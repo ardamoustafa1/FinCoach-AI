@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as cheerio from 'cheerio';
 import qrcode from 'qrcode-terminal';
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
@@ -73,10 +74,34 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma, doğrudan özel etike
       generationConfig: { maxOutputTokens: 1024 },
     });
 
-    // Gemini doesn't use 'system' role in startChat history, but we can prepend it to the message or use systemInstruction
-    // For 1.5 Flash/Pro, we can set systemInstruction in getGenerativeModel, but for simplicity here we'll just send it.
     const lastMsg = messages[messages.length - 1].content;
-    const prompt = `${systemInstruction}\n\nKullanıcı: ${lastMsg}`;
+    let extraContext = '';
+    
+    // Satın Almadan Önce Sor (E-Ticaret Scraper)
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = lastMsg.match(urlRegex);
+    
+    if (urls && urls.length > 0) {
+      try {
+        const url = urls[0];
+        const fetchRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }});
+        const html = await fetchRes.text();
+        const $ = cheerio.load(html);
+        
+        const title = $('meta[property="og:title"]').attr('content') || $('title').text() || 'Ürün';
+        let price = $('meta[property="product:price:amount"]').attr('content') || $('meta[property="og:price:amount"]').attr('content');
+        
+        if (!price) {
+          price = $('.prc-dsc').first().text() || $('#offering-price').first().text() || $('.a-price-whole').first().text() || 'Bilinmiyor';
+        }
+        
+        extraContext = `\n[SİSTEM BİLGİSİ: Kullanıcı bir ürün linki paylaştı. Ürün Adı: "${title.trim()}", Fiyatı: "${price}". Lütfen kullanıcının boşta kalan bütçesine ve aylık durumuna bakarak bu ürünü almasının finansal açıdan mantıklı olup olmadığını "Satın Almadan Önce Sor" vizyonuyla analiz et. Gerekirse bu ürünü almak için hangi aboneliklerden vazgeçebileceğini söyle.]`;
+      } catch (err) {
+        extraContext = `\n[SİSTEM BİLGİSİ: Kullanıcı bir ürün linki paylaştı ancak site güvenliği nedeniyle otomatik fiyat okunamadı. Yinede linkteki ürünü analiz edip harcama yapıp yapmaması gerektiğini yorumla.]`;
+      }
+    }
+
+    const prompt = `${systemInstruction}${extraContext}\n\nKullanıcı: ${lastMsg}`;
     
     const result = await chat.sendMessage(prompt);
     const response = await result.response;

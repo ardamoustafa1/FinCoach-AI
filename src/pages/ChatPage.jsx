@@ -42,11 +42,10 @@ const getInitialMessages = () => {
 };
 
 const QUICK_QUESTIONS = [
+  "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
-  "Bu ayki genel durumum nasıl?",
   "Hangi aboneliği kessem?",
   "En büyük 3 tasarruf fırsatım neler?",
-  "Geçen aya kıyasla nasılım?",
 ];
 
 function getUserContext() {
