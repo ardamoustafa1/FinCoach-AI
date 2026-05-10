@@ -42,12 +42,11 @@ const getInitialMessages = () => {
 };
 
 const QUICK_QUESTIONS = [
+  "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
   "Bu ayki genel durumum nasıl?",
   "Hangi aboneliği kessem?",
-  "6 aylık birikim planı yap",
   "En büyük 3 tasarruf fırsatım neler?",
   "Geçen aya kıyasla nasılım?",
-  "Bu haftanın özeti"
 ];
 
 function getUserContext() {
@@ -68,7 +67,8 @@ function getUserContext() {
     return {
       aylikOzet, limitler: limits,
       hedefler: goals.map(g => ({ ad: g.name, hedef: g.targetAmount, mevcut: g.currentAmount })),
-      skor: totalScore, kisilik: personalityTitle
+      skor: totalScore, kisilik: personalityTitle,
+      roastMode: localStorage.getItem('butceai_roast_mode') === 'true'
     };
   } catch (e) { return {}; }
 }
@@ -183,10 +183,16 @@ export default function ChatPage() {
           {messages.map((msg, i) => {
             let text = msg.content;
             let chartData = null;
+            let simulationData = null;
             if (msg.role === 'bot' && typeof text === 'string') {
-              const match = text.match(/CHART_DATA:(\{.*\})/);
-              if (match) {
-                try { chartData = JSON.parse(match[1]); text = text.replace(match[0], '').trim(); }
+              const chartMatch = text.match(/CHART_DATA:(\{.*\})/);
+              if (chartMatch) {
+                try { chartData = JSON.parse(chartMatch[1]); text = text.replace(chartMatch[0], '').trim(); }
+                catch (e) {}
+              }
+              const simMatch = text.match(/SIMULATION:(\{.*\})/);
+              if (simMatch) {
+                try { simulationData = JSON.parse(simMatch[1]); text = text.replace(simMatch[0], '').trim(); }
                 catch (e) {}
               }
             }
@@ -220,6 +226,30 @@ export default function ChatPage() {
                       <div style={{ color: P.text1 }}>
                         <ReactMarkdown>{text}</ReactMarkdown>
                       </div>
+                      
+                      {simulationData && (
+                        <div style={{
+                          marginTop: 12, padding: 20, borderRadius: 16,
+                          background: simulationData.status === 'rich' ? 'linear-gradient(135deg, #10B98122, #05966944)' : 'linear-gradient(135deg, #EF444422, #B91C1C44)',
+                          border: `1px solid ${simulationData.status === 'rich' ? P.green : P.red}50`,
+                          display: 'flex', flexDirection: 'column', gap: 14,
+                          boxShadow: `0 8px 32px ${simulationData.status === 'rich' ? P.green : P.red}20`,
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ fontSize: 32 }}>{simulationData.status === 'rich' ? '🏡🚀' : '📦🛒'}</div>
+                            <div>
+                              <h4 style={{ fontSize: 15, fontWeight: 800, color: simulationData.status === 'rich' ? P.green : P.red, letterSpacing: '-0.01em', margin: 0 }}>
+                                5 Yıl Sonraki Hayatın
+                              </h4>
+                              <p style={{ fontSize: 12, color: P.text2, margin: 0 }}>Yapay Zeka Projeksiyonu</p>
+                            </div>
+                          </div>
+                          <p style={{ fontSize: 14, color: P.text1, lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+                            "{simulationData.story}"
+                          </p>
+                        </div>
+                      )}
+
                       {chartData && (
                         <div style={{ borderRadius: 14, background: P.bg3, border: `1px solid ${P.border}`, padding: 16, marginTop: 4 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

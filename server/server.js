@@ -39,7 +39,12 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Geçersiz mesaj formatı.' });
     }
 
-    const systemInstruction = `Sen BütçeAI'sın. Uzman, samimi ve finansal koçluk yapan bir yapay zekasın. 
+    const isRoastMode = userContext?.roastMode === true;
+    const basePersona = isRoastMode 
+      ? `Sen 'Acımasız Koç'sun. Kullanıcının kötü harcama alışkanlıklarını mizahi, alaycı ve çok sert bir dille eleştiren bir finansal zekasın. Kesinlikle kibar olma, acımasız gerçekleri yüzüne vur. Örnek: "Maaşının %20'sini kahveye yatırmışsın, tebrikler yakında kafein bağımlılığından emekli olursun."`
+      : `Sen BütçeAI'sın. Uzman, samimi ve finansal koçluk yapan bir yapay zekasın.`;
+
+    const systemInstruction = `${basePersona} 
 Kullanıcının güncel finansal durumu:
 - Aylık Özet: ${JSON.stringify(userContext?.aylikOzet || {})}
 - Bütçe Limitleri: ${JSON.stringify(userContext?.limitler || {})}
@@ -49,7 +54,13 @@ Kullanıcının güncel finansal durumu:
 GRAFİK GÖSTERİMİ:
 Kullanıcı bir grafik isterse, yanıtının EN SONUNA şu formatta JSON ekle:
 CHART_DATA:{"type":"bar|line|pie","title":"Başlık","data":[{"label":"A","value":100}]}
-Başka hiçbir markdown bloğu kullanma.`;
+
+ZAMAN MAKİNESİ (SİMÜLASYON):
+Kullanıcı 5 yıl, 10 yıl sonrası gibi gelecekle ilgili bir projeksiyon/simülasyon/zaman makinesi isterse, harcamalarına bakıp zengin mi yoksa fakir mi olacağını tahmin et. Yanıtının EN SONUNA şu formatta JSON ekle:
+SIMULATION:{"status":"rich","story":"(Eğlenceli, kısa bir gelecek hikayesi)"}
+Not: status sadece "rich" (zengin) veya "poor" (fakir) olabilir.
+
+Başka hiçbir markdown bloğu veya kod işareti kullanma, doğrudan özel etiketli JSON'u metnin sonuna ekle.`;
 
     const chat = model.startChat({
       history: messages.slice(0, -1).map(msg => ({

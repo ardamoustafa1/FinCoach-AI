@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Moon, Sun, Globe, Bell, Trash2, Database, RotateCcw, Save,
-  Wallet, QrCode, Shield, Sparkles, ChevronRight,
+  Wallet, QrCode, Shield, Sparkles, ChevronRight, Flame
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { initMockData } from '../data/mockData';
@@ -78,8 +78,15 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 export default function SettingsPage({ theme, onToggleTheme }) {
   const [limits, setLimits] = useState({});
   const [isSaved, setIsSaved] = useState(false);
+  const [roastMode, setRoastMode] = useState(() => localStorage.getItem('butceai_roast_mode') === 'true');
 
   useEffect(() => { setLimits(getBudgetLimits()); }, []);
+
+  const toggleRoastMode = () => {
+    const newVal = !roastMode;
+    setRoastMode(newVal);
+    localStorage.setItem('butceai_roast_mode', newVal);
+  };
 
   const handleLimitChange = (kat, value) => { setLimits(prev => ({ ...prev, [kat]: Number(value) })); setIsSaved(false); };
 
@@ -137,6 +144,21 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             title="Tema"
             subtitle={theme === 'dark' ? 'Koyu mod aktif' : 'Açık mod aktif'}
             action={<ActionButton onClick={onToggleTheme} label="Değiştir" color={P.purple} variant="ghost" />}
+          />
+
+          <SettingRow
+            icon={Flame}
+            iconColor={P.red}
+            title="Acımasız Koç Modu 🔥"
+            subtitle={roastMode ? 'Açık (Sert eleştiri alıyorsunuz)' : 'Kapalı (Standart kibar AI)'}
+            action={
+              <ActionButton 
+                onClick={toggleRoastMode} 
+                label={roastMode ? 'Kapat' : 'Aç'} 
+                color={roastMode ? P.text3 : P.red} 
+                variant={roastMode ? 'ghost' : 'fill'} 
+              />
+            }
           />
 
           <SettingRow
