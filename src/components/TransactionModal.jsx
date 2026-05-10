@@ -1,421 +1,225 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Maximize2, X, Zap } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
-} from 'recharts';
-import { getTransactions, getGoals, getBudgetLimits } from '../utils/storage';
-import { aySkoru } from '../utils/healthScore';
-import { kisilikTipiBelirle } from '../utils/spendingPersonality';
-import { API_URL, apiUrl } from '../utils/api';
+import { useState, useEffect, useRef } from 'react';
+import { X, Plus, Tag } from 'lucide-react';
+import { TUM_KATEGORILER } from '../utils/categories';
+import { suggestCategory } from '../utils/storage';
 
-const getInitialMessages = () => {
-  const userName = localStorage.getItem('butceai_user_name') || '';
-  const greeting = userName ? `Merhaba ${userName}! 👋` : 'Merhaba! 👋';
-  return [
-    { role: 'bot', content: `${greeting} Ben BütçeAI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
-    { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' },
-    {
-      role: 'bot', actionable: {
-        type: 'cancel_subscription',
-        title: 'Kullanılmayan Abonelik Tespit Edildi',
-        desc: "Aboneliklerinde Exxen'i 3 aydır hiç kullanmıyorsun. İptal edelim mi?",
-        btnText: 'Tek Tıkla İptal Et',
-        payload: 'Exxen'
-      }
-    },
-    {
-      role: 'bot', actionable: {
-        type: 'transfer_goal',
-        title: 'Tasarruf Fırsatı',
-        desc: "Bu ay hedeflenenden 500₺ fazla paran arttı. Bunu 'Tatil Fonu' hedefine aktarayım mı?",
-        btnText: 'Hemen Aktar',
-        payload: { goal: 'Tatil Fonu', amount: 500 }
-      }
-    }
-  ];
+const P = {
+  purple: '#7C3AED', purpleLight: '#A78BFA', purpleDim: 'rgba(124,58,237,0.15)',
+  green: '#10B981', red: '#EF4444', amber: '#F59E0B',
+  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038', bg4: '#222540',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.35)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
 };
 
-const QUICK_QUESTIONS = [
-  "Bu ayki genel durumum nasıl?",
-  "Hangi aboneliği kessem?",
-  "6 aylık birikim planı yap",
-  "En büyük 3 tasarruf fırsatım neler?",
-  "Geçen aya kıyasla nasılım?",
-  "Bu haftanın özeti"
-];
+const BOS_FORM = {
+  tarih: new Date().toISOString().slice(0, 10),
+  tutar: '',
+  aciklama: '',
+  magaza: '',
+  kategori: '',
+  not: '',
+  etiketler: [],
+};
 
-// ─── Yardımcı: Kullanıcı bağlamını topla ────────────────────────
-function getUserContext() {
-  try {
-    const txs = getTransactions();
-    const goals = getGoals();
-    const limits = getBudgetLimits();
-    const { toplam: totalScore } = aySkoru(txs, [], 2025, 5, limits);
-    const { ad: personalityTitle } = kisilikTipiBelirle(txs);
-
-    // Sadece bu ayki harcamaları topla (basitçe son 30 gün diyebiliriz)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const recentTxs = txs.filter(t => new Date(t.tarih) >= thirtyDaysAgo);
-
-    const aylikOzet = recentTxs.reduce((acc, tx) => {
-      const isGider = tx.tur === 'gider' || (!tx.tur && Number(tx.tutar) < 0);
-      if (isGider) {
-        acc[tx.kategori] = (acc[tx.kategori] || 0) + Math.abs(Number(tx.tutar));
-      }
-      return acc;
-    }, {});
-
-    return {
-      aylikOzet,
-      limitler: limits,
-      hedefler: goals.map(g => ({ ad: g.name, hedef: g.targetAmount, mevcut: g.currentAmount })),
-      skor: totalScore,
-      kisilik: personalityTitle
-    };
-  } catch (e) {
-    console.error('Kullanıcı bağlamı alınamadı:', e);
-    return {};
-  }
-}
-
-export default function ChatPage() {
-  const [messages, setMessages] = useState(getInitialMessages);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [modalChart, setModalChart] = useState(null); // { type, title, data }
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
-
-  const handleAction = (action) => {
-    setMessages(prev => [...prev, { role: 'user', content: action.btnText }]);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      let botResponse = '';
-      if (action.type === 'cancel_subscription') {
-        botResponse = `✅ **${action.payload}** aboneliğin başarıyla iptal edildi! (Simülasyon)\n\nArtık aylık bütçende ekstra yerin var. Bu tutarı birikim hedefine aktarabiliriz.`;
-      } else if (action.type === 'transfer_goal') {
-        botResponse = `✅ **${action.payload.amount}₺** başarıyla '${action.payload.goal}' hedefine aktarıldı! (Simülasyon)\n\nHedefine bir adım daha yaklaştın. Harika gidiyorsun! 🎉`;
-      }
-      setMessages(prev => [...prev, { role: 'bot', content: botResponse }]);
-      setIsLoading(false);
-    }, 1500);
-  };
-
-  const handleSend = async (text = input) => {
-    if (!text.trim() || isLoading) return;
-
-    const userMsg = { role: 'user', content: text };
-    const newMessages = [...messages, userMsg];
-
-    setMessages(newMessages);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const userContext = getUserContext();
-
-      const response = await fetch(apiUrl('/api/chat'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages,
-          userContext
-        }),
-      });
-
-      if (!response.ok) throw new Error('API yanıt vermedi.');
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setMessages(prev => [...prev, { role: 'bot', content: data.response }]);
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        content: `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?`
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
+function alan(label, error, children) {
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full animate-fade-in-up">
-
-      {/* ── ÜST BAŞLIK ── */}
-      <div className="page-hero p-4 md:p-5 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/25">
-          <Bot className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary-600 dark:text-primary-300">AI cockpit</p>
-          <h1 className="text-xl md:text-2xl font-black text-surface-950 dark:text-white flex items-center gap-2">
-            AI Finansal Koçun
-            <Sparkles className="w-5 h-5 text-warn-500" />
-          </h1>
-          <p className="text-sm text-surface-700 dark:text-surface-200">Kişiselleştirilmiş içgörüler ve tavsiyeler</p>
-        </div>
-      </div>
-
-      {/* ── MESAJLAR ALANI ── */}
-      <div className="flex-1 overflow-y-auto mt-4 space-y-6 pr-2 scrollbar-thin scrollbar-thumb-surface-200 dark:scrollbar-thumb-surface-700">
-        {messages.map((msg, i) => {
-          // Parse chart data if exists
-          let text = msg.content;
-          let chartData = null;
-
-          if (msg.role === 'bot' && typeof text === 'string') {
-            const match = text.match(/CHART_DATA:(\{.*\})/);
-            if (match) {
-              try {
-                chartData = JSON.parse(match[1]);
-                text = text.replace(match[0], '').trim();
-              } catch (e) {
-                console.error("Chart parse error:", e);
-              }
-            }
-          }
-
-          return (
-            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-              {/* Avatar */}
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${msg.role === 'bot'
-                  ? 'bg-gradient-to-br from-primary-500/20 to-purple-500/20 border border-primary-500/20'
-                  : 'bg-surface-200 dark:bg-surface-700'
-                }`}>
-                {msg.role === 'bot'
-                  ? <Bot className="w-5 h-5 text-primary-500" />
-                  : <User className="w-5 h-5 text-surface-700 dark:text-surface-200" />}
-              </div>
-
-              {/* Balon */}
-              <div className={`max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm ${msg.role === 'bot'
-                  ? 'bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white rounded-tl-sm'
-                  : 'bg-primary-500 text-white rounded-tr-sm shadow-primary-500/20'
-                }`}>
-                {msg.role === 'bot' ? (
-                  msg.actionable ? (
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <Zap className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        <span className="font-bold text-surface-900 dark:text-white">{msg.actionable.title}</span>
-                      </div>
-                      <p className="text-sm text-surface-700 dark:text-surface-200 mb-3">{msg.actionable.desc}</p>
-                      <button
-                        onClick={() => handleAction(msg.actionable)}
-                        className="w-full py-2.5 rounded-xl bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-md"
-                      >
-                        {msg.actionable.btnText}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3 w-full">
-                      <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0 max-w-none">
-                        <ReactMarkdown>{text}</ReactMarkdown>
-                      </div>
-                      {chartData && (
-                        <div className="relative w-full rounded-xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 p-3 mt-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-bold text-surface-900 dark:text-white">{chartData.title || 'Grafik'}</h4>
-                            <button
-                              onClick={() => setModalChart(chartData)}
-                              className="p-1 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-500"
-                              title="Büyüt"
-                            >
-                              <Maximize2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                          <div className="h-[200px] w-full mt-2">
-                            <ChatChart chartData={chartData} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                ) : (
-                  <span className="whitespace-pre-wrap">{msg.content}</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Yazıyor Animasyonu */}
-        {isLoading && (
-          <div className="flex gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500/20 to-purple-500/20 border border-primary-500/20 flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5 text-primary-500" />
-            </div>
-            <div className="px-4 py-4 rounded-2xl bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 rounded-tl-sm shadow-sm flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* ── ALT KONTROLLER ── */}
-      <div className="mt-4 flex flex-col gap-3">
-        {/* Hazır Sorular (Yatay Scroll) */}
-        <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none snap-x">
-          {QUICK_QUESTIONS.map((q, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSend(q)}
-              disabled={isLoading}
-              className="snap-start shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium 
-                bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200
-                hover:bg-primary-500/10 hover:text-primary-500 dark:hover:bg-primary-500/15
-                border border-surface-200/50 dark:border-surface-700/50
-                transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Input Alanı */}
-        <div className="relative">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            placeholder="Mesajınızı yazın... (Göndermek için Enter)"
-            className="w-full px-4 py-3.5 pr-14 rounded-2xl bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none shadow-sm disabled:opacity-50"
-            rows="2"
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-2.5 bottom-2.5 p-2 rounded-xl bg-primary-500 text-white hover:bg-primary-600 disabled:bg-surface-200 dark:disabled:bg-surface-700 disabled:text-surface-400 transition-all shadow-md cursor-pointer"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* ── CHART MODAL ── */}
-      {modalChart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-          onClick={(e) => e.target === e.currentTarget && setModalChart(null)}>
-          <div className="w-full max-w-3xl bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 border border-surface-200 dark:border-surface-700 relative">
-            <button
-              onClick={() => setModalChart(null)}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-6 pr-10">{modalChart.title || 'Grafik Detayı'}</h3>
-            <div className="w-full h-[400px]">
-              <ChatChart chartData={modalChart} />
-            </div>
-          </div>
-        </div>
-      )}
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 6 }}>{label}</label>
+      {children}
+      {error && <p style={{ fontSize: 11, color: P.red, marginTop: 4 }}>{error}</p>}
     </div>
   );
 }
 
-// ─── Yardımcı Grafik Bileşeni ─────────────────────────────────
-const PIE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4'];
+export default function TransactionModal({ islem, initialValues, onKaydet, onKapat }) {
+  const [form, setForm] = useState(islem
+    ? {
+        ...BOS_FORM,
+        ...islem,
+        etiketler: islem.etiketler || [],
+        tutar: String(islem.tutar || ''),
+      }
+    : {
+        ...BOS_FORM,
+        ...(initialValues || {}),
+        etiketler: initialValues?.etiketler || [],
+        tutar: initialValues?.tutar ? String(initialValues.tutar) : '',
+      }
+  );
+  const [hatalar, setHatalar] = useState({});
+  const [etiketInput, setEtiketInput] = useState('');
+  const [kategoriOneri, setKategoriOneri] = useState(null);
+  const magazaDebRef = useRef(null);
 
-function ChatChart({ chartData }) {
-  if (!chartData || !chartData.data || chartData.data.length === 0) {
-    return <div className="text-sm text-surface-500">Grafik verisi bulunamadı.</div>;
-  }
+  useEffect(() => {
+    clearTimeout(magazaDebRef.current);
+    magazaDebRef.current = setTimeout(() => {
+      const oneri = suggestCategory(form.magaza);
+      setKategoriOneri(oneri && oneri !== form.kategori ? oneri : null);
+    }, 400);
+  }, [form.magaza, form.kategori]);
 
-  const { type, data } = chartData;
+  const set = (key, val) => {
+    setForm(f => ({ ...f, [key]: val }));
+    setHatalar(h => ({ ...h, [key]: '' }));
+  };
 
-  // Pie chart expects data to have 'name' instead of 'label' for Recharts tooltips
-  const pieData = type === 'pie' ? data.map(d => ({ name: d.label, value: d.value })) : data;
+  const validasyonKontrol = () => {
+    const h = {};
+    if (!form.tarih) h.tarih = 'Tarih zorunlu';
+    if (!form.tutar || Number(form.tutar) <= 0) h.tutar = 'Geçerli bir tutar girin';
+    if (!form.aciklama.trim()) h.aciklama = 'Açıklama zorunlu';
+    setHatalar(h);
+    return Object.keys(h).length === 0;
+  };
 
-  switch (type) {
-    case 'bar':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.2} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(val) => `₺${val}`} />
-            <RechartsTooltip
-              cursor={{ fill: 'rgba(99,102,241,0.05)' }}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={50} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    case 'line':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.2} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(val) => `₺${val}`} />
-            <RechartsTooltip
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    case 'pie':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={pieData}
-              cx="50%"
-              cy="50%"
-              innerRadius="50%"
-              outerRadius="80%"
-              paddingAngle={5}
-              dataKey="value"
-              stroke="none"
-            >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-              ))}
-            </Pie>
-            <RechartsTooltip
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-          </PieChart>
-        </ResponsiveContainer>
-      );
-    default:
-      return <div className="text-sm text-surface-500">Desteklenmeyen grafik tipi: {type}</div>;
-  }
+  const handleKaydet = () => {
+    if (!validasyonKontrol()) return;
+    onKaydet({ ...form, tutar: Number(form.tutar) });
+  };
+
+  const handleEtiketEkle = () => {
+    const yeniler = etiketInput.split(',')
+      .map(e => e.trim()).filter(e => e && !form.etiketler.includes(e));
+    if (yeniler.length) set('etiketler', [...form.etiketler, ...yeniler]);
+    setEtiketInput('');
+  };
+
+  const inputStyle = (key) => ({
+    width: '100%', boxSizing: 'border-box',
+    padding: '10px 14px', borderRadius: 12,
+    background: P.bg3, border: `1px solid ${hatalar[key] ? P.red : P.border}`,
+    color: P.text1, fontSize: 13, fontFamily: 'inherit',
+    outline: 'none', transition: 'all 0.2s',
+  });
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+    }} onClick={e => e.target === e.currentTarget && onKapat()}>
+      <div style={{
+        width: '100%', maxWidth: 460, background: P.bg2, border: `1px solid ${P.border}`,
+        borderRadius: 22, display: 'flex', flexDirection: 'column', maxHeight: '90vh',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.7)', animation: 'fadeUp 0.3s ease',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1 }}>
+            {islem ? 'İşlemi Düzenle' : 'Yeni İşlem'}
+          </h2>
+          <button onClick={onKapat} style={{
+            width: 32, height: 32, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`,
+            color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1 }}>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              {alan('Tarih *', hatalar.tarih,
+                <input type="date" value={form.tarih} onChange={e => set('tarih', e.target.value)} style={inputStyle('tarih')} />
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              {alan('Tutar *', hatalar.tutar,
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: P.text2, fontWeight: 700, fontSize: 14 }}>₺</span>
+                  <input type="number" min="0" step="0.01" value={form.tutar}
+                    onChange={e => set('tutar', e.target.value.replace(/-/, ''))}
+                    placeholder="0" style={{ ...inputStyle('tutar'), paddingLeft: 28 }} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {alan('Mağaza', null,
+            <input type="text" value={form.magaza} onChange={e => set('magaza', e.target.value)}
+              placeholder="Örn: Migros, Netflix…" style={inputStyle('magaza')} />
+          )}
+
+          {kategoriOneri && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: P.purpleDim, border: `1px solid rgba(124,58,237,0.3)`, color: P.purpleLight, fontSize: 12, marginBottom: 16 }}>
+              <span>💡 Öneri: <strong>{kategoriOneri}</strong></span>
+              <button onClick={() => { set('kategori', kategoriOneri); setKategoriOneri(null); }}
+                style={{ marginLeft: 'auto', fontWeight: 700, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>Uygula</button>
+              <button onClick={() => setKategoriOneri(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}><X size={12} /></button>
+            </div>
+          )}
+
+          {alan('Açıklama *', hatalar.aciklama,
+            <input type="text" value={form.aciklama} onChange={e => set('aciklama', e.target.value)}
+              placeholder="Örn: Haftalık market alışverişi" style={inputStyle('aciklama')} />
+          )}
+
+          {alan('Kategori', null,
+            <select value={form.kategori} onChange={e => set('kategori', e.target.value)} style={inputStyle('kategori')}>
+              <option value="">Kategori seçin…</option>
+              {TUM_KATEGORILER.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          )}
+
+          {alan('Not (opsiyonel)', null,
+            <textarea value={form.not} onChange={e => set('not', e.target.value)}
+              rows={2} placeholder="Eklemek istediğiniz bir not…"
+              style={{ ...inputStyle('not'), resize: 'none' }} />
+          )}
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 6 }}>
+              Etiketler <span style={{ fontWeight: 400, opacity: 0.7 }}>(virgülle ayırın)</span>
+            </label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input type="text" value={etiketInput} onChange={e => setEtiketInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleEtiketEkle()}
+                placeholder="iş yemeği, geri ödenecek…"
+                style={{ ...inputStyle(''), flex: 1 }} />
+              <button onClick={handleEtiketEkle} style={{
+                padding: '0 14px', borderRadius: 12, background: P.purpleDim, border: `1px solid rgba(124,58,237,0.3)`,
+                color: P.purpleLight, cursor: 'pointer',
+              }}>
+                <Plus size={16} />
+              </button>
+            </div>
+            {form.etiketler.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {form.etiketler.map(e => (
+                  <span key={e} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px',
+                    borderRadius: 999, background: P.bg4, fontSize: 11, fontWeight: 600, color: P.text1,
+                    border: `1px solid ${P.border}`
+                  }}>
+                    <Tag size={10} color={P.text3} /> {e}
+                    <button onClick={() => set('etiketler', form.etiketler.filter(t => t !== e))}
+                      style={{ background: 'none', border: 'none', color: P.text3, cursor: 'pointer', marginLeft: 2, padding: 0 }}>
+                      <X size={10} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: 'flex', gap: 10, padding: '16px 24px', borderTop: `1px solid ${P.border}`, background: P.bg1, borderRadius: '0 0 22px 22px' }}>
+          <button onClick={onKapat} style={{
+            flex: 1, padding: '12px 0', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg3,
+            color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+          }}>
+            İptal
+          </button>
+          <button onClick={handleKaydet} style={{
+            flex: 1, padding: '12px 0', borderRadius: 12, border: 'none', background: `linear-gradient(135deg, ${P.purple}, #4F46E5)`,
+            color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'all 0.2s',
+          }}>
+            {islem ? 'Güncelle' : 'Kaydet'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

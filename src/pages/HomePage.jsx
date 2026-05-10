@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
@@ -11,9 +12,10 @@ import {
   Sparkles, Activity, ChevronRight, Clock,
   ShieldCheck, Flame
 } from 'lucide-react';
-import { getTransactions, getGoals } from '../utils/storage';
+import { getTransactions, getGoals, saveTransaction } from '../utils/storage';
 import { calculateEcoScore } from '../utils/ecoScore';
 import { calculatePrediction } from '../utils/predictive';
+import TransactionModal from '../components/TransactionModal';
 
 /* ─── Palette ─── */
 const P = {
@@ -225,7 +227,7 @@ function StatCard({ label, value, icon: Icon, color, change, isCurrency = true, 
 }
 
 /* ─── Transaction Row ─── */
-function TxRow({ tx, index }) {
+function TxRow({ tx, index, onClick }) {
   const isIncome = tx.type === 'income' || tx.tur === 'gelir';
   const amount = Math.abs(Number(tx.amount || tx.tutar || 0));
   const color = isIncome ? P.green : P.red;
@@ -233,7 +235,7 @@ function TxRow({ tx, index }) {
   useEffect(() => { const t = setTimeout(() => setVis(true), index * 80); return () => clearTimeout(t); }, [index]);
 
   return (
-    <div style={{
+    <div onClick={() => onClick && onClick(tx)} style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '12px 16px', borderRadius: 14,
       background: vis ? P.bg3 : 'transparent',
@@ -276,10 +278,21 @@ function TxRow({ tx, index }) {
 
 /* ─── Main Component ─── */
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [txRefresh, setTxRefresh] = useState(0);
   const transactions = getTransactions();
   const goals = getGoals();
   const ecoData = calculateEcoScore(transactions);
   const prediction = calculatePrediction(transactions);
+
+  const [seciliIslem, setSeciliIslem] = useState(null);
+  const [range, setRange] = useState('1Y');
+
+  const handleKaydet = (form) => {
+    saveTransaction(form);
+    setSeciliIslem(null);
+    setTxRefresh(r => r + 1);
+  };
 
   const totalIncome = transactions
     .filter(t => t.type === 'income' || t.tur === 'gelir')
@@ -319,6 +332,13 @@ export default function HomePage() {
     { month: 'Eyl', bakiye: 12100 }, { month: 'Eki', bakiye: 15800 },
     { month: 'Kas', bakiye: 14200 }, { month: 'Ara', bakiye: 18600 },
   ];
+
+  const filteredAreaData = (() => {
+    if (range === '1A') return areaData.slice(-1);
+    if (range === '3A') return areaData.slice(-3);
+    if (range === '6A') return areaData.slice(-6);
+    return areaData;
+  })();
 
   const userName = localStorage.getItem('butceai_user_name') || 'Kullanıcı';
   const hour = new Date().getHours();
@@ -603,20 +623,26 @@ export default function HomePage() {
                 <p style={{ fontSize: 13, color: P.text3 }}>Son 12 aylık bakiye gelişimi</p>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                {['1A', '3A', '6A', '1Y'].map((t, i) => (
-                  <button key={t} style={{
-                    padding: '6px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                    border: `1px solid ${i === 3 ? P.purple : P.border}`,
-                    background: i === 3 ? P.purpleDim : 'transparent',
-                    color: i === 3 ? P.purpleLight : P.text3,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}>{t}</button>
+                {['1A', '3A', '6A', '1Y'].map((t) => (
+                  <button 
+                    key={t} 
+                    onClick={() => setRange(t)}
+                    style={{
+                      padding: '6px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
+                      border: `1px solid ${range === t ? P.purple : P.border}`,
+                      background: range === t ? P.purpleDim : 'transparent',
+                      color: range === t ? P.purpleLight : P.text3,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {t}
+                  </button>
                 ))}
               </div>
             </div>
             <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={areaData} margin={{ top: 5, right: 5, bottom: 0, left: 10 }}>
+              <AreaChart data={filteredAreaData} margin={{ top: 5, right: 5, bottom: 0, left: 10 }}>
                 <defs>
                   <linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={P.purple} stopOpacity={0.4} />
@@ -754,11 +780,14 @@ export default function HomePage() {
             <GlassCard style={{ padding: '28px 28px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1 }}>Son İşlemler</h2>
-                <button style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  fontSize: 12, fontWeight: 600, color: P.purpleLight,
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                }}>
+                <button 
+                  onClick={() => navigate('/transactions')}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    fontSize: 12, fontWeight: 600, color: P.purpleLight,
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  }}
+                >
                   Tümünü Gör <ChevronRight size={14} />
                 </button>
               </div>
@@ -766,7 +795,7 @@ export default function HomePage() {
               {transactions.length > 0 ? (
                 <div className="butce-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 300, overflowY: 'auto' }}>
                   {transactions.slice(0, 6).map((tx, i) => (
-                    <TxRow key={tx.id || i} tx={tx} index={i} />
+                    <TxRow key={tx.id || i} tx={tx} index={i} onClick={setSeciliIslem} />
                   ))}
                 </div>
               ) : (
@@ -781,6 +810,14 @@ export default function HomePage() {
 
         </div>
       </div>
+      
+      {seciliIslem && (
+        <TransactionModal
+          islem={seciliIslem}
+          onKapat={() => setSeciliIslem(null)}
+          onKaydet={handleKaydet}
+        />
+      )}
     </>
   );
 }
