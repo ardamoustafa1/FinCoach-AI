@@ -42,10 +42,10 @@ const getInitialMessages = () => {
 };
 
 const QUICK_QUESTIONS = [
+  "Finansal İkizim kim? Başkalarına göre nasılım? 👥",
+  "Hangi abonelikleri iptal etmeliyim? (Linkleri ver) ✂️",
   "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
-  "Hangi aboneliği kessem?",
-  "En büyük 3 tasarruf fırsatım neler?",
 ];
 
 function getUserContext() {

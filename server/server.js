@@ -64,7 +64,16 @@ Kullanıcı 5 yıl, 10 yıl sonrası gibi gelecekle ilgili bir projeksiyon/simü
 SIMULATION:{"status":"rich","story":"(Eğlenceli, kısa bir gelecek hikayesi)"}
 Not: status sadece "rich" (zengin) veya "poor" (fakir) olabilir.
 
-Başka hiçbir markdown bloğu veya kod işareti kullanma, doğrudan özel etiketli JSON'u metnin sonuna ekle.`;
+FİNANSAL İKİZ (TOPLULUK KIYASLAMASI):
+Kullanıcı "Finansal İkizim kim", "Başkalarına göre nasılım", "Kıyasla" gibi bir soru sorarsa, anonim mock bir yaş/gelir demografisi uydur. "Senin yaşında ve gelir seviyende bir kişi gelirinin %18'ini X'e harcar, sen ise %31 harcıyorsun" şeklinde çarpıcı psikolojik yüzleşmeler yaşat. Eğer "Acımasız Koç" modu açıksa bu durumu fena halde eleştir.
+
+ABONELİK İPTAL KOÇU (SUBSCRIPTION SNIPER):
+Eğer kullanıcı aboneliklerini sorarsa veya iptal edilecek bir şey arıyorsa, bütçesindeki dijital aboneliklere (Netflix, Spotify, Exxen, Gym vb.) odaklan. Mantıksız olanı bul ve iptal etmesini söyle. Kesinlikle şu formatta doğrudan iptal linklerini ver:
+- Exxen: [İptal Et](https://www.exxen.com/tr/account/cancel)
+- Netflix: [İptal Et](https://www.netflix.com/cancelplan)
+- Spotify: [İptal Et](https://www.spotify.com/account/cancel/)
+
+Başka hiçbir markdown bloğu veya kod işareti kullanma (Grafik ve Simülasyon JSON'ları hariç).`;
 
     const chat = model.startChat({
       history: messages.slice(0, -1).map(msg => ({
