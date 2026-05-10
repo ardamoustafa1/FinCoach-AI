@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertTriangle, Loader2, Eye, ChevronDown, Download, Sparkles } from 'lucide-react';
 import { fmt } from '../utils/categories';
-import { suggestCategory } from '../utils/storage';
+import { parseCSV } from '../utils/csvParser';
+import { apiUrl } from '../utils/api';
 
 // ─── Durum sabitleri ─────────────────────────────────────────
 const DURUM = {
@@ -98,7 +99,7 @@ export default function CsvUploader({ onImport, onKapat }) {
       const requestData = batch.map(t => ({ id: t.id, aciklama: t.aciklama, magaza: t.magaza }));
 
       try {
-        const res = await fetch('http://localhost:3001/api/categorize', {
+        const res = await fetch(apiUrl('/api/categorize'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transactions: requestData })

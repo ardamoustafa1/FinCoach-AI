@@ -19,11 +19,12 @@ export default function MobileNav() {
   return (
     <nav
       className="
-        fixed bottom-0 left-0 right-0 z-50
-        bg-white/90 dark:bg-surface-900/95 backdrop-blur-xl
-        border-t border-surface-200 dark:border-surface-800
+        fixed bottom-3 left-3 right-3 z-50
+        bg-white/76 dark:bg-surface-950/78 backdrop-blur-2xl
+        border border-white/60 dark:border-surface-800/70
+        shadow-2xl shadow-surface-950/12
         flex items-center justify-around
-        h-16 px-2
+        h-16 px-2 rounded-lg
         lg:hidden
       "
     >
@@ -33,7 +34,7 @@ export default function MobileNav() {
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl text-xs font-medium
+            `flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold
              transition-all duration-200
              ${
                isActive
@@ -45,9 +46,9 @@ export default function MobileNav() {
           {({ isActive }) => (
             <>
               <div
-                className={`p-1.5 rounded-xl transition-all duration-200 ${
+                className={`p-1.5 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-primary-500/10 dark:bg-primary-500/15'
+                    ? 'bg-gradient-to-br from-primary-500 to-emerald-500 text-white shadow-lg shadow-primary-500/25'
                     : ''
                 }`}
               >

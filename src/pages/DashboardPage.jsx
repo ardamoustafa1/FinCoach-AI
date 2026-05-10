@@ -8,6 +8,7 @@ import LimitBanner from '../components/LimitBanner';
 import HealthScore from '../components/HealthScore';
 import PersonalityCard from '../components/PersonalityCard';
 import { getBudgetLimits } from '../utils/storage';
+import { useToast } from '../hooks/useToast';
 
 // ─── localStorage'dan veri oku ───────────────────────────────
 function getIslemler() {
@@ -67,7 +68,7 @@ function SummaryCard({ label, hedefDeger, icon: Icon, gradientFrom, gradientTo, 
   const animated = useCountUp(hedefDeger, 1500);
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-850 p-5 shadow-lg shadow-black/5 dark:shadow-black/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+    <div className="group glass-card relative overflow-hidden p-5">
       {/* Arka plan dekoratif gradient */}
       <div
         className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 dark:opacity-15 blur-2xl group-hover:opacity-20 transition-opacity duration-500"
@@ -81,7 +82,7 @@ function SummaryCard({ label, hedefDeger, icon: Icon, gradientFrom, gradientTo, 
             {label}
           </span>
           <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg"
+            className="w-11 h-11 rounded-lg flex items-center justify-center shadow-lg"
             style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
           >
             <Icon className="w-5 h-5 text-white" />
@@ -119,6 +120,7 @@ function SummaryCard({ label, hedefDeger, icon: Icon, gradientFrom, gradientTo, 
 
 // ─── Dashboard Sayfası ───────────────────────────────────────
 export default function DashboardPage() {
+  const toast = useToast();
   const [veriler, setVeriler] = useState(null);
   const [rawIslemler, setRawIslemler] = useState([]);
   const [rawGelirler, setRawGelirler] = useState([]);
@@ -131,8 +133,8 @@ export default function DashboardPage() {
     setRawIslemler(islemler);
     setRawGelirler(gelirler);
 
-    // Bütçe limitleri
-    setBudgetLimitler(getBudgetLimits());
+    const limitler = getBudgetLimits();
+    setBudgetLimitler(limitler);
 
     // Bu ay kategoriye göre harcama toplamı
     const buAyPrefix = '2025-05';
@@ -141,6 +143,16 @@ export default function DashboardPage() {
       .filter(i => i.tarih && i.tarih.startsWith(buAyPrefix))
       .forEach(i => { harcamaMap[i.kategori] = (harcamaMap[i.kategori] || 0) + i.tutar; });
     setBuAyHarcamalar(harcamaMap);
+
+    Object.entries(limitler).forEach(([kategori, limit]) => {
+      const harcanan = harcamaMap[kategori] || 0;
+      const oran = limit > 0 ? (harcanan / limit) * 100 : 0;
+      if (oran >= 100) {
+        toast.error(`⚠️ ${kategori} limiti aşıldı`);
+      } else if (oran >= 80) {
+        toast.warning(`⚠️ ${kategori} limitine %${Math.max(0, Math.round(100 - oran))} kaldı`);
+      }
+    });
 
     // Bu ay = Mayıs (5), geçen ay = Nisan (4)
     const buAyIslemler = ayFiltre(islemler, 5);
@@ -171,7 +183,7 @@ export default function DashboardPage() {
       gelirDegisim: parseFloat(gelirDegisim),
       giderDegisim: parseFloat(giderDegisim),
     });
-  }, []);
+  }, [toast]);
 
   if (!veriler) return null;
 
@@ -237,17 +249,26 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Başlık */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white">
-          Dashboard
-        </h1>
-        <p className="text-surface-700 dark:text-surface-200 mt-1">
-          Mayıs 2025 finansal özetiniz
-        </p>
+      <div className="page-hero p-5 md:p-7">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Mayıs 2025</p>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-surface-950 dark:text-white">
+              Finansal kontrol paneli
+            </h1>
+            <p className="text-surface-700 dark:text-surface-200 mt-3">
+              Riskleri, fırsatları ve bütçe sağlığını tek bakışta oku.
+            </p>
+          </div>
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Canlı içgörü</p>
+            <p className="text-lg font-black text-surface-900 dark:text-white">AI koç hazır</p>
+          </div>
+        </div>
       </div>
 
       {/* Limit aşım uyarı banner'ı */}
-      <LimitBanner asimlar={asimlar} />
+      <LimitBanner asimlar={asimlar} persistent />
 
       {/* Finansal Sağlık Skoru */}
       <HealthScore islemler={rawIslemler} gelirler={rawGelirler} />

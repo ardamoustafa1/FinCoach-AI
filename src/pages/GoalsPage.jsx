@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Target, Calendar, Edit2, Trash2, X, CheckCircle, ChevronRight, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Target, Calendar, Edit2, Trash2, X, CheckCircle, Sparkles, Scissors, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getGoals, addGoal, updateGoal, deleteGoal } from '../utils/storage';
 import { fmt } from '../utils/categories';
@@ -15,14 +15,10 @@ const RENKLER = [
 ];
 
 export default function GoalsPage() {
-  const [goals, setGoals] = useState([]);
+  const [goals, setGoals] = useState(() => getGoals());
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [completedModal, setCompletedModal] = useState(null); // { name }
-
-  useEffect(() => {
-    setGoals(getGoals());
-  }, []);
 
   const handleOpenModal = (g = null) => {
     setDuzenlenen(g);
@@ -34,8 +30,6 @@ export default function GoalsPage() {
     if (duzenlenen) {
       newGoals = updateGoal(duzenlenen.id, yeniHedef);
     } else {
-      newGoals = getGoals(); // to get fresh list including the newly added returned from addGoal inside component
-      // Actually addGoal returns the new single item, but we should refetch all
       addGoal(yeniHedef);
       newGoals = getGoals();
     }
@@ -91,9 +85,10 @@ export default function GoalsPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* ── BAŞLIK & YENİ EKLENTİ ── */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="page-hero p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Hedef motoru</p>
+          <h1 className="text-3xl md:text-4xl font-black text-surface-950 dark:text-white flex items-center gap-2">
             Hedefler
             <Target className="w-6 h-6 text-primary-500" />
           </h1>
@@ -131,6 +126,8 @@ export default function GoalsPage() {
           <p className="text-sm text-surface-500">Hemen yeni bir hedef ekleyerek birikim yapmaya başla.</p>
         </div>
       )}
+
+      <KesintiSimulator goals={aktif.length > 0 ? aktif : goals} />
 
       {/* ── TAMAMLANAN HEDEFLER ── */}
       {tamamlanan.length > 0 && (
@@ -183,6 +180,185 @@ export default function GoalsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+const KESINTI_KATEGORILERI = [
+  { id: 'yemek-siparisi', ad: 'Yemek Siparişi', aylik: 2400, varsayilan: 50 },
+  { id: 'abonelikler', ad: 'Abonelikler', aylik: 680, varsayilan: 25 },
+  { id: 'disarida-yemek', ad: 'Dışarıda Yemek', aylik: 1800, varsayilan: 20 },
+  { id: 'alisveris', ad: 'Alışveriş', aylik: 3200, varsayilan: 0 },
+  { id: 'eglence', ad: 'Eğlence', aylik: 920, varsayilan: 15 },
+];
+
+const liraFmt = (v) => `${Math.round(v).toLocaleString('tr-TR')}₺`;
+
+function ayEkle(tarih, ay) {
+  const yeniTarih = new Date(tarih);
+  yeniTarih.setMonth(yeniTarih.getMonth() + Math.max(0, Math.ceil(ay)));
+  return yeniTarih;
+}
+
+function tarihFmt(tarih) {
+  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(tarih);
+}
+
+function KesintiSimulator({ goals }) {
+  const [seciliHedefId, setSeciliHedefId] = useState(goals[0]?.id || '');
+  const [oranlar, setOranlar] = useState(() =>
+    KESINTI_KATEGORILERI.reduce((acc, kategori) => ({ ...acc, [kategori.id]: kategori.varsayilan }), {})
+  );
+
+  if (goals.length === 0) return null;
+
+  const etkinHedefId = goals.some(g => g.id === seciliHedefId) ? seciliHedefId : goals[0]?.id;
+  const hedef = goals.find(g => g.id === etkinHedefId) || goals[0];
+  const hedefAdi = hedef?.name || 'Hedef';
+  const kalanTutar = Math.max(0, Number(hedef?.targetAmount || 0) - Number(hedef?.currentAmount || 0));
+  const bugun = new Date();
+  const hedefTarihi = hedef?.deadline ? new Date(hedef.deadline) : ayEkle(bugun, 6);
+  const kalanGun = Math.max(1, Math.ceil((hedefTarihi - bugun) / (1000 * 60 * 60 * 24)));
+  const mevcutKalanAy = Math.max(1, Math.ceil(kalanGun / 30));
+  const mevcutAylikTasarruf = kalanTutar > 0 ? Math.max(1, Math.ceil(kalanTutar / mevcutKalanAy)) : 0;
+  const ekTasarruf = KESINTI_KATEGORILERI.reduce(
+    (toplam, kategori) => toplam + Math.round(kategori.aylik * ((oranlar[kategori.id] || 0) / 100)),
+    0
+  );
+  const yeniAylikTasarruf = mevcutAylikTasarruf + ekTasarruf;
+  const yeniKalanAy = kalanTutar > 0 && yeniAylikTasarruf > 0 ? Math.max(1, Math.ceil(kalanTutar / yeniAylikTasarruf)) : 0;
+  const erkenAy = Math.max(0, mevcutKalanAy - yeniKalanAy);
+  const eskiTamamlanma = kalanTutar > 0 ? ayEkle(bugun, mevcutKalanAy) : bugun;
+  const yeniTamamlanma = kalanTutar > 0 ? ayEkle(bugun, yeniKalanAy) : bugun;
+  const enBuyukEtki = KESINTI_KATEGORILERI
+    .map(kategori => ({ ...kategori, tasarruf: Math.round(kategori.aylik * ((oranlar[kategori.id] || 0) / 100)) }))
+    .sort((a, b) => b.tasarruf - a.tasarruf)[0];
+  const eskiBar = kalanTutar > 0 ? 100 : 100;
+  const yeniBar = kalanTutar > 0 ? Math.max(12, Math.min(100, (yeniKalanAy / mevcutKalanAy) * 100)) : 100;
+
+  const handleOranDegistir = (id, deger) => {
+    setOranlar(prev => ({ ...prev, [id]: Number(deger) }));
+  };
+
+  return (
+    <section className="glass-card rounded-3xl overflow-hidden border border-surface-200 dark:border-surface-700/50 shadow-xl shadow-surface-900/5">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="p-5 md:p-6 border-b xl:border-b-0 xl:border-r border-surface-200 dark:border-surface-700/50">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <Scissors className="w-4 h-4" />
+                Ne Kessem Ne Birikirim?
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-surface-900 dark:text-white">
+                Küçük kesintilerin hedef tarihini nasıl değiştirdiğini gör.
+              </h2>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {KESINTI_KATEGORILERI.map(kategori => {
+              const oran = oranlar[kategori.id] || 0;
+              const tasarruf = Math.round(kategori.aylik * (oran / 100));
+
+              return (
+                <div key={kategori.id} className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                    <div>
+                      <p className="text-sm font-bold text-surface-900 dark:text-white">{kategori.ad}</p>
+                      <p className="text-xs text-surface-500">Mevcut aylık harcama: {liraFmt(kategori.aylik)}</p>
+                    </div>
+                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                      Aylık {liraFmt(tasarruf)} tasarruf
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[42px_1fr_46px] items-center gap-3">
+                    <span className="text-xs font-semibold text-surface-500">%0</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={oran}
+                      onChange={e => handleOranDegistir(kategori.id, e.target.value)}
+                      onInput={e => handleOranDegistir(kategori.id, e.target.value)}
+                      className="w-full accent-primary-500 cursor-pointer"
+                      aria-label={`${kategori.ad} kesinti oranı`}
+                    />
+                    <span className="text-xs font-bold text-surface-700 dark:text-surface-200 text-right">%{oran}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="p-5 md:p-6 bg-surface-50/70 dark:bg-surface-900/30">
+          <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-2 uppercase tracking-wider">
+            Hedef seç
+          </label>
+          <select
+            value={etkinHedefId}
+            onChange={e => setSeciliHedefId(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+          >
+            {goals.map(g => (
+              <option key={g.id} value={g.id}>{g.icon} {g.name}</option>
+            ))}
+          </select>
+
+          <div className="mt-7">
+            <p className="text-xs font-bold uppercase tracking-wider text-surface-500 mb-2">Aylık ek tasarruf</p>
+            <div className="text-4xl md:text-5xl font-black text-surface-900 dark:text-white tracking-tight">
+              +{liraFmt(ekTasarruf)}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-7">
+            <div className="rounded-2xl bg-white/80 dark:bg-surface-850/70 border border-surface-200 dark:border-surface-700/60 p-4">
+              <p className="text-xs text-surface-500 mb-1">Mevcut tarih</p>
+              <p className="text-sm font-bold text-surface-900 dark:text-white">{tarihFmt(eskiTamamlanma)}</p>
+            </div>
+            <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4">
+              <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-1">Yeni tarih</p>
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{tarihFmt(yeniTamamlanma)}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black text-lg">
+            <TrendingUp className="w-5 h-5" />
+            {erkenAy > 0 ? `${erkenAy} ay daha erken ulaşırsın!` : 'Hedef planın aynı hızda ilerliyor.'}
+          </div>
+
+          <div className="mt-6 space-y-3">
+            <div>
+              <div className="flex justify-between text-xs font-semibold text-surface-500 mb-1">
+                <span>Eski plan</span>
+                <span>{mevcutKalanAy} ay</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-surface-200 dark:bg-surface-800 overflow-hidden">
+                <div className="h-full rounded-full bg-surface-400 dark:bg-surface-600" style={{ width: `${eskiBar}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+                <span>Yeni plan</span>
+                <span>{yeniKalanAy} ay</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-emerald-500/15 overflow-hidden">
+                <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${yeniBar}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 rounded-2xl bg-primary-500/10 border border-primary-500/20">
+            <p className="text-sm font-semibold text-surface-900 dark:text-white leading-relaxed">
+              {enBuyukEtki.ad} kesintisini %{oranlar[enBuyukEtki.id] || 0} azaltırsan, {hedefAdi} hedefine{' '}
+              <span className="text-emerald-600 dark:text-emerald-400">{erkenAy} ay daha erken</span> ulaşırsın.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -255,7 +431,7 @@ function HedefKarti({ hedef, onEdit, onDelete, isCompleted = false }) {
         <div className="h-3 w-full bg-surface-100 dark:bg-surface-800 rounded-full overflow-hidden shadow-inner">
           <div 
             className="h-full rounded-full transition-all duration-1000 ease-out"
-            style={{ width: \`\${pct}%\`, backgroundColor: colorHex }}
+            style={{ width: `${pct}%`, backgroundColor: colorHex }}
           />
         </div>
       </div>

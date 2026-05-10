@@ -10,30 +10,37 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Target, Leaf } from 'lucide-react';
 import { getTransactions, getGoals } from '../utils/storage';
+import { calculateEcoScore } from '../utils/ecoScore';
+import { calculatePrediction } from '../utils/predictive';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#ec4899'];
 
 export default function HomePage() {
   const transactions = getTransactions();
   const goals = getGoals();
+  
+  // Real Data Calculations
+  const ecoData = calculateEcoScore(transactions);
+  const prediction = calculatePrediction(transactions);
 
   const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((t) => t.type === 'income' || t.tur === 'gelir')
+    .reduce((sum, t) => sum + Number(t.amount || t.tutar || 0), 0);
 
   const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((t) => t.type === 'expense' || t.tur === 'gider' || (!t.tur && Number(t.tutar) < 0))
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount || t.tutar || 0)), 0);
 
   const balance = totalIncome - totalExpense;
 
   // Kategori bazlı harcama
   const categoryExpenses = transactions
-    .filter((t) => t.type === 'expense')
+    .filter((t) => t.type === 'expense' || t.tur === 'gider' || (!t.tur && Number(t.tutar) < 0))
     .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      const cat = t.category || t.kategori || 'Diğer';
+      acc[cat] = (acc[cat] || 0) + Math.abs(Number(t.amount || t.tutar || 0));
       return acc;
     }, {});
 
@@ -91,13 +98,30 @@ export default function HomePage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Page Title */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white">
-          Hoş Geldiniz! 👋
-        </h1>
-        <p className="text-surface-700 dark:text-surface-200 mt-1">
-          Finansal durumunuzun genel özeti
-        </p>
+      <div className="page-hero p-5 md:p-7 overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Canlı finans kokpiti</p>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-surface-950 dark:text-white">
+              Merhaba {localStorage.getItem('butceai_user_name') || 'Kullanıcı'},<br/>paranı daha net gör.
+            </h1>
+            <p className="text-surface-700 dark:text-surface-200 mt-3 max-w-2xl">
+              Harcamalar, hedefler, raporlar ve AI içgörüleri tek bir akıcı deneyimde.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 min-w-full sm:min-w-[360px]">
+            {[
+              ['AI', 'aktif'],
+              ['OCR', 'hazır'],
+              ['Demo', 'sunum modu'],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-white/60 dark:border-surface-700 bg-white/64 dark:bg-surface-900/50 px-3 py-2">
+                <p className="text-[10px] font-black uppercase tracking-wider text-surface-500">{label}</p>
+                <p className="text-sm font-black text-surface-900 dark:text-white">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -105,14 +129,14 @@ export default function HomePage() {
         {summaryCards.map(({ label, value, icon: Icon, color, textColor, isCurrency = true }) => (
           <div
             key={label}
-            className="glass-card rounded-2xl p-5 hover:shadow-lg transition-shadow duration-300"
+            className="glass-card p-5 hover:shadow-lg transition-shadow duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-surface-700 dark:text-surface-200">
                 {label}
               </span>
               <div
-                className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
+                className={`w-10 h-10 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}
               >
                 <Icon className="w-5 h-5 text-white" />
               </div>
@@ -124,10 +148,82 @@ export default function HomePage() {
         ))}
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Predictive AI Banner (Zaman Makinesi) */}
+        <div className="rounded-2xl p-[1px] bg-gradient-to-r from-purple-500 via-primary-500 to-blue-500 shadow-xl shadow-primary-500/10 hover:-translate-y-1 transition-transform duration-300 h-full flex">
+          <div className="bg-white dark:bg-surface-850 rounded-2xl p-5 md:p-6 flex flex-col items-start gap-4 flex-1">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/10 to-primary-500/10 border border-primary-500/20 flex items-center justify-center shrink-0">
+                <span className="text-2xl">🔮</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-bold text-surface-900 dark:text-white">Bütçe Zaman Makinesi</h3>
+                <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase tracking-wider animate-pulse">AI Tahmini</span>
+              </div>
+            </div>
+            <p className="text-sm text-surface-700 dark:text-surface-200 flex-1 leading-relaxed">
+              {prediction.advice}
+            </p>
+            <div className="flex items-center gap-3 w-full pt-2">
+              <div className="flex-1 bg-surface-100 dark:bg-surface-800 rounded-lg p-2 text-center">
+                <p className="text-[10px] uppercase text-surface-500 font-bold mb-0.5">Tahmini Bakiye</p>
+                <p className={`text-sm font-black ${prediction.isWarning ? 'text-danger-500' : 'text-emerald-500'}`}>
+                  {prediction.isWarning ? '' : '+'}{formatCurrency(prediction.predictedBalance)}
+                </p>
+              </div>
+              <button className="flex-[2] py-2.5 rounded-xl bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer">
+                Plana Uymak İçin Tavsiye Al
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Eco-Score Banner */}
+        <div className={`rounded-2xl p-[1px] bg-gradient-to-r ${
+            ecoData.status === 'excellent' ? 'from-emerald-400 to-green-500' :
+            ecoData.status === 'good' ? 'from-blue-400 to-emerald-500' :
+            'from-warn-400 to-danger-500'
+          } shadow-xl shadow-emerald-500/10 hover:-translate-y-1 transition-transform duration-300 h-full flex`}
+        >
+          <div className="bg-white dark:bg-surface-850 rounded-2xl p-5 md:p-6 flex flex-col items-start gap-4 flex-1">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                ecoData.status === 'excellent' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                ecoData.status === 'good' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
+                'bg-danger-500/10 border-danger-500/20 text-danger-500'
+              }`}>
+                <Leaf className="w-6 h-6" />
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-bold text-surface-900 dark:text-white">ESG & Karbon Ayak İzi</h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">Sürdürülebilir Bütçe</span>
+              </div>
+            </div>
+            <p className="text-sm text-surface-700 dark:text-surface-200 flex-1 leading-relaxed">
+              {ecoData.message}
+            </p>
+            <div className="flex items-center gap-3 w-full pt-2">
+              <div className="flex-1 bg-surface-100 dark:bg-surface-800 rounded-lg p-2 text-center">
+                <p className="text-[10px] uppercase text-surface-500 font-bold mb-0.5">Aylık Karbon İzin</p>
+                <p className={`text-sm font-black ${
+                  ecoData.status === 'excellent' ? 'text-emerald-500' :
+                  ecoData.status === 'good' ? 'text-blue-500' : 'text-danger-500'
+                }`}>
+                  {ecoData.footprint} kg CO₂
+                </p>
+              </div>
+              <button className="flex-[2] py-2.5 rounded-xl border-2 border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white text-sm font-bold hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors cursor-pointer">
+                Yeşil Bütçe Önerileri
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bar Chart */}
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+        <div className="lg:col-span-2 glass-card p-6">
           <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-4">
             Haftalık Gelir / Gider
           </h2>
@@ -152,7 +248,7 @@ export default function HomePage() {
         </div>
 
         {/* Pie Chart */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card p-6">
           <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-4">
             Harcama Dağılımı
           </h2>
@@ -198,7 +294,7 @@ export default function HomePage() {
       </div>
 
       {/* Recent Transactions */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card p-6">
         <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-4">
           Son İşlemler
         </h2>

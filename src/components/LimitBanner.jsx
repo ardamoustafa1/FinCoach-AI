@@ -9,10 +9,10 @@ const fmt = (v) =>
     maximumFractionDigits: 0,
   }).format(v);
 
-export default function LimitBanner({ asimlar }) {
+export default function LimitBanner({ asimlar, persistent = false }) {
   const [kapali, setKapali] = useState(false);
 
-  if (kapali || asimlar.length === 0) return null;
+  if ((!persistent && kapali) || asimlar.length === 0) return null;
 
   return (
     <div className="rounded-2xl border border-danger-500/30 bg-danger-500/8 dark:bg-danger-500/10 p-4 animate-fade-in-up">
@@ -45,14 +45,15 @@ export default function LimitBanner({ asimlar }) {
           </div>
         </div>
 
-        {/* Kapat butonu */}
-        <button
-          onClick={() => setKapali(true)}
-          className="p-1.5 rounded-lg hover:bg-danger-500/10 transition-colors cursor-pointer shrink-0"
-          aria-label="Uyarıyı kapat"
-        >
-          <X className="w-4 h-4 text-danger-500" />
-        </button>
+        {!persistent && (
+          <button
+            onClick={() => setKapali(true)}
+            className="p-1.5 rounded-lg hover:bg-danger-500/10 transition-colors cursor-pointer shrink-0"
+            aria-label="Uyarıyı kapat"
+          >
+            <X className="w-4 h-4 text-danger-500" />
+          </button>
+        )}
       </div>
     </div>
   );

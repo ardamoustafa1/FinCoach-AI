@@ -7,7 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001;
 
 // Anthropic İstemcisi
 const anthropic = new Anthropic({
@@ -29,6 +29,12 @@ const categorizeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 dakika
   max: 5,
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.' },
+});
+
+const ocrLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Çok fazla fiş okuma isteği gönderdiniz. Lütfen daha sonra tekrar deneyin.' },
 });
 
 // ─── ENDPOINTS ──────────────────────────────────────────────────
@@ -124,20 +130,98 @@ KURALLAR:
   }
 });
 
+// OCR Endpoint
+app.post('/api/ocr', ocrLimiter, async (req, res) => {
+  try {
+    const { image, mimeType } = req.body;
+
+    if (!image || !mimeType) {
+      return res.status(400).json({ error: 'Görsel ve mimeType zorunludur.' });
+    }
+
+    const base64Data = String(image).replace(/^data:[^;]+;base64,/, '');
+    const systemPrompt = `Bu bir Türk market, restoran veya mağaza fişidir. Görselden şu bilgileri çıkar ve SADECE JSON döndür, başka hiçbir şey yazma:
+{tutar: number, tarih: string (YYYY-MM-DD formatında), magaza: string}
+Toplam tutarı bul (TOPLAM, GENEL TOPLAM, ÖDENECEK TUTAR gibi satırlar).
+Bilgi bulunamazsa ilgili alanı null döndür.`;
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 256,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mimeType,
+                data: base64Data,
+              },
+            },
+            {
+              type: 'text',
+              text: 'Fişteki toplam tutarı, tarihi ve mağaza adını çıkar.',
+            },
+          ],
+        },
+      ],
+    });
+
+    const text = response.content[0].text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch {
+      console.error('[OCR Parse Error]:', text);
+      return res.status(422).json({ error: 'Fiş okunamadı.' });
+    }
+
+    res.json({
+      tutar: typeof result.tutar === 'number' ? result.tutar : null,
+      tarih: result.tarih || null,
+      magaza: result.magaza || null,
+    });
+  } catch (error) {
+    console.error('[OCR API Error]:', error);
+    res.status(500).json({ error: 'Fiş okuma sırasında bir hata oluştu.' });
+  }
+});
+
 // Analyze Endpoint
 app.post('/api/analyze', async (req, res) => {
   try {
     const { aylikVeri, limitler, hedefler } = req.body;
 
     const systemPrompt = `Sen profesyonel bir finansal danışmansın.
-Kullanıcının aylık finansal durumunu analiz et ve 3-4 cümlelik öz, motive edici ve eyleme geçirilebilir bir özet çıkar.
-Dili Türkçe, samimi ama profesyonel olmalı.`;
+Kullanıcının seçili ay finansal verisini analiz et ve sadece Markdown döndür.
+Dili Türkçe, samimi ama profesyonel olmalı.
+
+Çıktı formatı:
+## Bu Ayın Özeti
+2-3 kısa cümlelik özet.
+
+## En İyi Yapılanlar
+- ✅ ...
+- ✅ ...
+
+## Dikkat Edilecek Alanlar
+- ⚠️ ...
+- ⚠️ ...
+
+## Gelecek Ay Önerileri
+- → ...
+- → ...
+- → ...`;
 
     const userMessage = `Aylık Veri: ${JSON.stringify(aylikVeri)}
 Bütçe Limitleri: ${JSON.stringify(limitler)}
 Hedefler: ${JSON.stringify(hedefler)}
 
-Lütfen analiz et.`;
+Lütfen yukarıdaki Markdown formatına birebir uyarak analiz et.`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -153,7 +237,55 @@ Lütfen analiz et.`;
   }
 });
 
+// Voice Parse Endpoint
+app.post('/api/voice', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Ses metni bulunamadı.' });
+    }
+
+    const systemPrompt = `Sen bir finansal veri çıkarma asistanısın. Kullanıcı harcamasını sözlü olarak söylüyor.
+Senden istenen bu cümleden harcama detaylarını çıkarıp SADECE JSON formatında döndürmendir.
+
+Gerekli alanlar:
+- tutar: (number) - Harcanan miktar. Cümleden rakamı bul.
+- magaza: (string) - Nereye harcanmış? (Örn: Starbucks, Migros, vs.)
+- kategori: (string) - Aşağıdaki kategorilerden en uygun olanı seç:
+  [Market, Yemek Siparişi, Ulaşım, Abonelik, Fatura, Alışveriş, Sağlık, Eğlence, Restoran, Diğer, Maaş]
+- tur: (string) - "gelir" veya "gider"
+
+Örnek 1: "Bugün Starbucks'ta kahveye 140 lira verdim."
+{"tutar": 140, "magaza": "Starbucks", "kategori": "Restoran", "tur": "gider"}
+
+Başka hiçbir markdown, açıklama veya not ekleme. SADECE JSON.`;
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 256,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: text }],
+    });
+
+    const resultText = response.content[0].text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+    let resultJson;
+    try {
+      resultJson = JSON.parse(resultText);
+    } catch {
+      console.error('[Voice Parse Error]:', resultText);
+      return res.status(422).json({ error: 'Cümle anlaşılamadı.' });
+    }
+
+    res.json(resultJson);
+  } catch (error) {
+    console.error('[Voice API Error]:', error);
+    res.status(500).json({ error: 'Ses işleme sırasında bir hata oluştu.' });
+  }
+});
+
 // Sunucuyu başlat
-app.listen(port, () => {
-  console.log(`[BütçeAI Backend] API Server is running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`[BütçeAI Backend] API Server is running on port ${PORT}`);
 });

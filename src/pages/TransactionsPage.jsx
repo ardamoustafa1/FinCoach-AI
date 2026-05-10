@@ -3,13 +3,16 @@ import {
   LayoutList, LayoutGrid, Search, SlidersHorizontal,
   ChevronUp, ChevronDown, ChevronsUpDown, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
-  RefreshCw, Receipt,
+  RefreshCw, Receipt, Camera, ImagePlus, Loader2, Mic,
 } from 'lucide-react';
 import { katRenk, TUM_KATEGORILER, fmt } from '../utils/categories';
 import { saveTransaction, removeTransaction } from '../utils/storage';
 import TransactionModal from '../components/TransactionModal';
 import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
+import { detectUnusualSpending, saveUnusualSpendingDecision } from '../utils/notifications';
+import { useToast } from '../hooks/useToast';
+import { apiUrl } from '../utils/api';
 
 const SAYFA_BOYUTU = 20;
 
@@ -134,17 +137,22 @@ function SilOnay({ islem, onOnayla, onIptal }) {
 
 // ─── Ana Sayfa ───────────────────────────────────────────────
 export default function TransactionsPage() {
+  const toast = useToast();
   const [ham, setHam] = useState(() => yukleIslemler());
   const [gorunum, setGorunum] = useState('tablo');
   const [sayfa, setSayfa] = useState(1);
   const [sortKolon, setSortKolon] = useState('tarih');
   const [sortYon, setSortYon] = useState('desc');
+  const [isListening, setIsListening] = useState(false);
 
   // Modal/Dialog state
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null); // null = yeni, obje = düzenle
+  const [taslakIslem, setTaslakIslem] = useState(null);
   const [silinecek, setSilinecek] = useState(null);
+  const [alisilmadik, setAlisilmadik] = useState(null);
   const [csvAcik, setCsvAcik] = useState(false);
+  const [fisModalAcik, setFisModalAcik] = useState(false);
   const [aktifTab, setAktifTab] = useState('islemler'); // 'islemler' | 'abonelikler'
 
   // Filtreler
@@ -169,12 +177,127 @@ export default function TransactionsPage() {
     setSayfa(1);
   }, [sortKolon]);
 
+  // ─── Sesle Ekleme ───────────────────────────────────────────
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Tarayıcınız ses tanımayı desteklemiyor (Chrome veya Safari güncel sürüm kullanın).');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info('Sizi dinliyorum... (Örn: Starbucks\'ta kahveye 140 lira verdim)', { duration: 5000 });
+    };
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      setIsListening(false);
+      
+      const tId = toast.info('Sesiniz yapay zeka ile analiz ediliyor...', { duration: 10000 });
+      
+      try {
+        const res = await fetch(apiUrl('/api/voice'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: transcript })
+        });
+        
+        if (!res.ok) throw new Error();
+        
+        const data = await res.json();
+        
+        const yeniIslem = {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          tarih: new Date().toISOString().slice(0, 10),
+          tutar: data.tutar || '',
+          magaza: data.magaza || '',
+          aciklama: transcript,
+          kategori: data.kategori || 'Diğer',
+          tur: data.tur || 'gider',
+          not: 'Sesli asistan ile eklendi'
+        };
+        
+        if (!yeniIslem.tutar) {
+          toast.warning('Tutar anlaşılamadı, formu doldurun.');
+          setTaslakIslem(yeniIslem);
+          setModalAcik(true);
+          return;
+        }
+
+        saveTransaction(yeniIslem);
+        setHam(yukleIslemler());
+        toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) anında eklendi! ✨`);
+        
+      } catch (e) {
+        toast.error('Ses analiz edilemedi, tekrar deneyin.');
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error !== 'no-speech') {
+        toast.error('Mikrofon hatası: ' + event.error);
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
   // ─── CRUD işlemleri ────────────────────────────────────────
   const handleKaydet = (form) => {
+    const yeniIslemMi = !duzenlenen;
     const kaydedilen = saveTransaction({ ...form });
+    if (yeniIslemMi) {
+      const uyarı = detectUnusualSpending(kaydedilen, ham);
+      if (uyarı) setAlisilmadik(uyarı);
+    }
     setHam(yukleIslemler());
     setModalAcik(false);
     setDuzenlenen(null);
+    setTaslakIslem(null);
+  };
+
+  const handleFisSonucu = (ocr) => {
+    if (!ocr.tutar && !ocr.tarih && !ocr.magaza) {
+      toast.error('Görüntü net değil, tekrar dene');
+      return;
+    }
+
+    const taslak = {
+      tarih: ocr.tarih || new Date().toISOString().slice(0, 10),
+      tutar: ocr.tutar || '',
+      magaza: ocr.magaza || '',
+      aciklama: ocr.magaza ? `${ocr.magaza} fişi` : 'Fişten eklenen işlem',
+      kategori: '',
+      not: 'Fiş tarama ile eklendi',
+    };
+
+    if (!ocr.tutar) {
+      toast.warning('Tutarı bulamadım, lütfen manuel gir');
+    } else {
+      toast.success('Fiş okundu, işlem formu dolduruldu');
+    }
+
+    setTaslakIslem(taslak);
+    setDuzenlenen(null);
+    setFisModalAcik(false);
+    setModalAcik(true);
+  };
+
+  const handleAlisilmadikSecim = (decision) => {
+    if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, decision);
+    setAlisilmadik(null);
   };
 
   const handleSil = () => {
@@ -253,13 +376,34 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-5 animate-fade-in-up">
       {/* Başlık + "+ Yeni İşlem" + Toggle */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="page-hero p-5 md:p-6 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white">İşlemler</h1>
-          <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">{filtrelenmis.length} işlem bulundu</p>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Harcama akışı</p>
+          <h1 className="text-3xl md:text-4xl font-black text-surface-950 dark:text-white">İşlemler</h1>
+          <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">{filtrelenmis.length} işlem bulundu · fiş tara, filtrele, düzenle</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Sesle Ekle butonu */}
+          <button
+            onClick={startListening}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all cursor-pointer ${
+              isListening 
+                ? 'bg-red-500 text-white shadow-red-500/30 animate-pulse' 
+                : 'bg-purple-500 text-white hover:bg-purple-600 shadow-purple-500/25'
+            }`}
+          >
+            <Mic className="w-4 h-4" />
+            <span className="hidden sm:inline">{isListening ? 'Dinleniyor...' : 'Sesle Ekle'}</span>
+          </button>
           {/* CSV Yükle butonu */}
+          <button
+            onClick={() => setFisModalAcik(true)}
+            aria-label="Fiş Tara"
+            title="Fiş Tara"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer">
+            <Camera className="w-4 h-4" />
+            <span className="hidden sm:inline">Fiş Tara</span>
+          </button>
           <button
             onClick={() => setCsvAcik(o => !o)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
@@ -272,7 +416,7 @@ export default function TransactionsPage() {
           </button>
           {/* Yeni İşlem butonu */}
           <button
-            onClick={() => { setDuzenlenen(null); setModalAcik(true); }}
+            onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 shadow-lg shadow-primary-500/30 transition-all cursor-pointer">
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Yeni İşlem</span>
@@ -459,8 +603,23 @@ export default function TransactionsPage() {
       {modalAcik && (
         <TransactionModal
           islem={duzenlenen}
+          initialValues={taslakIslem}
           onKaydet={handleKaydet}
-          onKapat={() => { setModalAcik(false); setDuzenlenen(null); }}
+          onKapat={() => { setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null); }}
+        />
+      )}
+
+      {fisModalAcik && (
+        <FisTaraModal
+          onSonuc={handleFisSonucu}
+          onApiError={() => {
+            toast.error('Şu an fiş okuma çalışmıyor, manuel ekle');
+            setFisModalAcik(false);
+            setTaslakIslem(null);
+            setDuzenlenen(null);
+            setModalAcik(true);
+          }}
+          onKapat={() => setFisModalAcik(false)}
         />
       )}
 
@@ -472,6 +631,211 @@ export default function TransactionsPage() {
           onIptal={() => setSilinecek(null)}
         />
       )}
+
+      {alisilmadik && (
+        <AlisilmadikHarcamaModal
+          alert={alisilmadik}
+          onNormal={() => handleAlisilmadikSecim('false_alarm')}
+          onReview={() => handleAlisilmadikSecim('review')}
+        />
+      )}
+    </div>
+  );
+}
+
+function AlisilmadikHarcamaModal({ alert, onNormal, onReview }) {
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 border border-warn-500/20 animate-fade-in-up">
+        <div className="w-12 h-12 rounded-2xl bg-warn-500/15 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-warn-500" />
+        </div>
+        <h3 className="text-lg font-black text-surface-900 dark:text-white mb-2">Alışılmadık harcama</h3>
+        <p className="text-sm leading-6 text-surface-700 dark:text-surface-200 mb-5">
+          Bu harcama sana alışılmadık geliyor
+          {' '}<span className="font-bold text-surface-900 dark:text-white">
+            (Ortalama: {fmt(alert.average)}, Bu: {fmt(alert.amount)})
+          </span>
+        </p>
+        <div className="rounded-xl bg-surface-50 dark:bg-surface-800/70 px-4 py-3 mb-5">
+          <p className="text-sm font-bold text-surface-900 dark:text-white">{alert.transaction.magaza || alert.transaction.aciklama}</p>
+          <p className="text-xs text-surface-700 dark:text-surface-200 mt-0.5">{alert.transaction.kategori} · {alert.transaction.tarih}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={onNormal}
+            className="flex-1 px-4 py-3 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 text-sm font-bold hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors cursor-pointer"
+          >
+            Normal, yanlış alarm
+          </button>
+          <button
+            onClick={onReview}
+            className="flex-1 px-4 py-3 rounded-xl bg-warn-500 text-white text-sm font-bold hover:bg-warn-600 transition-colors cursor-pointer"
+          >
+            İnceleyeceğim
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FisTaraModal({ onSonuc, onApiError, onKapat }) {
+  const [fileInfo, setFileInfo] = useState(null);
+  const [compressed, setCompressed] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const canvasRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const drawAndCompress = (file) => {
+    setError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSide = 1600;
+        const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const width = Math.round(image.width * ratio);
+        const height = Math.round(image.height * ratio);
+        const canvas = canvasRef.current;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(image, 0, 0, width, height);
+
+        const shouldCompress = file.size > 1024 * 1024;
+        const outputMime = file.type === 'image/png' && !shouldCompress ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(outputMime, shouldCompress ? 0.7 : 0.92);
+        setCompressed({
+          base64: dataUrl.split(',')[1],
+          mimeType: outputMime,
+        });
+        setFileInfo({
+          name: file.name,
+          size: file.size,
+          compressed: shouldCompress,
+        });
+      };
+      image.onerror = () => setError('Görüntü net değil, tekrar dene');
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Lütfen bir fotoğraf seç');
+      return;
+    }
+    drawAndCompress(file);
+  };
+
+  const handleAnalyze = async () => {
+    if (!compressed) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(apiUrl('/api/ocr'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: compressed.base64,
+          mimeType: compressed.mimeType,
+        }),
+      });
+
+      if (res.status === 422) {
+        setError('Görüntü net değil, tekrar dene');
+        return;
+      }
+      if (!res.ok) throw new Error('api');
+      const data = await res.json();
+      onSonuc(data);
+    } catch {
+      onApiError();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={e => e.target === e.currentTarget && !loading && onKapat()}>
+      <div className="w-full max-w-lg bg-white dark:bg-surface-850 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 overflow-hidden animate-fade-in-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-100 dark:border-surface-700">
+          <div>
+            <h2 className="text-lg font-bold text-surface-900 dark:text-white">Fiş Tara</h2>
+            <p className="text-xs text-surface-700 dark:text-surface-200">Fotoğrafı seç, BütçeAI tutar ve tarihi çıkarsın.</p>
+          </div>
+          <button onClick={onKapat} disabled={loading}
+            className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 disabled:opacity-50 transition-colors cursor-pointer">
+            <X className="w-5 h-5 text-surface-700 dark:text-surface-200" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={e => handleFile(e.target.files?.[0])}
+          />
+
+          <div
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => {
+              e.preventDefault();
+              handleFile(e.dataTransfer.files?.[0]);
+            }}
+            className="rounded-2xl border-2 border-dashed border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-surface-900/40 p-5 text-center"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center mx-auto mb-3">
+              <ImagePlus className="w-6 h-6 text-primary-500" />
+            </div>
+            <p className="text-sm font-bold text-surface-900 dark:text-white mb-1">Fotoğrafı buraya sürükle-bırak</p>
+            <p className="text-xs text-surface-700 dark:text-surface-200 mb-4">JPG, PNG veya telefon kamerası fotoğrafı</p>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 transition-colors cursor-pointer"
+            >
+              Fotoğraf Seç
+            </button>
+          </div>
+
+          <canvas
+            ref={canvasRef}
+            className={`w-full max-h-72 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-900 object-contain ${fileInfo ? 'block' : 'hidden'}`}
+          />
+
+          {fileInfo && (
+            <div className="rounded-xl bg-surface-50 dark:bg-surface-800/70 px-4 py-3 text-xs text-surface-700 dark:text-surface-200">
+              <span className="font-bold text-surface-900 dark:text-white">{fileInfo.name}</span>
+              {' '}· {(fileInfo.size / 1024 / 1024).toFixed(2)} MB
+              {fileInfo.compressed && <span className="text-primary-500 font-bold"> · 1MB üstü olduğu için sıkıştırıldı</span>}
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-danger-500/20 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-500">
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={handleAnalyze}
+            disabled={!compressed || loading}
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+            {loading ? 'Fiş okunuyor...' : 'Analiz Et'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

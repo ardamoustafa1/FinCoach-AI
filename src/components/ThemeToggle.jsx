@@ -5,8 +5,9 @@ export default function ThemeToggle({ theme, onToggle }) {
     <button
       onClick={onToggle}
       className="
-        relative w-14 h-7 rounded-full
-        bg-surface-200 dark:bg-surface-700
+        relative w-14 h-8 rounded-lg
+        bg-white/80 dark:bg-surface-800/90 border border-surface-200/80 dark:border-surface-700
+        shadow-sm
         transition-colors duration-300
         cursor-pointer
         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
@@ -16,12 +17,12 @@ export default function ThemeToggle({ theme, onToggle }) {
     >
       <div
         className={`
-          absolute top-0.5 w-6 h-6 rounded-full
-          bg-white dark:bg-surface-900
-          shadow-md
+          absolute top-0.5 w-7 h-7 rounded-md
+          bg-gradient-to-br from-white to-surface-100 dark:from-surface-700 dark:to-surface-900
+          shadow-lg
           flex items-center justify-center
           transition-all duration-300 ease-in-out
-          ${theme === 'dark' ? 'left-[30px]' : 'left-0.5'}
+          ${theme === 'dark' ? 'left-[26px]' : 'left-0.5'}
         `}
       >
         {theme === 'dark' ? (

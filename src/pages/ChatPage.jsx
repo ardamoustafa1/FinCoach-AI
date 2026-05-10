@@ -1,18 +1,37 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, MoreHorizontal, Maximize2, X } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Maximize2, X, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { getTransactions, getGoals, getBudgetLimits, getSettings } from '../utils/storage';
+import { getTransactions, getGoals, getBudgetLimits } from '../utils/storage';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
+import { API_URL, apiUrl } from '../utils/api';
 
-const initialMessages = [
-  { role: 'bot', content: 'Merhaba! 👋 Ben BütçeAI, kişisel finans koçunuz. Finansal verilerinizi analiz ederek size özel tavsiyeler verebilirim. Birlikte bütçenizi yönetelim, bana ne sormak istersiniz?' },
-  { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' }
-];
+const getInitialMessages = () => {
+  const userName = localStorage.getItem('butceai_user_name') || '';
+  const greeting = userName ? `Merhaba ${userName}! 👋` : 'Merhaba! 👋';
+  return [
+    { role: 'bot', content: `${greeting} Ben BütçeAI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
+    { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' },
+    { role: 'bot', actionable: {
+      type: 'cancel_subscription',
+      title: 'Kullanılmayan Abonelik Tespit Edildi',
+      desc: "Aboneliklerinde Exxen'i 3 aydır hiç kullanmıyorsun. İptal edelim mi?",
+      btnText: 'Tek Tıkla İptal Et',
+      payload: 'Exxen'
+    }},
+    { role: 'bot', actionable: {
+      type: 'transfer_goal',
+      title: 'Tasarruf Fırsatı',
+      desc: "Bu ay hedeflenenden 500₺ fazla paran arttı. Bunu 'Tatil Fonu' hedefine aktarayım mı?",
+      btnText: 'Hemen Aktar',
+      payload: { goal: 'Tatil Fonu', amount: 500 }
+    }}
+  ];
+};
 
 const QUICK_QUESTIONS = [
   "Bu ayki genel durumum nasıl?",
@@ -60,7 +79,7 @@ function getUserContext() {
 }
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [modalChart, setModalChart] = useState(null); // { type, title, data }
@@ -73,6 +92,22 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  const handleAction = (action) => {
+    setMessages(prev => [...prev, { role: 'user', content: action.btnText }]);
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      let botResponse = '';
+      if (action.type === 'cancel_subscription') {
+        botResponse = `✅ **${action.payload}** aboneliğin başarıyla iptal edildi! (Simülasyon)\n\nArtık aylık bütçende ekstra yerin var. Bu tutarı birikim hedefine aktarabiliriz.`;
+      } else if (action.type === 'transfer_goal') {
+        botResponse = `✅ **${action.payload.amount}₺** başarıyla '${action.payload.goal}' hedefine aktarıldı! (Simülasyon)\n\nHedefine bir adım daha yaklaştın. Harika gidiyorsun! 🎉`;
+      }
+      setMessages(prev => [...prev, { role: 'bot', content: botResponse }]);
+      setIsLoading(false);
+    }, 1500);
+  };
 
   const handleSend = async (text = input) => {
     if (!text.trim() || isLoading) return;
@@ -87,7 +122,7 @@ export default function ChatPage() {
     try {
       const userContext = getUserContext();
       
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch(apiUrl('/api/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -109,7 +144,7 @@ export default function ChatPage() {
       console.error(error);
       setMessages(prev => [...prev, { 
         role: 'bot', 
-        content: 'Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (http://localhost:3001) çalıştığından emin misin?' 
+        content: `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?`
       }]);
     } finally {
       setIsLoading(false);
@@ -127,12 +162,13 @@ export default function ChatPage() {
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full animate-fade-in-up">
       
       {/* ── ÜST BAŞLIK ── */}
-      <div className="flex items-center gap-3 pb-4 border-b border-surface-200 dark:border-surface-700/50">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center shadow-lg shadow-primary-500/25">
+      <div className="page-hero p-4 md:p-5 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/25">
           <Bot className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary-600 dark:text-primary-300">AI cockpit</p>
+          <h1 className="text-xl md:text-2xl font-black text-surface-950 dark:text-white flex items-center gap-2">
             AI Finansal Koçun
             <Sparkles className="w-5 h-5 text-warn-500" />
           </h1>
@@ -179,28 +215,46 @@ export default function ChatPage() {
                   : 'bg-primary-500 text-white rounded-tr-sm shadow-primary-500/20'
               }`}>
                 {msg.role === 'bot' ? (
-                  <div className="flex flex-col gap-3 w-full">
-                    <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0 max-w-none">
-                      <ReactMarkdown>{text}</ReactMarkdown>
-                    </div>
-                    {chartData && (
-                      <div className="relative w-full rounded-xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 p-3 mt-2">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-bold text-surface-900 dark:text-white">{chartData.title || 'Grafik'}</h4>
-                          <button 
-                            onClick={() => setModalChart(chartData)}
-                            className="p-1 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-500"
-                            title="Büyüt"
-                          >
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </button>
+                  msg.actionable ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <Zap className="w-4 h-4 text-emerald-500" />
                         </div>
-                        <div className="h-[200px] w-full mt-2">
-                          <ChatChart chartData={chartData} />
-                        </div>
+                        <span className="font-bold text-surface-900 dark:text-white">{msg.actionable.title}</span>
                       </div>
-                    )}
-                  </div>
+                      <p className="text-sm text-surface-700 dark:text-surface-200 mb-3">{msg.actionable.desc}</p>
+                      <button 
+                        onClick={() => handleAction(msg.actionable)}
+                        className="w-full py-2.5 rounded-xl bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-md"
+                      >
+                        {msg.actionable.btnText}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3 w-full">
+                      <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0 max-w-none">
+                        <ReactMarkdown>{text}</ReactMarkdown>
+                      </div>
+                      {chartData && (
+                        <div className="relative w-full rounded-xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 p-3 mt-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-sm font-bold text-surface-900 dark:text-white">{chartData.title || 'Grafik'}</h4>
+                            <button 
+                              onClick={() => setModalChart(chartData)}
+                              className="p-1 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-500"
+                              title="Büyüt"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="h-[200px] w-full mt-2">
+                            <ChatChart chartData={chartData} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
                 ) : (
                   <span className="whitespace-pre-wrap">{msg.content}</span>
                 )}
@@ -363,4 +417,3 @@ function ChatChart({ chartData }) {
       return <div className="text-sm text-surface-500">Desteklenmeyen grafik tipi: {type}</div>;
   }
 }
-

@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Plus, Tag } from 'lucide-react';
-import { TUM_KATEGORILER, fmt } from '../utils/categories';
+import { TUM_KATEGORILER } from '../utils/categories';
 import { suggestCategory } from '../utils/storage';
-
-const BOSLUK = 'Tarih, tutar ve açıklama zorunludur.';
 
 const BOS_FORM = {
   tarih: new Date().toISOString().slice(0, 10),
@@ -25,7 +23,7 @@ function alan(label, error, children) {
   );
 }
 
-export default function TransactionModal({ islem, onKaydet, onKapat }) {
+export default function TransactionModal({ islem, initialValues, onKaydet, onKapat }) {
   const [form, setForm] = useState(islem
     ? {
         ...BOS_FORM,
@@ -33,7 +31,12 @@ export default function TransactionModal({ islem, onKaydet, onKapat }) {
         etiketler: islem.etiketler || [],
         tutar: String(islem.tutar || ''),
       }
-    : { ...BOS_FORM }
+    : {
+        ...BOS_FORM,
+        ...(initialValues || {}),
+        etiketler: initialValues?.etiketler || [],
+        tutar: initialValues?.tutar ? String(initialValues.tutar) : '',
+      }
   );
   const [hatalar, setHatalar] = useState({});
   const [etiketInput, setEtiketInput] = useState('');
@@ -47,7 +50,7 @@ export default function TransactionModal({ islem, onKaydet, onKapat }) {
       const oneri = suggestCategory(form.magaza);
       setKategoriOneri(oneri && oneri !== form.kategori ? oneri : null);
     }, 400);
-  }, [form.magaza]);
+  }, [form.magaza, form.kategori]);
 
   const set = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
