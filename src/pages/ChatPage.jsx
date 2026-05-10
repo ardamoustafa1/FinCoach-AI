@@ -173,7 +173,7 @@ export default function ChatPage() {
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 10, padding: '8px 14px' }}>
               <Zap size={14} color={P.purpleLight} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: P.purpleLight }}>Claude AI</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: P.purpleLight }}>Gemini 1.5 Flash</span>
             </div>
           </div>
         </div>
