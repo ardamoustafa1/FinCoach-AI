@@ -8,6 +8,20 @@ const KEYS = {
   GOALS: 'butceai_goals',
   SETTINGS: 'butceai_settings',
   THEME: 'butceai_theme',
+  BUDGET_LIMITS: 'butceai_budget_limits',
+  CATEGORY_RULES: 'butceai_category_rules',
+};
+
+// ─── Varsayılan kategori limitleri ───────────────────────────
+export const DEFAULT_LIMITS = {
+  Market: 3000,
+  'Yemek Siparişi': 2000,
+  Ulaşım: 1000,
+  Abonelik: 500,
+  Fatura: 1500,
+  Alışveriş: 2000,
+  Eğlence: 800,
+  Sağlık: 1000,
 };
 
 // ─── Genel yardımcılar ───────────────────────────────────────
@@ -114,4 +128,60 @@ export function getTheme() {
 
 export function saveTheme(theme) {
   localStorage.setItem(KEYS.THEME, theme);
+}
+
+// ─── Bütçe Limitleri ─────────────────────────────────────────
+export function getBudgetLimits() {
+  return getItem(KEYS.BUDGET_LIMITS, DEFAULT_LIMITS);
+}
+
+export function saveBudgetLimits(limits) {
+  return setItem(KEYS.BUDGET_LIMITS, limits);
+}
+
+export function updateBudgetLimit(kategori, limit) {
+  const limits = getBudgetLimits();
+  limits[kategori] = Number(limit);
+  return saveBudgetLimits(limits);
+}
+
+// ─── Kategori Öğrenme Kuralları ──────────────────────────────
+export function getCategoryRules() {
+  return getItem(KEYS.CATEGORY_RULES, {});
+}
+
+export function saveCategoryRule(magaza, kategori) {
+  if (!magaza || !kategori) return;
+  const rules = getCategoryRules();
+  rules[magaza.trim().toLowerCase()] = kategori;
+  setItem(KEYS.CATEGORY_RULES, rules);
+}
+
+export function suggestCategory(magaza) {
+  if (!magaza) return null;
+  const rules = getCategoryRules();
+  return rules[magaza.trim().toLowerCase()] || null;
+}
+
+// ─── İşlem CRUD ──────────────────────────────────────────────
+export function saveTransaction(islem) {
+  const list = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
+  const idx = list.findIndex(i => i.id === islem.id);
+  if (idx >= 0) {
+    list[idx] = islem;
+  } else {
+    islem.id = crypto.randomUUID();
+    islem.createdAt = new Date().toISOString();
+    list.unshift(islem);
+  }
+  localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(list));
+  // Kategori kuralı öğren
+  if (islem.magaza) saveCategoryRule(islem.magaza, islem.kategori);
+  return islem;
+}
+
+export function removeTransaction(id) {
+  const list = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]')
+    .filter(i => i.id !== id);
+  localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(list));
 }

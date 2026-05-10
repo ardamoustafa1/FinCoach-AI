@@ -3,6 +3,11 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUp, ArrowDown } from 
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import TrendLineChart from '../components/charts/TrendLineChart';
 import HeatmapCalendar from '../components/charts/HeatmapCalendar';
+import BudgetBars from '../components/BudgetBars';
+import LimitBanner from '../components/LimitBanner';
+import HealthScore from '../components/HealthScore';
+import PersonalityCard from '../components/PersonalityCard';
+import { getBudgetLimits } from '../utils/storage';
 
 // ─── localStorage'dan veri oku ───────────────────────────────
 function getIslemler() {
@@ -117,12 +122,25 @@ export default function DashboardPage() {
   const [veriler, setVeriler] = useState(null);
   const [rawIslemler, setRawIslemler] = useState([]);
   const [rawGelirler, setRawGelirler] = useState([]);
+  const [budgetLimitler, setBudgetLimitler] = useState({});
+  const [buAyHarcamalar, setBuAyHarcamalar] = useState({});
 
   useEffect(() => {
     const islemler = getIslemler();
     const gelirler = getGelirler();
     setRawIslemler(islemler);
     setRawGelirler(gelirler);
+
+    // Bütçe limitleri
+    setBudgetLimitler(getBudgetLimits());
+
+    // Bu ay kategoriye göre harcama toplamı
+    const buAyPrefix = '2025-05';
+    const harcamaMap = {};
+    islemler
+      .filter(i => i.tarih && i.tarih.startsWith(buAyPrefix))
+      .forEach(i => { harcamaMap[i.kategori] = (harcamaMap[i.kategori] || 0) + i.tutar; });
+    setBuAyHarcamalar(harcamaMap);
 
     // Bu ay = Mayıs (5), geçen ay = Nisan (4)
     const buAyIslemler = ayFiltre(islemler, 5);
@@ -211,6 +229,11 @@ export default function DashboardPage() {
     },
   ];
 
+  // Limit aşan kategoriler
+  const asimlar = Object.entries(budgetLimitler)
+    .filter(([kat, limit]) => (buAyHarcamalar[kat] || 0) > limit)
+    .map(([kategori, limit]) => ({ kategori, harcanan: buAyHarcamalar[kategori], limit }));
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Başlık */}
@@ -222,6 +245,15 @@ export default function DashboardPage() {
           Mayıs 2025 finansal özetiniz
         </p>
       </div>
+
+      {/* Limit aşım uyarı banner'ı */}
+      <LimitBanner asimlar={asimlar} />
+
+      {/* Finansal Sağlık Skoru */}
+      <HealthScore islemler={rawIslemler} gelirler={rawGelirler} />
+
+      {/* Harcama Kişiliği */}
+      <PersonalityCard islemler={rawIslemler} />
 
       {/* 4 Özet Kart — mobilde 2×2, masaüstünde 4×1 */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -237,6 +269,9 @@ export default function DashboardPage() {
       </div>
 
       <HeatmapCalendar islemler={rawIslemler} />
+
+      {/* Bütçe limiti çubukları */}
+      <BudgetBars harcamalar={buAyHarcamalar} limitler={budgetLimitler} />
     </div>
   );
 }
