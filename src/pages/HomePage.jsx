@@ -456,9 +456,21 @@ export default function HomePage() {
                     <span style={{ color: P.text1 }}>paranı daha net gör.</span>
                   </h1>
 
-                  <p style={{ fontSize: 15, color: P.text2, maxWidth: 480, lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 15, color: P.text2, maxWidth: 480, lineHeight: 1.7, marginBottom: 20 }}>
                     Harcamalar, hedefler, raporlar ve AI içgörüleri tek bir akıcı deneyimde.
                   </p>
+                  <a href="https://wa.me/905070271251?text=Merhaba BütçeAI, sana bir harcama göndereceğim!" target="_blank" rel="noopener noreferrer" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    background: '#25D366', color: '#fff', textDecoration: 'none',
+                    padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14,
+                    boxShadow: '0 8px 24px rgba(37, 211, 102, 0.3)',
+                    transition: 'transform 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+                  >
+                    WhatsApp'tan Test Et 📱
+                  </a>
                 </div>
 
                 {/* Status badges */}
