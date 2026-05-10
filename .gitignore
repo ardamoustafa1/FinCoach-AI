@@ -25,3 +25,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# BütçeAI Specific
+.wwebjs_auth/
+server/.env
+server/node_modules
+server/dist
