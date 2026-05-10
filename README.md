@@ -1,17 +1,51 @@
-# React + Vite
+# FinCoach AI (BütçeAI) 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BütçeAI, kişisel finans yönetiminizi yapay zeka gücüyle kolaylaştıran, modern ve akıllı bir finansal koçluk uygulamasıdır.
 
-Currently, two official plugins are available:
+## 🌟 Özellikler
+*   **🤖 AI Finansal Koç:** Google Gemini 1.5 Flash destekli interaktif sohbet arayüzü ile harcamalarınızı analiz edin ve tavsiye alın.
+*   **📸 Fiş Tarama (OCR):** Fişlerinizin fotoğrafını yükleyerek harcama tutarı, tarihi ve mağaza adını otomatik çıkarın.
+*   **🎙️ Sesli Harcama Ekleme:** "Starbucks'ta 150 lira kahve içtim" diyerek saniyeler içinde gider kaydedin.
+*   **📊 Dinamik Raporlar:** Harcamalarınızı kategorik olarak analiz edin ve tek tıkla PDF olarak indirin.
+*   **🌍 ESG & Karbon Ayak İzi:** Harcamalarınızın çevresel etkisini hesaplayıp "Sürdürülebilir Bütçe" önerileri alın.
+*   **✨ Premium Glassmorphism UI:** Modern, karanlık tema tabanlı, akıcı animasyonlara sahip muazzam bir kullanıcı deneyimi.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Teknolojiler
+*   **Frontend:** React (v19), Vite, React Router v7, Tailwind CSS (v4), Recharts
+*   **Backend:** Node.js, Express.js
+*   **Yapay Zeka:** Google Generative AI (Gemini 1.5 Flash)
 
-## React Compiler
+## 🚀 Kurulum & Çalıştırma
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Projeyi lokalinizde çalıştırmak için iki terminal kullanmanız gerekmektedir (Biri arayüz, diğeri API sunucusu için).
 
-## Expanding the ESLint configuration
+### 1. Backend (API Sunucusu)
+Öncelikle sunucu klasörüne gidin ve bağımlılıkları kurun:
+\`\`\`bash
+cd server
+npm install
+\`\`\`
+`.env` dosyanızı oluşturun veya güncelleyin. Google AI Studio'dan aldığınız anahtarı ekleyin:
+\`\`\`env
+PORT=3001
+GEMINI_API_KEY=sizin_gemini_api_anahtariniz_buraya
+\`\`\`
+Sunucuyu başlatın:
+\`\`\`bash
+npm start
+\`\`\`
+*(Sunucu http://localhost:3001 adresinde çalışacaktır)*
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# FinCoach-AI
+### 2. Frontend (React Arayüzü)
+Ana dizinde (FinCoach-AI) yeni bir terminal açın ve bağımlılıkları kurun:
+\`\`\`bash
+npm install
+\`\`\`
+Arayüzü başlatın:
+\`\`\`bash
+npm run dev
+\`\`\`
+*(Arayüz http://localhost:5173 adresinde açılacaktır)*
+
+## 📄 Lisans
+Bu proje geliştirilmeye açık bir hackathon/demo projesidir.
