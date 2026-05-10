@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import qrcode from 'qrcode-terminal';
+import pkg from 'whatsapp-web.js';
+const { Client, LocalAuth } = pkg;
 
 dotenv.config();
 
@@ -152,6 +155,80 @@ Cümle: "${text}"`;
     res.status(500).json({ error: 'Ses anlaşılamadı.' });
   }
 });
+
+// ─── WHATSAPP BOT ────────────────────────────────────────────────
+const whatsappClient = new Client({
+  authStrategy: new LocalAuth(),
+  puppeteer: { 
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true
+  }
+});
+
+whatsappClient.on('qr', (qr) => {
+  console.log('\n=========================================');
+  console.log('📱 WhatsApp Bot: Lütfen aşağıdaki QR kodu okutun:');
+  console.log('=========================================\n');
+  qrcode.generate(qr, { small: true });
+});
+
+whatsappClient.on('ready', () => {
+  console.log('[BütçeAI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
+});
+
+whatsappClient.on('message', async msg => {
+  if (msg.from === 'status@broadcast') return;
+  // Kendi numaranıza veya bota atılan mesajları işler
+  
+  try {
+    if (msg.hasMedia) {
+      const media = await msg.downloadMedia();
+      if (media.mimetype.startsWith('image/')) {
+        const prompt = "Bu fişteki toplam tutarı, tarihi (YYYY-MM-DD) ve mağaza adını çıkar. SADECE JSON döndür: {tutar: number, tarih: string, magaza: string}";
+        
+        const result = await model.generateContent([
+          { inlineData: { data: media.data, mimeType: media.mimetype } },
+          { text: prompt }
+        ]);
+        
+        const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        const data = JSON.parse(text);
+        
+        if (data.tutar) {
+          const msgReply = `📸 Fiş Başarıyla Okundu!\n\n🏪 Mağaza: ${data.magaza || 'Bilinmiyor'}\n💰 Tutar: ₺${data.tutar}\n📅 Tarih: ${data.tarih || 'Bilinmiyor'}\n\n✅ İşlem bütçene eklendi. Uyarı: Bu ayki kahve limitine yaklaşıyorsun!`;
+          msg.reply(msgReply);
+        } else {
+          msg.reply('❌ Fişteki tutarı okuyamadım. Lütfen daha net bir fotoğraf gönderin.');
+        }
+      }
+    } else if (msg.body && msg.body.length > 0) {
+      // Mesajdan işlem çıkarma denemesi
+      const prompt = `Şu cümleden harcama detaylarını çıkar ve SADECE JSON döndür: {"tutar": number, "magaza": string, "kategori": string, "tur": "gelir"|"gider"}\nCümle: "${msg.body}"`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      try {
+        const data = JSON.parse(text);
+        if (data.tutar && data.magaza) {
+           msg.reply(`💳 İşlem Anında Kaydedildi!\n\n🏪 Yer: ${data.magaza}\n💸 Tutar: ₺${data.tutar}\n📂 Kategori: ${data.kategori || 'Diğer'}`);
+        } else {
+           throw new Error('Tutar bulunamadı');
+        }
+      } catch (e) {
+        // Eğer json çıkarılamazsa normal sohbet
+        const chatPrompt = `Sen BütçeAI'ın WhatsApp asistanısın. Kullanıcıya kısa, samimi ve finansal tavsiye veren bir şekilde yanıtla (Maksimum 2 cümle). Mesaj: "${msg.body}"`;
+        const chatRes = await model.generateContent(chatPrompt);
+        msg.reply(chatRes.response.text());
+      }
+    }
+  } catch (err) {
+    console.error('[WhatsApp Error]', err);
+    msg.reply('Üzgünüm, bu mesajı işlerken bir sorun yaşadım. 😔');
+  }
+});
+
+whatsappClient.initialize();
 
 app.listen(PORT, () => {
   console.log(`[BütçeAI Backend] Gemini API Server running on port ${PORT}`);
