@@ -74,7 +74,49 @@ export function deleteTransaction(id) {
 
 // ─── Hedefler (Goals) ────────────────────────────────────────
 export function getGoals() {
-  return getItem(KEYS.GOALS, []);
+  const existing = getItem(KEYS.GOALS, null);
+  if (existing) return existing;
+
+  // Demo verileri
+  const bugun = new Date();
+  const ucAySonra = new Date(bugun); ucAySonra.setMonth(ucAySonra.getMonth() + 3);
+  const altiAySonra = new Date(bugun); altiAySonra.setMonth(altiAySonra.getMonth() + 6);
+  const onIkiAySonra = new Date(bugun); onIkiAySonra.setMonth(onIkiAySonra.getMonth() + 12);
+
+  const demoGoals = [
+    {
+      id: crypto.randomUUID(),
+      createdAt: bugun.toISOString(),
+      name: 'Tatil Fonu',
+      targetAmount: 8000,
+      currentAmount: 5200,
+      deadline: ucAySonra.toISOString().slice(0, 10),
+      icon: '✈️',
+      color: 'blue'
+    },
+    {
+      id: crypto.randomUUID(),
+      createdAt: bugun.toISOString(),
+      name: 'Yeni Laptop',
+      targetAmount: 15000,
+      currentAmount: 4500,
+      deadline: altiAySonra.toISOString().slice(0, 10),
+      icon: '📱',
+      color: 'purple'
+    },
+    {
+      id: crypto.randomUUID(),
+      createdAt: bugun.toISOString(),
+      name: 'Acil Durum Fonu',
+      targetAmount: 20000,
+      currentAmount: 9000,
+      deadline: onIkiAySonra.toISOString().slice(0, 10),
+      icon: '💰',
+      color: 'emerald'
+    }
+  ];
+  saveGoals(demoGoals);
+  return demoGoals;
 }
 
 export function saveGoals(goals) {

@@ -2,11 +2,14 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   LayoutList, LayoutGrid, Search, SlidersHorizontal,
   ChevronUp, ChevronDown, ChevronsUpDown, X,
-  Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle,
+  Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
+  RefreshCw, Receipt,
 } from 'lucide-react';
 import { katRenk, TUM_KATEGORILER, fmt } from '../utils/categories';
 import { saveTransaction, removeTransaction } from '../utils/storage';
 import TransactionModal from '../components/TransactionModal';
+import CsvUploader from '../components/CsvUploader';
+import SubscriptionsTab from '../components/SubscriptionsTab';
 
 const SAYFA_BOYUTU = 20;
 
@@ -141,6 +144,8 @@ export default function TransactionsPage() {
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null); // null = yeni, obje = düzenle
   const [silinecek, setSilinecek] = useState(null);
+  const [csvAcik, setCsvAcik] = useState(false);
+  const [aktifTab, setAktifTab] = useState('islemler'); // 'islemler' | 'abonelikler'
 
   // Filtreler
   const [aramaHam, setAramaHam] = useState('');
@@ -182,6 +187,13 @@ export default function TransactionsPage() {
   const handleDuzenle = (tx) => {
     setDuzenlenen(tx);
     setModalAcik(true);
+  };
+
+  // ─── CSV Import ────────────────────────────────────────────
+  const handleCsvImport = (islemler) => {
+    islemler.forEach(tx => saveTransaction({ ...tx }));
+    setHam(yukleIslemler());
+    setCsvAcik(false);
   };
 
   // ─── Filtreleme + Sıralama ──────────────────────────────────
@@ -247,6 +259,17 @@ export default function TransactionsPage() {
           <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">{filtrelenmis.length} işlem bulundu</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* CSV Yükle butonu */}
+          <button
+            onClick={() => setCsvAcik(o => !o)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              csvAcik
+                ? 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-200'
+                : 'bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-700 dark:text-surface-200 hover:border-primary-500 hover:text-primary-500'
+            }`}>
+            <Upload className="w-4 h-4" />
+            <span className="hidden sm:inline">Ekstre Yükle</span>
+          </button>
           {/* Yeni İşlem butonu */}
           <button
             onClick={() => { setDuzenlenen(null); setModalAcik(true); }}
@@ -254,17 +277,57 @@ export default function TransactionsPage() {
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Yeni İşlem</span>
           </button>
-          {/* Görünüm toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800">
-            {[{ k: 'tablo', icon: LayoutList }, { k: 'kart', icon: LayoutGrid }].map(({ k, icon: Icon }) => (
-              <button key={k} onClick={() => setGorunum(k)}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${gorunum === k ? 'bg-white dark:bg-surface-700 shadow text-primary-500' : 'text-surface-700 dark:text-surface-200 hover:text-white'}`}>
-                <Icon className="w-4 h-4" />
-              </button>
-            ))}
-          </div>
+          {/* Görünüm toggle (sadece işlemler tabında) */}
+          {aktifTab === 'islemler' && (
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800">
+              {[{ k: 'tablo', icon: LayoutList }, { k: 'kart', icon: LayoutGrid }].map(({ k, icon: Icon }) => (
+                <button key={k} onClick={() => setGorunum(k)}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${gorunum === k ? 'bg-white dark:bg-surface-700 shadow text-primary-500' : 'text-surface-700 dark:text-surface-200 hover:text-white'}`}>
+                  <Icon className="w-4 h-4" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* CSV Uploader */}
+      {csvAcik && (
+        <CsvUploader
+          onImport={handleCsvImport}
+          onKapat={() => setCsvAcik(false)}
+        />
+      )}
+
+      {/* ── TAB SWITCH ── */}
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800/80 w-fit">
+        {[
+          { k: 'islemler', label: 'İşlemler', icon: Receipt },
+          { k: 'abonelikler', label: 'Abonelikler', icon: RefreshCw },
+        ].map(({ k, label, icon: Icon }) => (
+          <button
+            key={k}
+            onClick={() => setAktifTab(k)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+              aktifTab === k
+                ? 'bg-white dark:bg-surface-700 shadow-sm text-primary-500'
+                : 'text-surface-700 dark:text-surface-200 hover:text-surface-900 dark:hover:text-white'
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── ABONELİKLER TABI ── */}
+      {aktifTab === 'abonelikler' && (
+        <SubscriptionsTab islemler={ham} />
+      )}
+
+      {/* ── İŞLEMLER TABI İÇERİĞİ ── */}
+      {aktifTab === 'islemler' && (<>
+
 
       {/* Filtreleme Paneli */}
       <div className="glass-card rounded-2xl p-4 space-y-3">
@@ -390,6 +453,7 @@ export default function TransactionsPage() {
           </div>
         </div>
       )}
+      </>)}{/* end aktifTab === 'islemler' */}
 
       {/* ── MODAL ── */}
       {modalAcik && (
