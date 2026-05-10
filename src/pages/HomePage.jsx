@@ -10,7 +10,7 @@ import {
   TrendingUp, TrendingDown, Wallet, Target,
   Leaf, Zap, ArrowUpRight, ArrowDownRight,
   Sparkles, Activity, ChevronRight, Clock,
-  ShieldCheck, Flame
+  ShieldCheck, Flame, Trophy, Users
 } from 'lucide-react';
 import { getTransactions, getGoals, saveTransaction } from '../utils/storage';
 import { calculateEcoScore } from '../utils/ecoScore';
@@ -824,6 +824,77 @@ export default function HomePage() {
               )}
             </GlassCard>
           </div>
+
+          {/* ── MAHALLE REKABETİ (BÜTÇE LİGİ) ── */}
+          <GlassCard style={{ padding: '28px 32px', marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: P.text1, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Trophy size={22} color={P.amber} /> Bütçe Ligi (Mahalle Rekabeti)
+                </h2>
+                <p style={{ fontSize: 13, color: P.text3, marginTop: 4 }}>Arkadaşlarını davet et, tasarruf yarışını başlat.</p>
+              </div>
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: 'BütçeAI', text: 'Seni Bütçe Ligi\'ne davet ediyorum! Kim daha çok tasarruf edecek görelim 🏆 #BütçeAI' });
+                  } else {
+                    alert('Davet linki kopyalandı!');
+                  }
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#fff',
+                  border: 'none', padding: '10px 20px', borderRadius: 12, fontWeight: 700, fontSize: 13,
+                  cursor: 'pointer', boxShadow: '0 4px 16px rgba(245,158,11,0.3)', transition: 'transform 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+              >
+                <Users size={16} /> Rakip Davet Et
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+              {/* Sen */}
+              <div style={{ background: P.bg3, border: `1px solid ${P.purple}40`, borderRadius: 16, padding: '20px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: P.purple }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: P.purpleDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>😎</div>
+                    <div>
+                      <p style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: 0 }}>Sen</p>
+                      <p style={{ fontSize: 11, color: P.purpleLight, fontWeight: 700, margin: 0, marginTop: 2 }}>Tasarruf Lideri</p>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: P.purple }}>%34</span>
+                </div>
+                <div style={{ background: P.bg1, borderRadius: 999, height: 8, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: P.purple, width: '34%', borderRadius: 999 }} />
+                </div>
+                <p style={{ fontSize: 12, color: P.text3, marginTop: 10 }}>Aylık hedefine göre tasarruf oranın.</p>
+              </div>
+
+              {/* Rakip */}
+              <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 16, padding: '20px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: P.text3 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: P.bg2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤡</div>
+                    <div>
+                      <p style={{ fontSize: 15, fontWeight: 800, color: P.text2, margin: 0 }}>Can (Arkadaşın)</p>
+                      <p style={{ fontSize: 11, color: P.red, fontWeight: 700, margin: 0, marginTop: 2 }}>Sınırda Geziyor</p>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: P.text2 }}>%12</span>
+                </div>
+                <div style={{ background: P.bg1, borderRadius: 999, height: 8, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: P.text3, width: '12%', borderRadius: 999 }} />
+                </div>
+                <p style={{ fontSize: 12, color: P.text3, marginTop: 10 }}>Can bu ay gereksiz çok harcadı.</p>
+              </div>
+            </div>
+          </GlassCard>
 
         </div>
       </div>

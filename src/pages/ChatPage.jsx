@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, Maximize2, X, Zap } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -42,6 +42,7 @@ const getInitialMessages = () => {
 };
 
 const QUICK_QUESTIONS = [
+  "Beni özetle! (Finansal Sarmal Kartımı Çıkar 🃏)",
   "Finansal İkizim kim? Başkalarına göre nasılım? 👥",
   "Hangi abonelikleri iptal etmeliyim? (Linkleri ver) ✂️",
   "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
@@ -183,15 +184,21 @@ export default function ChatPage() {
             let text = msg.content;
             let chartData = null;
             let simulationData = null;
+            let wrappedData = null;
             if (msg.role === 'bot' && typeof text === 'string') {
-              const chartMatch = text.match(/CHART_DATA:(\{.*\})/);
+              const chartMatch = text.match(/CHART_DATA:(\{.*?\})/s);
               if (chartMatch) {
                 try { chartData = JSON.parse(chartMatch[1]); text = text.replace(chartMatch[0], '').trim(); }
                 catch (e) {}
               }
-              const simMatch = text.match(/SIMULATION:(\{.*\})/);
+              const simMatch = text.match(/SIMULATION:(\{.*?\})/s);
               if (simMatch) {
                 try { simulationData = JSON.parse(simMatch[1]); text = text.replace(simMatch[0], '').trim(); }
+                catch (e) {}
+              }
+              const wrappedMatch = text.match(/WRAPPED_CARD:(\{.*?\})/s);
+              if (wrappedMatch) {
+                try { wrappedData = JSON.parse(wrappedMatch[1]); text = text.replace(wrappedMatch[0], '').trim(); }
                 catch (e) {}
               }
             }
@@ -248,6 +255,62 @@ export default function ChatPage() {
                           </p>
                         </div>
                       )}
+
+                      {wrappedData && (
+                        <div style={{
+                          marginTop: 12, borderRadius: 24, padding: 1,
+                          background: 'linear-gradient(135deg, #FF1493, #7C3AED, #3B82F6)',
+                          boxShadow: '0 12px 40px rgba(124,58,237,0.4)',
+                          maxWidth: 320, position: 'relative', overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            background: P.bg1, borderRadius: 23, padding: '32px 24px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                            position: 'relative', overflow: 'hidden'
+                          }}>
+                            {/* Texture & Glow */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 60%)' }} />
+                            <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 6, lineHeight: 1.2, zIndex: 1 }}>{wrappedData.title}</h2>
+                            <p style={{ fontSize: 12, color: P.purpleLight, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, zIndex: 1 }}>BütçeAI 2026</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%', zIndex: 1 }}>
+                              <div style={{ background: P.bg2, padding: '16px', borderRadius: 16, border: `1px solid ${P.border}` }}>
+                                <p style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>TOPLAM HARCAMA</p>
+                                <p style={{ fontSize: 22, fontWeight: 800, color: P.text1 }}>{wrappedData.total_spent}</p>
+                              </div>
+                              <div style={{ background: P.bg2, padding: '16px', borderRadius: 16, border: `1px solid ${P.border}` }}>
+                                <p style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>EN BÜYÜK GÜNAHIN</p>
+                                <p style={{ fontSize: 18, fontWeight: 800, color: P.red }}>{wrappedData.worst_habit}</p>
+                              </div>
+                            </div>
+
+                            <p style={{ fontSize: 15, color: '#fff', fontStyle: 'italic', marginTop: 24, marginBottom: 28, lineHeight: 1.6, zIndex: 1 }}>"{wrappedData.roast_text}"</p>
+                            
+                            <button 
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: 'BütçeAI Sarmalım',
+                                    text: `Ben bir ${wrappedData.title}! En büyük günahım: ${wrappedData.worst_habit}. ${wrappedData.roast_text} #BütçeAI`,
+                                  });
+                                } else {
+                                  alert('Paylaşım kopyalandı!');
+                                }
+                              }}
+                              style={{
+                                width: '100%', padding: '14px 0', borderRadius: 14,
+                                background: 'linear-gradient(135deg, #FF1493, #7C3AED)',
+                                color: '#fff', fontWeight: 800, fontSize: 14, border: 'none', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 1,
+                                boxShadow: '0 4px 16px rgba(124,58,237,0.3)'
+                              }}
+                            >
+                              <Share2 size={16} /> Paylaş
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
 
                       {chartData && (
                         <div style={{ borderRadius: 14, background: P.bg3, border: `1px solid ${P.border}`, padding: 16, marginTop: 4 }}>

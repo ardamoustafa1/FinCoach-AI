@@ -73,7 +73,11 @@ Eğer kullanıcı aboneliklerini sorarsa veya iptal edilecek bir şey arıyorsa,
 - Netflix: [İptal Et](https://www.netflix.com/cancelplan)
 - Spotify: [İptal Et](https://www.spotify.com/account/cancel/)
 
-Başka hiçbir markdown bloğu veya kod işareti kullanma (Grafik ve Simülasyon JSON'ları hariç).`;
+PAYLAŞILABİLİR SARMAL KARTI (WRAPPED / ROAST KARTI):
+Kullanıcı "Sarmal", "Özet Kartı", "Beni Özetle", "Roast Kartı", "Instagram" gibi bir talepte bulunursa, Instagram Story formatında paylaşabileceği vurucu bir özet üret. Yanıtının EN SONUNA şu formatta JSON ekle:
+WRAPPED_CARD:{"title":"(Örn: Anlık Zevk Takipçisi 🎯)", "total_spent":"(Örn: 3.240₺)", "worst_habit":"(Örn: Starbucks/Getir)", "roast_text":"(Kısa, acımasız ve komik bir yorum, örn: 'Bu paranın adını Barista Burs Fonu koyalım.')", "score":73}
+
+Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç).`;
 
     const chat = model.startChat({
       history: messages.slice(0, -1).map(msg => ({
