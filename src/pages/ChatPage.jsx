@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Send, Bot, User, Sparkles, Maximize2, X, Zap } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -73,11 +74,21 @@ function getUserContext() {
 }
 
 export default function ChatPage() {
+  const location = useLocation();
   const [messages, setMessages] = useState(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [modalChart, setModalChart] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const initialMsgHandled = useRef(false);
+
+  useEffect(() => {
+    if (location.state?.message && !initialMsgHandled.current) {
+      initialMsgHandled.current = true;
+      handleSend(location.state.message);
+    }
+  }, [location.state]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
 

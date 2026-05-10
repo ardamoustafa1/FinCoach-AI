@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
@@ -541,13 +541,16 @@ export default function HomePage() {
                       {prediction.isWarning ? '' : '+'}{fmt(prediction.predictedBalance)}
                     </p>
                   </div>
-                  <button style={{
-                    flex: 2, borderRadius: 12, border: 'none',
-                    background: `linear-gradient(135deg, ${P.purple}, #4F46E5)`,
-                    color: '#fff', fontSize: 13, fontWeight: 700,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'opacity 0.2s',
-                  }}
+                  <button 
+                    onClick={() => navigate('/chat', { state: { message: 'Gelecek ay sonunda artıda kapatmak için bana özel bir tasarruf planı hazırlar mısın?' } })}
+                    style={{
+                      flex: 1, padding: '14px 20px', borderRadius: 12,
+                      background: `linear-gradient(135deg, ${P.purple}, #4F46E5)`,
+                      color: '#fff', fontSize: 13, fontWeight: 700,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      transition: 'opacity 0.2s',
+                      border: 'none'
+                    }}
                     onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                     onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                     Tavsiye Al <ChevronRight size={14} />
@@ -598,14 +601,16 @@ export default function HomePage() {
                       {ecoData.footprint} kg CO₂
                     </p>
                   </div>
-                  <button style={{
-                    flex: 2, borderRadius: 12,
-                    border: `1px solid ${P.border}`,
-                    background: 'transparent',
-                    color: P.text1, fontSize: 13, fontWeight: 700,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'all 0.2s',
-                  }}
+                  <button 
+                    onClick={() => navigate('/chat', { state: { message: 'Karbon ayak izimi düşürmek için harcamalarımda ne gibi değişiklikler yapabilirim? Yeşil önerilerini bekliyorum.' } })}
+                    style={{
+                      flex: 1, borderRadius: 12,
+                      border: `1px solid ${P.border}`,
+                      background: 'transparent',
+                      color: P.text1, fontSize: 13, fontWeight: 700,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      transition: 'all 0.2s',
+                    }}
                     onMouseEnter={e => { e.currentTarget.style.background = `${P.green}15`; e.currentTarget.style.borderColor = `${P.green}40`; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = P.border; }}>
                     Yeşil Öneriler <ChevronRight size={14} />
