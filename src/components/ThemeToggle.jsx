@@ -1,35 +1,37 @@
-import { Sun, Moon } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
+import { useState } from 'react';
 
 export default function ThemeToggle({ theme, onToggle }) {
+  const [hov, setHov] = useState(false);
+  const isDark = theme === 'dark';
   return (
     <button
       onClick={onToggle}
-      className="
-        relative w-14 h-8 rounded-lg
-        bg-white/80 dark:bg-surface-800/90 border border-surface-200/80 dark:border-surface-700
-        shadow-sm
-        transition-colors duration-300
-        cursor-pointer
-        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-        dark:focus:ring-offset-surface-900
-      "
-      aria-label={theme === 'dark' ? 'Açık moda geç' : 'Koyu moda geç'}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      aria-label={isDark ? 'Açık moda geç' : 'Koyu moda geç'}
+      style={{
+        position: 'relative', width: 52, height: 30, borderRadius: 10,
+        background: isDark ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.08)',
+        border: `1px solid ${isDark ? 'rgba(124,58,237,0.4)' : 'rgba(255,255,255,0.12)'}`,
+        cursor: 'pointer', flexShrink: 0,
+        transition: 'all 0.3s ease',
+        boxShadow: hov ? '0 0 12px rgba(124,58,237,0.3)' : 'none',
+      }}
     >
-      <div
-        className={`
-          absolute top-0.5 w-7 h-7 rounded-md
-          bg-gradient-to-br from-white to-surface-100 dark:from-surface-700 dark:to-surface-900
-          shadow-lg
-          flex items-center justify-center
-          transition-all duration-300 ease-in-out
-          ${theme === 'dark' ? 'left-[26px]' : 'left-0.5'}
-        `}
-      >
-        {theme === 'dark' ? (
-          <Moon className="w-3.5 h-3.5 text-primary-400" />
-        ) : (
-          <Sun className="w-3.5 h-3.5 text-warn-500" />
-        )}
+      <div style={{
+        position: 'absolute', top: 3,
+        left: isDark ? 24 : 3,
+        width: 22, height: 22, borderRadius: 8,
+        background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'left 0.3s cubic-bezier(0.4,0,0.2,1)',
+        boxShadow: '0 2px 8px rgba(124,58,237,0.5)',
+      }}>
+        {isDark
+          ? <Moon size={11} color="#fff" />
+          : <Sun size={11} color="#fff" />
+        }
       </div>
     </button>
   );

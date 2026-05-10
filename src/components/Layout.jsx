@@ -15,6 +15,13 @@ import {
   weeklySummary,
 } from '../utils/notifications';
 
+const P = {
+  purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
+  bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+};
+
 export default function Layout({ theme, onToggleTheme }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showWeeklySummary, setShowWeeklySummary] = useState(() => shouldShowWeeklySummary());
@@ -34,66 +41,85 @@ export default function Layout({ theme, onToggleTheme }) {
   };
 
   return (
-    <div className="premium-surface min-h-screen bg-transparent transition-colors duration-300">
+    <div style={{ minHeight: '100vh', display: 'flex', background: 'transparent', transition: 'background-color 0.3s' }}>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <Sidebar
-          collapsed={collapsed}
-          onToggle={() => setCollapsed(!collapsed)}
-        />
+      <div className="hidden lg:block shrink-0 transition-all duration-300" style={{ width: collapsed ? 80 : 260 }}>
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
       </div>
 
       {/* Mobile Bottom Nav */}
       <MobileNav />
 
       {/* Main Content */}
-      <main
-        className={`
-          transition-all duration-300
-          pb-24 lg:pb-0
-          ${collapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]'}
-        `}
-      >
+      <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden', paddingBottom: '96px', position: 'relative' }}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 h-[72px] flex items-center justify-between gap-4 px-4 md:px-6 lg:px-8 bg-white/58 dark:bg-surface-950/62 backdrop-blur-2xl border-b border-white/50 dark:border-surface-800/60">
-          <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300">BütçeAI</p>
-            <p className="hidden sm:block text-sm text-surface-600 dark:text-surface-300 truncate">Akıllı bütçe, hedef ve harcama koçu</p>
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 30, height: 72,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          padding: '0 24px', background: 'rgba(13,15,30,0.85)', backdropFilter: 'blur(24px)',
+          borderBottom: `1px solid ${P.border}`
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#a78bfa', margin: 0 }}>BütçeAI</p>
+            <p className="hidden sm:block" style={{ fontSize: 13, color: P.text2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Akıllı bütçe, hedef ve harcama koçu</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button 
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <button
               onClick={() => setShowQrModal(true)}
-              className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-primary-500/20 bg-primary-500/10 hover:bg-primary-500/20 transition-colors cursor-pointer"
+              className="hidden md:flex"
+              style={{
+                alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10,
+                border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(124,58,237,0.1)',
+                cursor: 'pointer', transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,58,237,0.1)'}
             >
-              <QrCode className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-              <span className="text-xs font-bold text-primary-700 dark:text-primary-300">Sunum QR</span>
+              <QrCode size={16} color="#c4b5fd" />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>Sunum QR</span>
             </button>
-            <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Demo hazır</span>
+            <div className="hidden md:flex" style={{
+              alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10,
+              border: '1px solid rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#6ee7b7' }}>Demo hazır</span>
             </div>
             <ThemeToggle theme={theme} onToggleTheme={onToggleTheme} onToggle={onToggleTheme} />
           </div>
         </header>
 
         {showWeeklySummary && (
-          <div className="px-4 md:px-6 lg:px-8 pt-6">
-            <div className="rounded-2xl bg-gradient-to-r from-primary-500 to-purple-500 p-[1px] animate-fade-in-up shadow-xl shadow-primary-500/10">
-              <div className="bg-white dark:bg-surface-850 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-5 h-5 text-primary-500" />
+          <div style={{ padding: '32px 24px 0 24px', maxWidth: 1540, margin: '0 auto' }}>
+            <div style={{
+              padding: 1, borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)',
+              animation: 'fadeSlideUp 0.4s ease', boxShadow: '0 12px 32px rgba(124,58,237,0.15)'
+            }}>
+              <div style={{
+                background: P.bg2, borderRadius: 16, padding: '16px 20px',
+                display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+                flexWrap: 'wrap'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Sparkles size={22} color="#a78bfa" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-surface-900 dark:text-white mb-0.5">Haftalık Özeti</h3>
-                    <p className="text-sm text-surface-700 dark:text-surface-200">
-                      Geçen hafta <strong className="text-danger-500">{fmt(haftalik.total)}</strong> harcadın, bu haftaki hedefin <strong className="text-emerald-500">{fmt(2000)}</strong>.
+                    <h3 style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: '0 0 4px 0' }}>Haftalık Özeti</h3>
+                    <p style={{ fontSize: 14, color: P.text2, margin: 0 }}>
+                      Geçen hafta <strong style={{ color: P.red, fontWeight: 800 }}>{fmt(haftalik.total)}</strong> harcadın, bu haftaki hedefin <strong style={{ color: P.green, fontWeight: 800 }}>{fmt(2000)}</strong>.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={closeWeeklySummary}
-                  className="self-start sm:self-auto px-4 py-2 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 text-xs font-bold hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors cursor-pointer shrink-0"
+                  style={{
+                    padding: '8px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.06)',
+                    border: `1px solid ${P.border}`, color: P.text1, fontSize: 12, fontWeight: 800,
+                    cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
                 >
                   Anladım
                 </button>
@@ -103,7 +129,7 @@ export default function Layout({ theme, onToggleTheme }) {
         )}
 
         {/* Page Content */}
-        <div className="mx-auto w-full max-w-[1540px] p-4 md:p-6 lg:p-8">
+        <div style={{ maxWidth: 1540, margin: '0 auto', padding: '0 24px', width: '100%' }}>
           <Outlet />
         </div>
       </main>

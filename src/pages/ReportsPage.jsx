@@ -1,5 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, FileText, Loader2, Sparkles, Wallet, TrendingDown, TrendingUp, Scale } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, Download, FileText, Loader2,
+  Sparkles, Wallet, TrendingDown, TrendingUp, Scale,
+  BarChart3, ArrowUpRight, ArrowDownRight,
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -8,108 +12,87 @@ import { getBudgetLimits, getGoals, getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 import { apiUrl } from '../utils/api';
 
-const AY_ADLARI = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-];
-
-const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
-
-const markdownComponents = {
-  h2: ({ children }) => <h2 className="text-base font-black text-surface-900 dark:text-white mt-5 mb-2 first:mt-0">{children}</h2>,
-  p: ({ children }) => <p className="text-sm leading-6 text-surface-700 dark:text-surface-200 mb-3">{children}</p>,
-  ul: ({ children }) => <ul className="space-y-2 mb-4">{children}</ul>,
-  li: ({ children }) => <li className="text-sm leading-6 text-surface-700 dark:text-surface-200">{children}</li>,
-  strong: ({ children }) => <strong className="font-black text-surface-900 dark:text-white">{children}</strong>,
+/* ─── Palette ─── */
+const P = {
+  purple: '#7C3AED', purpleLight: '#A78BFA', purpleDim: 'rgba(124,58,237,0.15)',
+  purpleGlow: 'rgba(124,58,237,0.35)', green: '#10B981', greenDim: 'rgba(16,185,129,0.15)',
+  red: '#EF4444', redDim: 'rgba(239,68,68,0.15)', amber: '#F59E0B',
+  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
 };
+
+const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
 function normalizeTransactions() {
   const giderler = getTransactions().map((tx) => ({
-    id: tx.id,
-    tarih: tx.tarih || tx.date,
-    magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
-    kategori: tx.kategori || tx.category || 'Diğer',
-    tutar: Number(tx.tutar ?? tx.amount ?? 0),
-    not: tx.not || tx.note || tx.aciklama || '',
-    tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
+    id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
+    kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
+    not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
   }));
-
   try {
     const gelirler = JSON.parse(localStorage.getItem('butceai_gelir') || '[]').map((tx) => ({
-      id: tx.id,
-      tarih: tx.tarih || tx.date,
-      magaza: tx.magaza || tx.title || tx.aciklama || 'Gelir',
-      kategori: tx.kategori || tx.category || 'Gelir',
-      tutar: Number(tx.tutar ?? tx.amount ?? 0),
-      not: tx.not || tx.note || tx.aciklama || '',
-      tur: 'gelir',
+      id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || 'Gelir',
+      kategori: tx.kategori || 'Gelir', tutar: Number(tx.tutar ?? tx.amount ?? 0),
+      not: tx.not || '', tur: 'gelir',
     }));
     return [...giderler, ...gelirler].filter(tx => tx.tarih && tx.tutar > 0);
-  } catch {
-    return giderler.filter(tx => tx.tarih && tx.tutar > 0);
-  }
+  } catch { return giderler.filter(tx => tx.tarih && tx.tutar > 0); }
 }
 
-function monthKey(dateLike) {
-  return String(dateLike || '').slice(0, 7);
-}
-
-function monthLabel(key) {
-  const [year, month] = key.split('-').map(Number);
-  return `${AY_ADLARI[month - 1]} ${year}`;
-}
-
+function monthKey(dateLike) { return String(dateLike || '').slice(0, 7); }
+function monthLabel(key) { const [year, month] = key.split('-').map(Number); return `${AY_ADLARI[month - 1]} ${year}`; }
 function addMonths(key, delta) {
   const [year, month] = key.split('-').map(Number);
   const date = new Date(year, month - 1 + delta, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
-
 function buildMonthWindow(transactions) {
   const keys = transactions.map(tx => monthKey(tx.tarih)).filter(Boolean).sort();
   const latest = keys[keys.length - 1] || new Date().toISOString().slice(0, 7);
-  return Array.from({ length: 6 }, (_, index) => addMonths(latest, index - 5));
+  return Array.from({ length: 6 }, (_, i) => addMonths(latest, i - 5));
 }
-
 function summarizeMonth(transactions, key) {
   const aylik = transactions.filter(tx => monthKey(tx.tarih) === key);
-  const gelir = aylik.filter(tx => tx.tur === 'gelir').reduce((sum, tx) => sum + tx.tutar, 0);
+  const gelir = aylik.filter(tx => tx.tur === 'gelir').reduce((s, tx) => s + tx.tutar, 0);
   const giderler = aylik.filter(tx => tx.tur !== 'gelir');
-  const gider = giderler.reduce((sum, tx) => sum + tx.tutar, 0);
+  const gider = giderler.reduce((s, tx) => s + tx.tutar, 0);
   const net = gelir - gider;
   const tasarrufOrani = gelir > 0 ? (net / gelir) * 100 : 0;
-
   return { aylik, giderler, gelir, gider, net, tasarrufOrani };
 }
-
 function categoryRows(currentExpenses, previousExpenses) {
-  const toplamlar = (list) => list.reduce((acc, tx) => {
-    acc[tx.kategori] = (acc[tx.kategori] || 0) + tx.tutar;
-    return acc;
-  }, {});
+  const toplamlar = (list) => list.reduce((acc, tx) => { acc[tx.kategori] = (acc[tx.kategori] || 0) + tx.tutar; return acc; }, {});
   const current = toplamlar(currentExpenses);
   const previous = toplamlar(previousExpenses);
   const categories = [...new Set([...Object.keys(current), ...Object.keys(previous)])];
-
-  return categories
-    .map((kategori) => {
-      const buAy = current[kategori] || 0;
-      const gecenAy = previous[kategori] || 0;
-      return { kategori, buAy, gecenAy, fark: buAy - gecenAy };
-    })
-    .sort((a, b) => b.buAy - a.buAy);
+  return categories.map((k) => ({ kategori: k, buAy: current[k] || 0, gecenAy: previous[k] || 0, fark: (current[k] || 0) - (previous[k] || 0) })).sort((a, b) => b.buAy - a.buAy);
 }
 
-function StatCard({ label, value, icon: Icon, tone }) {
+function StatCard({ label, value, icon: Icon, color, positive }) {
+  const [hov, setHov] = useState(false);
   return (
-    <div className="glass-card rounded-2xl p-5 border border-surface-200 dark:border-surface-700/50">
-      <div className="flex items-start justify-between gap-3">
+    <div
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        padding: '22px 24px', borderRadius: 20,
+        background: hov ? P.bg3 : P.bg2,
+        border: `1px solid ${hov ? P.borderHover : P.border}`,
+        transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+        transform: hov ? 'translateY(-2px)' : 'none',
+        boxShadow: hov ? `0 0 32px ${P.purpleGlow}` : '0 4px 24px rgba(0,0,0,0.4)',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: color, opacity: 0.08, filter: 'blur(28px)', pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-surface-500 mb-2">{label}</p>
-          <p className={`text-2xl font-black ${tone}`}>{value}</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</p>
+          <p style={{ fontSize: 24, fontWeight: 800, color: positive === undefined ? P.text1 : positive ? P.green : P.red, lineHeight: 1 }}>{value}</p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-primary-500" />
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: `${color}22`, border: `1px solid ${color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={20} color={color} />
         </div>
       </div>
     </div>
@@ -130,236 +113,248 @@ export default function ReportsPage() {
   const previousMonth = addMonths(selectedMonth, -1);
   const selectedSummary = useMemo(() => summarizeMonth(transactions, selectedMonth), [transactions, selectedMonth]);
   const previousSummary = useMemo(() => summarizeMonth(transactions, previousMonth), [transactions, previousMonth]);
-  const rows = useMemo(
-    () => categoryRows(selectedSummary.giderler, previousSummary.giderler),
-    [selectedSummary.giderler, previousSummary.giderler]
-  );
+  const rows = useMemo(() => categoryRows(selectedSummary.giderler, previousSummary.giderler), [selectedSummary.giderler, previousSummary.giderler]);
 
   const stats = [
-    { label: 'Toplam gelir', value: fmt(selectedSummary.gelir), icon: Wallet, tone: 'text-emerald-500' },
-    { label: 'Toplam gider', value: fmt(selectedSummary.gider), icon: TrendingDown, tone: 'text-danger-500' },
-    { label: 'Net bakiye', value: fmt(selectedSummary.net), icon: Scale, tone: selectedSummary.net >= 0 ? 'text-primary-500' : 'text-danger-500' },
-    { label: 'Tasarruf oranı', value: `%${selectedSummary.tasarrufOrani.toFixed(1)}`, icon: TrendingUp, tone: 'text-warn-500' },
+    { label: 'Toplam Gelir', value: fmt(selectedSummary.gelir), icon: Wallet, color: P.green, positive: true },
+    { label: 'Toplam Gider', value: fmt(selectedSummary.gider), icon: TrendingDown, color: P.red, positive: false },
+    { label: 'Net Bakiye', value: fmt(selectedSummary.net), icon: Scale, color: selectedSummary.net >= 0 ? P.purple : P.red, positive: selectedSummary.net >= 0 },
+    { label: 'Tasarruf Oranı', value: `%${selectedSummary.tasarrufOrani.toFixed(1)}`, icon: TrendingUp, color: P.amber },
   ];
 
   const handleAnalyze = async () => {
-    setAiLoading(true);
-    setAiError('');
+    setAiLoading(true); setAiError('');
     try {
       const res = await fetch(apiUrl('/api/analyze'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           aylikVeri: {
             ay: monthLabel(selectedMonth),
-            ozet: {
-              toplamGelir: selectedSummary.gelir,
-              toplamGider: selectedSummary.gider,
-              netBakiye: selectedSummary.net,
-              tasarrufOrani: Number(selectedSummary.tasarrufOrani.toFixed(1)),
-            },
-            kategoriKarsilastirma: rows,
-            islemler: selectedSummary.aylik,
+            ozet: { toplamGelir: selectedSummary.gelir, toplamGider: selectedSummary.gider, netBakiye: selectedSummary.net, tasarrufOrani: Number(selectedSummary.tasarrufOrani.toFixed(1)) },
+            kategoriKarsilastirma: rows, islemler: selectedSummary.aylik,
           },
-          limitler: getBudgetLimits(),
-          hedefler: getGoals(),
+          limitler: getBudgetLimits(), hedefler: getGoals(),
         }),
       });
-
       if (!res.ok) throw new Error('Analiz servisi yanıt vermedi.');
       const data = await res.json();
       setAiYorumu(data.summary || data.response || '');
-    } catch (error) {
-      setAiError(error.message || 'Rapor oluşturulamadı.');
-    } finally {
-      setAiLoading(false);
-    }
+    } catch (error) { setAiError(error.message || 'Rapor oluşturulamadı.'); }
+    finally { setAiLoading(false); }
   };
 
   const handlePdf = async () => {
     if (!reportRef.current) return;
     setPdfLoading(true);
     try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: document.documentElement.classList.contains('dark') ? '#020617' : '#f8fafc',
-      });
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#050714' });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
-      let remainingHeight = imgHeight;
-      let y = 0;
-
+      let remainingHeight = imgHeight; let y = 0;
       pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
       remainingHeight -= pageHeight;
-      while (remainingHeight > 0) {
-        y -= pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
-        remainingHeight -= pageHeight;
-      }
-
+      while (remainingHeight > 0) { y -= pageHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight); remainingHeight -= pageHeight; }
       pdf.save(`BütçeAI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
-    } finally {
-      setPdfLoading(false);
-    }
+    } finally { setPdfLoading(false); }
   };
 
   const handleCsv = () => {
     const headers = ['Tarih', 'Mağaza', 'Kategori', 'Tutar', 'Not'];
-    const lines = selectedSummary.aylik
-      .sort((a, b) => String(a.tarih).localeCompare(String(b.tarih)))
-      .map(tx => [tx.tarih, tx.magaza, tx.kategori, tx.tutar, tx.not].map(csvEscape).join(','));
+    const lines = selectedSummary.aylik.sort((a, b) => String(a.tarih).localeCompare(String(b.tarih))).map(tx => [tx.tarih, tx.magaza, tx.kategori, tx.tutar, tx.not].map(csvEscape).join(','));
     const blob = new Blob([`\uFEFF${[headers.join(','), ...lines].join('\n')}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `BütçeAI_${monthLabel(selectedMonth).replace(' ', '_')}_İşlemleri.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    link.href = url; link.download = `BütçeAI_${monthLabel(selectedMonth).replace(' ', '_')}_İşlemleri.csv`;
+    link.click(); URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="page-hero p-5 md:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Aylık analiz</p>
-          <h1 className="text-3xl md:text-4xl font-black text-surface-950 dark:text-white">Raporlar</h1>
-          <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">Ay bazında gelir, gider ve kategori davranışlarını incele.</p>
+    <>
+      <style>{`
+        @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        .reports-btn-nav:hover:not(:disabled) { background: rgba(124,58,237,0.15) !important; color: #a78bfa !important; }
+        .reports-btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+        .cat-row:hover { background: rgba(124,58,237,0.08) !important; }
+        .ai-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+        .dl-btn:hover { background: rgba(255,255,255,0.1) !important; }
+        .csv-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+      `}</style>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* ── HERO ── */}
+        <div style={{
+          background: P.bg2, border: `1px solid ${P.border}`,
+          borderRadius: 20, padding: '28px 32px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.text3, marginBottom: 8 }}>Aylık Analiz</p>
+              <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 6 }}>Raporlar</h1>
+              <p style={{ fontSize: 14, color: P.text2 }}>Ay bazında gelir, gider ve kategori davranışlarını incele.</p>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+              {/* Month Picker */}
+              <div style={{ display: 'flex', alignItems: 'center', background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                <button onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} disabled={selectedIndex === 0} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+                  <ChevronLeft size={18} />
+                </button>
+                <div style={{ minWidth: 140, textAlign: 'center', padding: '8px 12px' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seçili Ay</p>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{monthLabel(selectedMonth)}</p>
+                </div>
+                <button onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))} disabled={selectedIndex === months.length - 1} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              <button onClick={handlePdf} disabled={pdfLoading} className="dl-btn" style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 18px', borderRadius: 12,
+                background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`,
+                color: P.text1, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.2s', opacity: pdfLoading ? 0.6 : 1,
+              }}>
+                {pdfLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <FileText size={16} />}
+                PDF İndir
+              </button>
+
+              <button onClick={handleCsv} className="csv-btn" style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 18px', borderRadius: 12,
+                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.2s', boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
+              }}>
+                <Download size={16} />
+                CSV İndir
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center rounded-2xl border border-surface-200 dark:border-surface-700 bg-white/80 dark:bg-surface-850/80 overflow-hidden">
-            <button
-              onClick={() => setSelectedIndex(i => Math.max(0, i - 1))}
-              disabled={selectedIndex === 0}
-              className="p-3 text-surface-700 dark:text-surface-200 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              aria-label="Önceki ay"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="min-w-40 text-center px-3 py-2">
-              <p className="text-xs font-semibold text-surface-500">Seçili ay</p>
-              <p className="font-black text-surface-900 dark:text-white">{monthLabel(selectedMonth)}</p>
-            </div>
-            <button
-              onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))}
-              disabled={selectedIndex === months.length - 1}
-              className="p-3 text-surface-700 dark:text-surface-200 hover:text-primary-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              aria-label="Sonraki ay"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+        <div ref={reportRef} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* ── STAT CARDS ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {stats.map(s => <StatCard key={s.label} {...s} />)}
           </div>
 
-          <button
-            onClick={handlePdf}
-            disabled={pdfLoading}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-sm font-bold hover:opacity-90 disabled:opacity-60 transition-opacity cursor-pointer"
-          >
-            {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-            PDF İndir
-          </button>
-          <button
-            onClick={handleCsv}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 shadow-lg shadow-primary-500/25 transition-colors cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            CSV İndir
-          </button>
-        </div>
-      </div>
+          {/* ── TABLE + PIE ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
 
-      <div ref={reportRef} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {stats.map(stat => <StatCard key={stat.label} {...stat} />)}
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
-          <section className="glass-card rounded-2xl p-5 md:p-6 border border-surface-200 dark:border-surface-700/50">
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <div>
-                <h2 className="text-lg font-bold text-surface-900 dark:text-white">Kategori Tablosu</h2>
-                <p className="text-xs text-surface-500">{monthLabel(previousMonth)} karşılaştırması</p>
+            {/* Category Table */}
+            <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <div>
+                  <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, marginBottom: 3 }}>Kategori Tablosu</h2>
+                  <p style={{ fontSize: 12, color: P.text3 }}>{monthLabel(previousMonth)} karşılaştırması</p>
+                </div>
+                <div style={{ width: 36, height: 36, borderRadius: 11, background: `${P.purple}22`, border: `1px solid ${P.purple}33`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BarChart3 size={18} color={P.purple} />
+                </div>
               </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-surface-200 dark:border-surface-700">
-                    {['Kategori', 'Bu Ay', 'Geçen Ay', 'Fark', 'Trend'].map(label => (
-                      <th key={label} className="text-left py-3 pr-4 text-xs font-bold uppercase tracking-wider text-surface-500">{label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.length > 0 ? rows.map(row => {
-                    const iyi = row.fark < 0;
-                    const ayni = row.fark === 0;
-                    return (
-                      <tr key={row.kategori} className="border-b border-surface-100 dark:border-surface-800 last:border-0">
-                        <td className="py-3 pr-4 font-bold text-surface-900 dark:text-white">{row.kategori}</td>
-                        <td className="py-3 pr-4 text-surface-700 dark:text-surface-200">{fmt(row.buAy)}</td>
-                        <td className="py-3 pr-4 text-surface-700 dark:text-surface-200">{fmt(row.gecenAy)}</td>
-                        <td className={`py-3 pr-4 font-black ${ayni ? 'text-surface-500' : iyi ? 'text-emerald-500' : 'text-danger-500'}`}>
-                          {row.fark > 0 ? '+' : ''}{fmt(row.fark)}
-                        </td>
-                        <td className={`py-3 pr-4 font-black ${ayni ? 'text-surface-500' : iyi ? 'text-emerald-500' : 'text-danger-500'}`}>
-                          {ayni ? '→' : iyi ? '↓' : '↑'}
-                        </td>
-                      </tr>
-                    );
-                  }) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
                     <tr>
-                      <td colSpan="5" className="py-10 text-center text-surface-500">Bu ay için kategori verisi yok.</td>
+                      {['Kategori', 'Bu Ay', 'Geçen Ay', 'Fark', 'Trend'].map(label => (
+                        <th key={label} style={{ textAlign: 'left', padding: '8px 12px 12px 0', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: P.text3, borderBottom: `1px solid ${P.border}` }}>{label}</th>
+                      ))}
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <CategoryPieChart islemler={selectedSummary.giderler} />
-        </div>
-
-        <section className="glass-card rounded-2xl p-5 md:p-6 border border-surface-200 dark:border-surface-700/50">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-            <div>
-              <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 text-xs font-bold uppercase tracking-wider mb-1">
-                <Sparkles className="w-4 h-4" />
-                AI Yorumu
+                  </thead>
+                  <tbody>
+                    {rows.length > 0 ? rows.map(row => {
+                      const iyi = row.fark < 0; const ayni = row.fark === 0;
+                      const farkColor = ayni ? P.text3 : iyi ? P.green : P.red;
+                      return (
+                        <tr key={row.kategori} className="cat-row" style={{ borderBottom: `1px solid rgba(255,255,255,0.03)`, transition: 'background 0.15s' }}>
+                          <td style={{ padding: '11px 12px 11px 0', fontSize: 13, fontWeight: 700, color: P.text1 }}>{row.kategori}</td>
+                          <td style={{ padding: '11px 12px 11px 0', fontSize: 13, color: P.text2 }}>{fmt(row.buAy)}</td>
+                          <td style={{ padding: '11px 12px 11px 0', fontSize: 13, color: P.text3 }}>{fmt(row.gecenAy)}</td>
+                          <td style={{ padding: '11px 12px 11px 0', fontSize: 13, fontWeight: 700, color: farkColor }}>{row.fark > 0 ? '+' : ''}{fmt(row.fark)}</td>
+                          <td style={{ padding: '11px 0 11px 0' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              {ayni ? null : iyi ? <ArrowDownRight size={14} color={P.green} /> : <ArrowUpRight size={14} color={P.red} />}
+                              <span style={{ fontSize: 12, fontWeight: 700, color: farkColor }}>{ayni ? '→' : iyi ? 'Azaldı' : 'Arttı'}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr><td colSpan={5} style={{ padding: '40px 0', textAlign: 'center', fontSize: 13, color: P.text3 }}>Bu ay için kategori verisi yok.</td></tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <h2 className="text-lg font-bold text-surface-900 dark:text-white">{monthLabel(selectedMonth)} finans yorumu</h2>
             </div>
-            <button
-              onClick={handleAnalyze}
-              disabled={aiLoading}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 disabled:opacity-60 transition-colors cursor-pointer"
-            >
-              {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Rapor Oluştur
-            </button>
+
+            {/* Pie Chart */}
+            <CategoryPieChart islemler={selectedSummary.giderler} />
           </div>
 
-          {aiError && (
-            <div className="rounded-xl border border-danger-500/20 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-500">
-              {aiError}
+          {/* ── AI ANALYSIS ── */}
+          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
+            {/* Gradient top accent */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.5), transparent)', pointerEvents: 'none' }} />
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <Sparkles size={14} color={P.purpleLight} />
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: P.purpleLight }}>AI Yorumu</span>
+                </div>
+                <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em' }}>{monthLabel(selectedMonth)} finans yorumu</h2>
+              </div>
+              <button onClick={handleAnalyze} disabled={aiLoading} className="ai-btn" style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '11px 22px', borderRadius: 12,
+                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                cursor: aiLoading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s', opacity: aiLoading ? 0.6 : 1,
+                boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
+              }}>
+                {aiLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
+                Rapor Oluştur
+              </button>
             </div>
-          )}
-          {aiYorumu ? (
-            <div>
-              <ReactMarkdown components={markdownComponents}>{aiYorumu}</ReactMarkdown>
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-surface-50 dark:bg-surface-900/40 border border-surface-200 dark:border-surface-700/50 px-4 py-6 text-sm text-surface-500">
-              Rapor Oluştur butonuna basınca bu ayın kısa özeti, iyi yapılanlar, risk alanları ve gelecek ay önerileri burada markdown olarak görünür.
-            </div>
-          )}
-        </section>
+
+            {aiError && (
+              <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: P.red, fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
+                {aiError}
+              </div>
+            )}
+
+            {aiYorumu ? (
+              <div style={{ color: P.text2, fontSize: 14, lineHeight: 1.75 }}>
+                <ReactMarkdown components={{
+                  h2: ({ children }) => <h2 style={{ fontSize: 15, fontWeight: 800, color: P.text1, marginTop: 20, marginBottom: 8 }}>{children}</h2>,
+                  p: ({ children }) => <p style={{ marginBottom: 12, color: P.text2 }}>{children}</p>,
+                  ul: ({ children }) => <ul style={{ paddingLeft: 20, marginBottom: 12 }}>{children}</ul>,
+                  li: ({ children }) => <li style={{ marginBottom: 6, color: P.text2 }}>{children}</li>,
+                  strong: ({ children }) => <strong style={{ color: P.text1, fontWeight: 700 }}>{children}</strong>,
+                }}>{aiYorumu}</ReactMarkdown>
+              </div>
+            ) : (
+              <div style={{ padding: '28px 20px', borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}`, textAlign: 'center' }}>
+                <Sparkles size={28} color={P.text3} style={{ marginBottom: 10 }} />
+                <p style={{ fontSize: 13, color: P.text3, lineHeight: 1.7 }}>
+                  <strong style={{ color: P.text2, display: 'block', marginBottom: 4 }}>AI analizi bekleniyor</strong>
+                  Rapor Oluştur butonuna basınca bu ayın kısa özeti, iyi yapılanlar, risk alanları ve gelecek ay önerileri burada görünür.
+                </p>
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }

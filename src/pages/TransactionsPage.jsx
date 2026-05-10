@@ -4,6 +4,7 @@ import {
   ChevronUp, ChevronDown, ChevronsUpDown, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
   RefreshCw, Receipt, Camera, ImagePlus, Loader2, Mic,
+  ArrowUpRight, ArrowDownRight, Calendar, Tag,
 } from 'lucide-react';
 import { katRenk, TUM_KATEGORILER, fmt } from '../utils/categories';
 import { saveTransaction, removeTransaction } from '../utils/storage';
@@ -14,9 +15,32 @@ import { detectUnusualSpending, saveUnusualSpendingDecision } from '../utils/not
 import { useToast } from '../hooks/useToast';
 import { apiUrl } from '../utils/api';
 
+/* ─── Palette ─── */
+const P = {
+  purple: '#7C3AED', purpleLight: '#A78BFA',
+  purpleDim: 'rgba(124,58,237,0.15)', purpleGlow: 'rgba(124,58,237,0.25)',
+  green: '#10B981', greenDim: 'rgba(16,185,129,0.12)',
+  red: '#EF4444', redDim: 'rgba(239,68,68,0.12)',
+  amber: '#F59E0B', blue: '#3B82F6', pink: '#EC4899',
+  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038', bg4: '#222540',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.35)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+};
+
 const SAYFA_BOYUTU = 20;
 
-// ─── localStorage okuma ───────────────────────────────────────
+const CAT_COLORS = {
+  Market: '#10B981', Ulaşım: '#3B82F6', Fatura: '#F59E0B', Eğlence: '#A855F7',
+  Yemek: '#EF4444', 'Yemek Siparişi': '#F97316', Alışveriş: '#EC4899',
+  Sağlık: '#06B6D4', Eğitim: '#8B5CF6', Diğer: '#64748B',
+};
+const CAT_ICONS = {
+  Market: '🛒', Ulaşım: '🚌', Fatura: '📄', Eğlence: '🎮',
+  Yemek: '🍔', 'Yemek Siparişi': '🛵', Alışveriş: '🛍️',
+  Sağlık: '💊', Eğitim: '📚', Diğer: '💳',
+};
+
+/* ─── localStorage ─── */
 function yukleIslemler() {
   try {
     const tx = JSON.parse(localStorage.getItem('butceai_transactions') || '[]');
@@ -28,35 +52,56 @@ function yukleIslemler() {
   } catch { return []; }
 }
 
-// ─── Küçük bileşenler ─────────────────────────────────────────
-function SortIcon({ kolon, aktif, yon }) {
-  if (aktif !== kolon) return <ChevronsUpDown className="w-3.5 h-3.5 opacity-30" />;
-  return yon === 'asc'
-    ? <ChevronUp className="w-3.5 h-3.5 text-primary-400" />
-    : <ChevronDown className="w-3.5 h-3.5 text-primary-400" />;
+/* ─── GlowOrb ─── */
+function GlowOrb({ color, size = 300, style = {} }) {
+  return (
+    <div style={{
+      position: 'absolute', width: size, height: size, borderRadius: '50%',
+      background: color, filter: `blur(${size * 0.42}px)`, opacity: 0.1,
+      pointerEvents: 'none', zIndex: 0, ...style,
+    }} />
+  );
 }
 
+/* ─── KatBadge ─── */
 function KatBadge({ kategori }) {
-  const s = katRenk(kategori);
+  const color = CAT_COLORS[kategori] || P.text3;
+  const icon = CAT_ICONS[kategori] || '💳';
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${s.bg}`}>
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: s.dot }} />
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '4px 10px', borderRadius: 999,
+      background: `${color}15`, color,
+      fontSize: 11, fontWeight: 700,
+      border: `1px solid ${color}25`,
+    }}>
+      <span style={{ fontSize: 12 }}>{icon}</span>
       {kategori || '—'}
     </span>
   );
 }
 
+/* ─── FiltreBadge ─── */
 function FiltreBadge({ etiket, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 text-xs font-semibold border border-primary-500/20">
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '4px 10px', borderRadius: 8,
+      background: P.purpleDim, color: P.purpleLight,
+      fontSize: 11, fontWeight: 700,
+      border: `1px solid rgba(124,58,237,0.3)`,
+    }}>
       {etiket}
-      <button onClick={onRemove} className="hover:text-danger-500 transition-colors cursor-pointer ml-0.5">
-        <X className="w-3 h-3" />
-      </button>
+      <button onClick={onRemove} style={{
+        background: 'none', border: 'none', color: 'inherit',
+        cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center',
+        opacity: 0.7,
+      }}><X size={11} /></button>
     </span>
   );
 }
 
+/* ─── KatDropdown ─── */
 function KatDropdown({ secili, onChange }) {
   const [acik, setAcik] = useState(false);
   const ref = useRef(null);
@@ -67,20 +112,55 @@ function KatDropdown({ secili, onChange }) {
   }, []);
   const toggle = (kat) => onChange(secili.includes(kat) ? secili.filter(k => k !== kat) : [...secili, kat]);
   return (
-    <div className="relative" ref={ref}>
-      <button onClick={() => setAcik(!acik)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-sm text-surface-700 dark:text-surface-200 hover:border-primary-500 transition-colors cursor-pointer">
-        <SlidersHorizontal className="w-4 h-4" />
-        Kategori {secili.length > 0 && <span className="bg-primary-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{secili.length}</span>}
-        <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setAcik(!acik)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '9px 14px', borderRadius: 12,
+          background: P.bg3, border: `1px solid ${acik ? P.borderHover : P.border}`,
+          color: P.text2, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          transition: 'all 0.2s',
+        }}
+      >
+        <SlidersHorizontal size={14} />
+        Kategori
+        {secili.length > 0 && (
+          <span style={{
+            background: P.purple, color: '#fff',
+            fontSize: 10, fontWeight: 800,
+            padding: '1px 6px', borderRadius: 999,
+          }}>{secili.length}</span>
+        )}
+        <ChevronDown size={12} style={{ opacity: 0.5 }} />
       </button>
       {acik && (
-        <div className="absolute top-full mt-1 left-0 z-50 w-52 bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 rounded-xl shadow-xl overflow-hidden">
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 50,
+          width: 220,
+          background: P.bg2, border: `1px solid ${P.border}`,
+          borderRadius: 14, overflow: 'hidden',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+        }}>
           {TUM_KATEGORILER.map(kat => (
-            <button key={kat} onClick={() => toggle(kat)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors text-sm text-left cursor-pointer">
-              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${secili.includes(kat) ? 'bg-primary-500 border-primary-500' : 'border-surface-300 dark:border-surface-600'}`}>
-                {secili.includes(kat) && <Check className="w-2.5 h-2.5 text-white" />}
+            <button
+              key={kat} onClick={() => toggle(kat)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 14px', background: 'transparent', border: 'none',
+                cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = P.bg3}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{
+                width: 16, height: 16, borderRadius: 5, flexShrink: 0,
+                border: `2px solid ${secili.includes(kat) ? P.purple : P.text3}`,
+                background: secili.includes(kat) ? P.purple : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.15s',
+              }}>
+                {secili.includes(kat) && <Check size={10} color="#fff" />}
               </div>
               <KatBadge kategori={kat} />
             </button>
@@ -91,42 +171,207 @@ function KatDropdown({ secili, onChange }) {
   );
 }
 
-function TabloBaşlık({ label, kolon, aktif, yon, onSort }) {
+/* ─── SortIcon ─── */
+function SortIcon({ kolon, aktif, yon }) {
+  if (aktif !== kolon) return <ChevronsUpDown size={13} style={{ opacity: 0.3 }} />;
+  return yon === 'asc'
+    ? <ChevronUp size={13} color={P.purpleLight} />
+    : <ChevronDown size={13} color={P.purpleLight} />;
+}
+
+/* ─── StatMini ─── */
+function StatMini({ label, value, icon, color, delay = 0 }) {
+  const [vis, setVis] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVis(true), delay); return () => clearTimeout(t); }, []);
   return (
-    <th className="text-left px-4 py-3 text-xs font-semibold text-surface-700 dark:text-surface-200 uppercase tracking-wide">
-      <button onClick={() => onSort(kolon)} className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-        {label} <SortIcon kolon={kolon} aktif={aktif} yon={yon} />
-      </button>
-    </th>
+    <div style={{
+      background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14,
+      padding: '14px 18px', flex: 1, minWidth: 130,
+      opacity: vis ? 1 : 0, transform: vis ? 'none' : 'translateY(10px)',
+      transition: `all 0.5s ease ${delay}ms`,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{label}</span>
+        <span style={{ fontSize: 18 }}>{icon}</span>
+      </div>
+      <p style={{ fontSize: 20, fontWeight: 800, color }}>{value}</p>
+    </div>
   );
 }
 
-// ─── Silme Onay Diyaloğu ──────────────────────────────────────
+/* ─── AksiyonButonlari ─── */
+function AksiyonButonlari({ tx, onDuzenle, onSil }) {
+  return (
+    <div style={{ display: 'flex', gap: 4 }}>
+      <button
+        onClick={() => onDuzenle(tx)}
+        style={{
+          width: 30, height: 30, borderRadius: 8,
+          background: P.bg3, border: `1px solid ${P.border}`,
+          color: P.text3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = P.purpleDim; e.currentTarget.style.color = P.purpleLight; }}
+        onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text3; }}
+        title="Düzenle"
+      ><Pencil size={13} /></button>
+      <button
+        onClick={() => onSil(tx)}
+        style={{
+          width: 30, height: 30, borderRadius: 8,
+          background: P.bg3, border: `1px solid ${P.border}`,
+          color: P.text3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = `${P.red}18`; e.currentTarget.style.color = P.red; }}
+        onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text3; }}
+        title="Sil"
+      ><Trash2 size={13} /></button>
+    </div>
+  );
+}
+
+/* ─── TxTableRow ─── */
+function TxTableRow({ tx, index, onDuzenle, onSil }) {
+  const [hov, setHov] = useState(false);
+  const [vis, setVis] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 35, 600)); return () => clearTimeout(t); }, []);
+  const isGelir = tx.tur === 'gelir';
+  const amtColor = isGelir ? P.green : P.red;
+  return (
+    <tr
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        borderBottom: `1px solid ${P.border}`,
+        background: hov ? P.bg3 : 'transparent',
+        opacity: vis ? 1 : 0,
+        transition: `opacity 0.4s ease ${Math.min(index * 25, 500)}ms, background 0.15s`,
+      }}
+    >
+      <td style={{ padding: '13px 16px', fontSize: 12, color: P.text3, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Calendar size={12} color={P.text3} />
+          {tx.tarih}
+        </div>
+      </td>
+      <td style={{ padding: '13px 16px', maxWidth: 240 }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: P.text1, marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {tx.magaza || '—'}
+        </p>
+        <p style={{ fontSize: 12, color: P.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {tx.aciklama}
+        </p>
+      </td>
+      <td style={{ padding: '13px 16px' }}><KatBadge kategori={tx.kategori} /></td>
+      <td style={{ padding: '13px 16px', textAlign: 'right' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+          {isGelir ? <ArrowUpRight size={13} color={P.green} /> : <ArrowDownRight size={13} color={P.red} />}
+          <span style={{ fontSize: 14, fontWeight: 800, color: amtColor, letterSpacing: '-0.01em' }}>
+            {isGelir ? '+' : '-'}{fmt(tx.tutar)}
+          </span>
+        </div>
+      </td>
+      <td style={{ padding: '13px 16px' }}>
+        <div style={{ opacity: hov ? 1 : 0, transition: 'opacity 0.2s', display: 'flex', justifyContent: 'flex-end' }}>
+          <AksiyonButonlari tx={tx} onDuzenle={onDuzenle} onSil={onSil} />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+/* ─── TxKartRow ─── */
+function TxKartRow({ tx, index, onDuzenle, onSil }) {
+  const [hov, setHov] = useState(false);
+  const [vis, setVis] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 40, 600)); return () => clearTimeout(t); }, []);
+  const isGelir = tx.tur === 'gelir';
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? P.bg4 : P.bg3,
+        border: `1px solid ${hov ? P.borderHover : P.border}`,
+        borderRadius: 16, padding: '16px 18px',
+        transition: 'all 0.25s',
+        transform: hov ? 'translateY(-2px)' : 'none',
+        opacity: vis ? 1 : 0,
+        animation: vis ? `fadeUp 0.4s ease ${Math.min(index * 30, 500)}ms both` : 'none',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <KatBadge kategori={tx.kategori} />
+        <AksiyonButonlari tx={tx} onDuzenle={onDuzenle} onSil={onSil} />
+      </div>
+      <p style={{ fontSize: 14, fontWeight: 700, color: P.text1, marginBottom: 3 }}>{tx.magaza || '—'}</p>
+      <p style={{ fontSize: 12, color: P.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tx.aciklama}</p>
+      {tx.etiketler?.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+          {tx.etiketler.map(e => (
+            <span key={e} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, background: P.bg2, color: P.text3, border: `1px solid ${P.border}` }}>{e}</span>
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${P.border}` }}>
+        <span style={{ fontSize: 11, color: P.text3, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Calendar size={11} /> {tx.tarih}
+        </span>
+        <span style={{ fontSize: 14, fontWeight: 800, color: isGelir ? P.green : P.red }}>
+          {isGelir ? '+' : '-'}{fmt(tx.tutar)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SilOnay ─── */
 function SilOnay({ islem, onOnayla, onIptal }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={e => e.target === e.currentTarget && onIptal()}>
-      <div className="w-full max-w-sm bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 animate-fade-in-up border border-surface-200 dark:border-surface-700">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-danger-500/15 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-danger-500" />
+    <div
+      onClick={e => e.target === e.currentTarget && onIptal()}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: 24,
+        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      }}
+    >
+      <div style={{
+        width: '100%', maxWidth: 380,
+        background: P.bg2, border: `1px solid ${P.border}`,
+        borderRadius: 22, padding: '28px 28px',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+        animation: 'fadeUp 0.25s ease',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: `${P.red}18`, border: `1px solid ${P.red}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AlertTriangle size={20} color={P.red} />
           </div>
-          <h3 className="text-base font-bold text-surface-900 dark:text-white">İşlemi Sil</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>İşlemi Sil</h3>
         </div>
-        <p className="text-sm text-surface-700 dark:text-surface-200 mb-2">
-          Bu işlemi silmek istediğine emin misin?
-        </p>
-        <div className="text-sm rounded-xl bg-surface-50 dark:bg-surface-800 px-3 py-2.5 mb-5 flex justify-between">
-          <span className="font-medium text-surface-900 dark:text-white">{islem.magaza || islem.aciklama}</span>
-          <span className="font-bold text-danger-500">-{fmt(islem.tutar)}</span>
+        <p style={{ fontSize: 13, color: P.text2, marginBottom: 12, lineHeight: 1.7 }}>Bu işlemi silmek istediğine emin misin?</p>
+        <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '12px 14px', marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: P.text1 }}>{islem.magaza || islem.aciklama}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: P.red }}>-{fmt(islem.tutar)}</span>
         </div>
-        <div className="flex gap-3">
-          <button onClick={onIptal}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors cursor-pointer">
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onIptal} style={{
+            flex: 1, padding: '11px 0', borderRadius: 12, border: `1px solid ${P.border}`,
+            background: 'transparent', color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text1; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = P.text2; }}>
             İptal
           </button>
-          <button onClick={onOnayla}
-            className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-danger-500 text-white hover:bg-danger-600 shadow-lg shadow-danger-500/25 transition-colors cursor-pointer">
+          <button onClick={onOnayla} style={{
+            flex: 1, padding: '11px 0', borderRadius: 12, border: 'none',
+            background: P.red, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+            boxShadow: `0 4px 16px ${P.red}44`, transition: 'opacity 0.2s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
             Evet, Sil
           </button>
         </div>
@@ -135,7 +380,158 @@ function SilOnay({ islem, onOnayla, onIptal }) {
   );
 }
 
-// ─── Ana Sayfa ───────────────────────────────────────────────
+/* ─── AlışılmadıkModal ─── */
+function AlisilmadikHarcamaModal({ alert, onNormal, onReview }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
+      <div style={{ width: '100%', maxWidth: 420, background: P.bg2, border: `1px solid ${P.amber}33`, borderRadius: 22, padding: '28px', boxShadow: '0 32px 80px rgba(0,0,0,0.7)', animation: 'fadeUp 0.25s ease' }}>
+        <div style={{ width: 48, height: 48, borderRadius: 16, background: `${P.amber}18`, border: `1px solid ${P.amber}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <AlertTriangle size={22} color={P.amber} />
+        </div>
+        <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Alışılmadık harcama</h3>
+        <p style={{ fontSize: 13, color: P.text2, lineHeight: 1.75, marginBottom: 14 }}>
+          Bu harcama sana alışılmadık geliyor{' '}
+          <span style={{ fontWeight: 700, color: P.text1 }}>(Ort: {fmt(alert.average)}, Bu: {fmt(alert.amount)})</span>
+        </p>
+        <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '12px 14px', marginBottom: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: P.text1 }}>{alert.transaction.magaza || alert.transaction.aciklama}</p>
+          <p style={{ fontSize: 11, color: P.text3, marginTop: 3 }}>{alert.transaction.kategori} · {alert.transaction.tarih}</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button onClick={onNormal} style={{ padding: '11px', borderRadius: 12, border: `1px solid ${P.border}`, background: 'transparent', color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text1; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = P.text2; }}>
+            Normal, yanlış alarm
+          </button>
+          <button onClick={onReview} style={{ padding: '11px', borderRadius: 12, border: 'none', background: P.amber, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            İnceleyeceğim
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── FisTaraModal ─── */
+function FisTaraModal({ onSonuc, onApiError, onKapat }) {
+  const [fileInfo, setFileInfo] = useState(null);
+  const [compressed, setCompressed] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const canvasRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const drawAndCompress = (file) => {
+    setError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSide = 1600;
+        const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const width = Math.round(image.width * ratio), height = Math.round(image.height * ratio);
+        const canvas = canvasRef.current;
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+        const shouldCompress = file.size > 1024 * 1024;
+        const outputMime = file.type === 'image/png' && !shouldCompress ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(outputMime, shouldCompress ? 0.7 : 0.92);
+        setCompressed({ base64: dataUrl.split(',')[1], mimeType: outputMime });
+        setFileInfo({ name: file.name, size: file.size, compressed: shouldCompress });
+      };
+      image.onerror = () => setError('Görüntü net değil, tekrar dene');
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Lütfen bir fotoğraf seç'); return; }
+    drawAndCompress(file);
+  };
+
+  const handleAnalyze = async () => {
+    if (!compressed) return;
+    setLoading(true); setError('');
+    try {
+      const res = await fetch(apiUrl('/api/ocr'), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: compressed.base64, mimeType: compressed.mimeType }),
+      });
+      if (res.status === 422) { setError('Görüntü net değil, tekrar dene'); return; }
+      if (!res.ok) throw new Error('api');
+      onSonuc(await res.json());
+    } catch { onApiError(); } finally { setLoading(false); }
+  };
+
+  return (
+    <div onClick={e => e.target === e.currentTarget && !loading && onKapat()}
+      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
+      <div style={{ width: '100%', maxWidth: 520, background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 22, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.7)', animation: 'fadeUp 0.25s ease' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${P.border}`, background: P.bg3 }}>
+          <div>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Fiş Tara</h2>
+            <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Fotoğrafı seç, BütçeAI tutar ve tarihi çıkarsın.</p>
+          </div>
+          <button onClick={onKapat} disabled={loading} style={{ width: 34, height: 34, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={15} />
+          </button>
+        </div>
+        {/* Body */}
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFile(e.target.files?.[0])} />
+          {/* Drop zone */}
+          <div
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]); }}
+            style={{ borderRadius: 16, border: `2px dashed ${P.border}`, background: P.bg3, padding: '28px 20px', textAlign: 'center', cursor: 'pointer' }}
+            onClick={() => inputRef.current?.click()}
+          >
+            <div style={{ width: 48, height: 48, borderRadius: 16, background: `${P.green}18`, border: `1px solid ${P.green}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <ImagePlus size={22} color={P.green} />
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: P.text1, marginBottom: 4 }}>Fotoğrafı buraya sürükle-bırak</p>
+            <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>JPG, PNG veya telefon kamerası fotoğrafı</p>
+            <button type="button" onClick={e => { e.stopPropagation(); inputRef.current?.click(); }} style={{ padding: '9px 20px', borderRadius: 11, border: 'none', background: `linear-gradient(135deg, ${P.green}, #059669)`, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+              Fotoğraf Seç
+            </button>
+          </div>
+          <canvas ref={canvasRef} style={{ width: '100%', maxHeight: 260, borderRadius: 14, border: `1px solid ${P.border}`, objectFit: 'contain', display: fileInfo ? 'block' : 'none' }} />
+          {fileInfo && (
+            <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: P.text3 }}>
+              <span style={{ fontWeight: 700, color: P.text1 }}>{fileInfo.name}</span>
+              {' '}· {(fileInfo.size / 1024 / 1024).toFixed(2)} MB
+              {fileInfo.compressed && <span style={{ color: P.purpleLight, fontWeight: 700 }}> · Sıkıştırıldı</span>}
+            </div>
+          )}
+          {error && (
+            <div style={{ borderRadius: 10, border: `1px solid ${P.red}30`, background: `${P.red}12`, padding: '10px 14px', fontSize: 13, fontWeight: 600, color: P.red }}>
+              {error}
+            </div>
+          )}
+          <button onClick={handleAnalyze} disabled={!compressed || loading} style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '13px 0', borderRadius: 13, border: 'none',
+            background: !compressed || loading ? P.bg4 : `linear-gradient(135deg, ${P.green}, #059669)`,
+            color: !compressed || loading ? P.text3 : '#fff',
+            fontSize: 14, fontWeight: 800, cursor: !compressed || loading ? 'not-allowed' : 'pointer',
+            boxShadow: compressed && !loading ? `0 4px 16px ${P.green}40` : 'none',
+            transition: 'all 0.2s',
+          }}>
+            {loading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Camera size={16} />}
+            {loading ? 'Fiş okunuyor...' : 'Analiz Et'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN ─── */
 export default function TransactionsPage() {
   const toast = useToast();
   const [ham, setHam] = useState(() => yukleIslemler());
@@ -144,18 +540,17 @@ export default function TransactionsPage() {
   const [sortKolon, setSortKolon] = useState('tarih');
   const [sortYon, setSortYon] = useState('desc');
   const [isListening, setIsListening] = useState(false);
+  const [headerVis, setHeaderVis] = useState(false);
 
-  // Modal/Dialog state
   const [modalAcik, setModalAcik] = useState(false);
-  const [duzenlenen, setDuzenlenen] = useState(null); // null = yeni, obje = düzenle
+  const [duzenlenen, setDuzenlenen] = useState(null);
   const [taslakIslem, setTaslakIslem] = useState(null);
   const [silinecek, setSilinecek] = useState(null);
   const [alisilmadik, setAlisilmadik] = useState(null);
   const [csvAcik, setCsvAcik] = useState(false);
   const [fisModalAcik, setFisModalAcik] = useState(false);
-  const [aktifTab, setAktifTab] = useState('islemler'); // 'islemler' | 'abonelikler'
+  const [aktifTab, setAktifTab] = useState('islemler');
 
-  // Filtreler
   const [aramaHam, setAramaHam] = useState('');
   const [arama, setArama] = useState('');
   const [seciliKatlar, setSeciliKatlar] = useState([]);
@@ -164,11 +559,8 @@ export default function TransactionsPage() {
   const [minTutar, setMinTutar] = useState('');
   const [maxTutar, setMaxTutar] = useState('');
 
-  useEffect(() => {
-    const t = setTimeout(() => setArama(aramaHam), 300);
-    return () => clearTimeout(t);
-  }, [aramaHam]);
-
+  useEffect(() => { setTimeout(() => setHeaderVis(true), 80); }, []);
+  useEffect(() => { const t = setTimeout(() => setArama(aramaHam), 300); return () => clearTimeout(t); }, [aramaHam]);
   useEffect(() => { setSayfa(1); }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
 
   const handleSort = useCallback((kolon) => {
@@ -177,149 +569,53 @@ export default function TransactionsPage() {
     setSayfa(1);
   }, [sortKolon]);
 
-  // ─── Sesle Ekleme ───────────────────────────────────────────
+  /* ─ Sesle ekleme ─ */
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      toast.error('Tarayıcınız ses tanımayı desteklemiyor (Chrome veya Safari güncel sürüm kullanın).');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'tr-TR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      toast.info('Sizi dinliyorum... (Örn: Starbucks\'ta kahveye 140 lira verdim)', { duration: 5000 });
-    };
-
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
+    const recognition = new SR();
+    recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+    recognition.onstart = () => { setIsListening(true); toast.info('Sizi dinliyorum...', { duration: 5000 }); };
     recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript;
       setIsListening(false);
-      
-      const tId = toast.info('Sesiniz yapay zeka ile analiz ediliyor...', { duration: 10000 });
-      
+      toast.info('Sesiniz analiz ediliyor...', { duration: 10000 });
       try {
-        const res = await fetch(apiUrl('/api/voice'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: transcript })
-        });
-        
+        const res = await fetch(apiUrl('/api/voice'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: transcript }) });
         if (!res.ok) throw new Error();
-        
         const data = await res.json();
-        
-        const yeniIslem = {
-          id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
-          tarih: new Date().toISOString().slice(0, 10),
-          tutar: data.tutar || '',
-          magaza: data.magaza || '',
-          aciklama: transcript,
-          kategori: data.kategori || 'Diğer',
-          tur: data.tur || 'gider',
-          not: 'Sesli asistan ile eklendi'
-        };
-        
-        if (!yeniIslem.tutar) {
-          toast.warning('Tutar anlaşılamadı, formu doldurun.');
-          setTaslakIslem(yeniIslem);
-          setModalAcik(true);
-          return;
-        }
-
-        saveTransaction(yeniIslem);
-        setHam(yukleIslemler());
-        toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) anında eklendi! ✨`);
-        
-      } catch (e) {
-        toast.error('Ses analiz edilemedi, tekrar deneyin.');
-      }
+        const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
+        if (!yeniIslem.tutar) { toast.warning('Tutar anlaşılamadı, formu doldurun.'); setTaslakIslem(yeniIslem); setModalAcik(true); return; }
+        saveTransaction(yeniIslem); setHam(yukleIslemler());
+        toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
+      } catch { toast.error('Ses analiz edilemedi.'); }
     };
-
-    recognition.onerror = (event) => {
-      setIsListening(false);
-      if (event.error !== 'no-speech') {
-        toast.error('Mikrofon hatası: ' + event.error);
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
+    recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
+    recognition.onend = () => setIsListening(false);
     recognition.start();
   };
 
-  // ─── CRUD işlemleri ────────────────────────────────────────
+  /* ─ CRUD ─ */
   const handleKaydet = (form) => {
     const yeniIslemMi = !duzenlenen;
     const kaydedilen = saveTransaction({ ...form });
-    if (yeniIslemMi) {
-      const uyarı = detectUnusualSpending(kaydedilen, ham);
-      if (uyarı) setAlisilmadik(uyarı);
-    }
-    setHam(yukleIslemler());
-    setModalAcik(false);
-    setDuzenlenen(null);
-    setTaslakIslem(null);
+    if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
+    setHam(yukleIslemler()); setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
   };
 
   const handleFisSonucu = (ocr) => {
-    if (!ocr.tutar && !ocr.tarih && !ocr.magaza) {
-      toast.error('Görüntü net değil, tekrar dene');
-      return;
-    }
-
-    const taslak = {
-      tarih: ocr.tarih || new Date().toISOString().slice(0, 10),
-      tutar: ocr.tutar || '',
-      magaza: ocr.magaza || '',
-      aciklama: ocr.magaza ? `${ocr.magaza} fişi` : 'Fişten eklenen işlem',
-      kategori: '',
-      not: 'Fiş tarama ile eklendi',
-    };
-
-    if (!ocr.tutar) {
-      toast.warning('Tutarı bulamadım, lütfen manuel gir');
-    } else {
-      toast.success('Fiş okundu, işlem formu dolduruldu');
-    }
-
-    setTaslakIslem(taslak);
-    setDuzenlenen(null);
-    setFisModalAcik(false);
-    setModalAcik(true);
+    if (!ocr.tutar && !ocr.tarih && !ocr.magaza) { toast.error('Görüntü net değil, tekrar dene'); return; }
+    const taslak = { tarih: ocr.tarih || new Date().toISOString().slice(0, 10), tutar: ocr.tutar || '', magaza: ocr.magaza || '', aciklama: ocr.magaza ? `${ocr.magaza} fişi` : 'Fişten eklenen işlem', kategori: '', not: 'Fiş tarama ile eklendi' };
+    if (!ocr.tutar) toast.warning('Tutarı bulamadım, lütfen manuel gir'); else toast.success('Fiş okundu!');
+    setTaslakIslem(taslak); setDuzenlenen(null); setFisModalAcik(false); setModalAcik(true);
   };
 
-  const handleAlisilmadikSecim = (decision) => {
-    if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, decision);
-    setAlisilmadik(null);
-  };
+  const handleAlisilmadikSecim = (d) => { if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, d); setAlisilmadik(null); };
+  const handleSil = () => { if (!silinecek) return; removeTransaction(silinecek.id); setHam(yukleIslemler()); setSilinecek(null); };
+  const handleDuzenle = (tx) => { setDuzenlenen(tx); setModalAcik(true); };
+  const handleCsvImport = (islemler) => { islemler.forEach(tx => saveTransaction({ ...tx })); setHam(yukleIslemler()); setCsvAcik(false); };
 
-  const handleSil = () => {
-    if (!silinecek) return;
-    removeTransaction(silinecek.id);
-    setHam(yukleIslemler());
-    setSilinecek(null);
-  };
-
-  const handleDuzenle = (tx) => {
-    setDuzenlenen(tx);
-    setModalAcik(true);
-  };
-
-  // ─── CSV Import ────────────────────────────────────────────
-  const handleCsvImport = (islemler) => {
-    islemler.forEach(tx => saveTransaction({ ...tx }));
-    setHam(yukleIslemler());
-    setCsvAcik(false);
-  };
-
-  // ─── Filtreleme + Sıralama ──────────────────────────────────
+  /* ─ Filtreleme ─ */
   const filtrelenmis = useMemo(() => {
     let liste = ham;
     if (arama) liste = liste.filter(i => (i.magaza || i.aciklama || '').toLowerCase().includes(arama.toLowerCase()));
@@ -340,502 +636,279 @@ export default function TransactionsPage() {
   const toplamSayfa = Math.max(1, Math.ceil(filtrelenmis.length / SAYFA_BOYUTU));
   const sayfadakiler = filtrelenmis.slice((sayfa - 1) * SAYFA_BOYUTU, sayfa * SAYFA_BOYUTU);
 
+  const totalIncome = ham.filter(t => t.tur === 'gelir').reduce((s, t) => s + Math.abs(Number(t.tutar)), 0);
+  const totalExpense = ham.filter(t => t.tur === 'gider').reduce((s, t) => s + Math.abs(Number(t.tutar)), 0);
+
   const aktifFiltreler = [
-    arama && { etiket: `Arama: "${arama}"`, temizle: () => { setArama(''); setAramaHam(''); } },
+    arama && { etiket: `"${arama}"`, temizle: () => { setArama(''); setAramaHam(''); } },
     ...seciliKatlar.map(k => ({ etiket: k, temizle: () => setSeciliKatlar(s => s.filter(x => x !== k)) })),
-    tarihBas && { etiket: `Başlangıç: ${tarihBas}`, temizle: () => setTarihBas('') },
+    tarihBas && { etiket: `Başl: ${tarihBas}`, temizle: () => setTarihBas('') },
     tarihBit && { etiket: `Bitiş: ${tarihBit}`, temizle: () => setTarihBit('') },
     minTutar && { etiket: `Min: ${fmt(minTutar)}`, temizle: () => setMinTutar('') },
     maxTutar && { etiket: `Max: ${fmt(maxTutar)}`, temizle: () => setMaxTutar('') },
   ].filter(Boolean);
 
-  const tumunuTemizle = () => {
-    setAramaHam(''); setArama('');
-    setSeciliKatlar([]); setTarihBas(''); setTarihBit('');
-    setMinTutar(''); setMaxTutar('');
+  const tumunuTemizle = () => { setAramaHam(''); setArama(''); setSeciliKatlar([]); setTarihBas(''); setTarihBit(''); setMinTutar(''); setMaxTutar(''); };
+
+  const inputStyle = {
+    padding: '9px 14px', borderRadius: 12,
+    background: P.bg3, border: `1px solid ${P.border}`,
+    color: P.text1, fontSize: 13, fontFamily: 'inherit',
+    transition: 'all 0.2s', outline: 'none',
   };
 
-  const inputCls = "px-3 py-2 rounded-xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-sm text-surface-900 dark:text-white placeholder-surface-700 dark:placeholder-surface-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all";
-
-  // Aksiyon butonları (tablo + kart için ortak)
-  const AksiyonButonlari = ({ tx }) => (
-    <div className="flex items-center gap-1.5">
-      <button onClick={() => handleDuzenle(tx)}
-        className="p-1.5 rounded-lg hover:bg-primary-500/10 text-surface-700 dark:text-surface-200 hover:text-primary-500 transition-colors cursor-pointer"
-        title="Düzenle">
-        <Pencil className="w-3.5 h-3.5" />
-      </button>
-      <button onClick={() => setSilinecek(tx)}
-        className="p-1.5 rounded-lg hover:bg-danger-500/10 text-surface-700 dark:text-surface-200 hover:text-danger-500 transition-colors cursor-pointer"
-        title="Sil">
-        <Trash2 className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
+  const thStyle = {
+    padding: '12px 16px', fontSize: 10, fontWeight: 800,
+    letterSpacing: '0.12em', textTransform: 'uppercase',
+    color: P.text3, textAlign: 'left', userSelect: 'none',
+  };
 
   return (
-    <div className="space-y-5 animate-fade-in-up">
-      {/* Başlık + "+ Yeni İşlem" + Toggle */}
-      <div className="page-hero p-5 md:p-6 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Harcama akışı</p>
-          <h1 className="text-3xl md:text-4xl font-black text-surface-950 dark:text-white">İşlemler</h1>
-          <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">{filtrelenmis.length} işlem bulundu · fiş tara, filtrele, düzenle</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Sesle Ekle butonu */}
-          <button
-            onClick={startListening}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all cursor-pointer ${
-              isListening 
-                ? 'bg-red-500 text-white shadow-red-500/30 animate-pulse' 
-                : 'bg-purple-500 text-white hover:bg-purple-600 shadow-purple-500/25'
-            }`}
-          >
-            <Mic className="w-4 h-4" />
-            <span className="hidden sm:inline">{isListening ? 'Dinleniyor...' : 'Sesle Ekle'}</span>
-          </button>
-          {/* CSV Yükle butonu */}
-          <button
-            onClick={() => setFisModalAcik(true)}
-            aria-label="Fiş Tara"
-            title="Fiş Tara"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer">
-            <Camera className="w-4 h-4" />
-            <span className="hidden sm:inline">Fiş Tara</span>
-          </button>
-          <button
-            onClick={() => setCsvAcik(o => !o)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-              csvAcik
-                ? 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-200'
-                : 'bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-700 dark:text-surface-200 hover:border-primary-500 hover:text-primary-500'
-            }`}>
-            <Upload className="w-4 h-4" />
-            <span className="hidden sm:inline">Ekstre Yükle</span>
-          </button>
-          {/* Yeni İşlem butonu */}
-          <button
-            onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 shadow-lg shadow-primary-500/30 transition-all cursor-pointer">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Yeni İşlem</span>
-          </button>
-          {/* Görünüm toggle (sadece işlemler tabında) */}
-          {aktifTab === 'islemler' && (
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800">
-              {[{ k: 'tablo', icon: LayoutList }, { k: 'kart', icon: LayoutGrid }].map(({ k, icon: Icon }) => (
-                <button key={k} onClick={() => setGorunum(k)}
-                  className={`p-2 rounded-lg transition-all cursor-pointer ${gorunum === k ? 'bg-white dark:bg-surface-700 shadow text-primary-500' : 'text-surface-700 dark:text-surface-200 hover:text-white'}`}>
-                  <Icon className="w-4 h-4" />
+    <>
+      <style>{`
+        @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .tx-input:focus { border-color: rgba(124,58,237,0.5) !important; box-shadow: 0 0 0 3px rgba(124,58,237,0.12) !important; }
+        .tx-scroll::-webkit-scrollbar { width: 4px; }
+        .tx-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius:999px; }
+        .tab-btn:hover { color: #A78BFA !important; }
+      `}</style>
+
+      <div style={{ minHeight: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", position: 'relative', overflow: 'hidden' }}>
+        <GlowOrb color={P.purple} style={{ top: -100, left: -100 }} />
+        <GlowOrb color={P.blue} style={{ bottom: 0, right: -80 }} size={250} />
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+          {/* ── HERO HEADER ── */}
+          <div style={{
+            background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 20,
+            padding: '24px 28px', position: 'relative', overflow: 'hidden',
+            opacity: headerVis ? 1 : 0, transform: headerVis ? 'none' : 'translateY(-12px)',
+            transition: 'all 0.6s cubic-bezier(0.4,0,0.2,1)',
+          }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${P.purple},${P.blue},${P.green},${P.purple})`, backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite', borderRadius: '20px 20px 0 0' }} />
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.text3, marginBottom: 10 }}>Harcama Akışı</p>
+                <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 6, lineHeight: 1 }}>İşlemler</h1>
+                <p style={{ fontSize: 13, color: P.text3 }}>{filtrelenmis.length} işlem bulundu · fiş tara, filtrele, düzenle</p>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                <button onClick={startListening} style={{
+                  display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: 'none',
+                  background: isListening ? P.red : `${P.purple}25`, border: `1px solid ${isListening ? P.red + '50' : P.purple + '40'}`,
+                  color: isListening ? '#fff' : P.purpleLight,
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                  animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none',
+                }}>
+                  <Mic size={15} />
+                  <span>{isListening ? 'Dinleniyor...' : 'Sesle Ekle'}</span>
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* CSV Uploader */}
-      {csvAcik && (
-        <CsvUploader
-          onImport={handleCsvImport}
-          onKapat={() => setCsvAcik(false)}
-        />
-      )}
-
-      {/* ── TAB SWITCH ── */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800/80 w-fit">
-        {[
-          { k: 'islemler', label: 'İşlemler', icon: Receipt },
-          { k: 'abonelikler', label: 'Abonelikler', icon: RefreshCw },
-        ].map(({ k, label, icon: Icon }) => (
-          <button
-            key={k}
-            onClick={() => setAktifTab(k)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-              aktifTab === k
-                ? 'bg-white dark:bg-surface-700 shadow-sm text-primary-500'
-                : 'text-surface-700 dark:text-surface-200 hover:text-surface-900 dark:hover:text-white'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── ABONELİKLER TABI ── */}
-      {aktifTab === 'abonelikler' && (
-        <SubscriptionsTab islemler={ham} />
-      )}
-
-      {/* ── İŞLEMLER TABI İÇERİĞİ ── */}
-      {aktifTab === 'islemler' && (<>
-
-
-      {/* Filtreleme Paneli */}
-      <div className="glass-card rounded-2xl p-4 space-y-3">
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-700 dark:text-surface-200" />
-            <input type="text" value={aramaHam} onChange={e => setAramaHam(e.target.value)}
-              placeholder="Mağaza veya açıklama ara..." className={`${inputCls} pl-9 w-full`} />
-          </div>
-          <KatDropdown secili={seciliKatlar} onChange={setSeciliKatlar} />
-          <input type="date" value={tarihBas} onChange={e => setTarihBas(e.target.value)} className={inputCls} title="Başlangıç tarihi" />
-          <input type="date" value={tarihBit} onChange={e => setTarihBit(e.target.value)} className={inputCls} title="Bitiş tarihi" />
-          <input type="number" value={minTutar} onChange={e => setMinTutar(e.target.value)} placeholder="Min ₺" className={`${inputCls} w-24`} />
-          <input type="number" value={maxTutar} onChange={e => setMaxTutar(e.target.value)} placeholder="Max ₺" className={`${inputCls} w-24`} />
-        </div>
-        {aktifFiltreler.length > 0 && (
-          <div className="flex flex-wrap gap-2 items-center pt-1">
-            {aktifFiltreler.map((f, i) => <FiltreBadge key={i} etiket={f.etiket} onRemove={f.temizle} />)}
-            <button onClick={tumunuTemizle} className="text-xs text-danger-500 hover:underline cursor-pointer font-semibold ml-1">
-              Tüm Filtreleri Temizle
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ── TABLO ── */}
-      {gorunum === 'tablo' && (
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-surface-50/80 dark:bg-surface-800/80 border-b border-surface-200 dark:border-surface-700">
-                <tr>
-                  <TabloBaşlık label="Tarih"    kolon="tarih"    aktif={sortKolon} yon={sortYon} onSort={handleSort} />
-                  <TabloBaşlık label="Mağaza"   kolon="magaza"   aktif={sortKolon} yon={sortYon} onSort={handleSort} />
-                  <TabloBaşlık label="Kategori" kolon="kategori" aktif={sortKolon} yon={sortYon} onSort={handleSort} />
-                  <TabloBaşlık label="Tutar"    kolon="tutar"    aktif={sortKolon} yon={sortYon} onSort={handleSort} />
-                  <th className="px-4 py-3 w-20" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
-                {sayfadakiler.length === 0
-                  ? <tr><td colSpan={5} className="text-center py-16 text-surface-700 dark:text-surface-200">Eşleşen işlem bulunamadı</td></tr>
-                  : sayfadakiler.map(tx => (
-                    <tr key={tx.id} className="hover:bg-surface-50/50 dark:hover:bg-surface-800/30 transition-colors">
-                      <td className="px-4 py-3 text-sm text-surface-700 dark:text-surface-200 whitespace-nowrap">{tx.tarih}</td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-surface-900 dark:text-white">{tx.magaza || '—'}</p>
-                        <p className="text-xs text-surface-700 dark:text-surface-200 truncate max-w-[180px]">{tx.aciklama}</p>
-                      </td>
-                      <td className="px-4 py-3"><KatBadge kategori={tx.kategori} /></td>
-                      <td className="px-4 py-3">
-                        <span className={`font-bold text-sm ${tx.tur === 'gelir' ? 'text-accent-500' : 'text-danger-500'}`}>
-                          {tx.tur === 'gelir' ? '+' : '-'}{fmt(tx.tutar)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 flex justify-end"><AksiyonButonlari tx={tx} /></td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ── KART ── */}
-      {gorunum === 'kart' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {sayfadakiler.length === 0
-            ? <div className="col-span-full text-center py-16 text-surface-700 dark:text-surface-200">Eşleşen işlem bulunamadı</div>
-            : sayfadakiler.map(tx => (
-              <div key={tx.id} className="glass-card rounded-2xl p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                <div className="flex items-start justify-between mb-3">
-                  <KatBadge kategori={tx.kategori} />
-                  <AksiyonButonlari tx={tx} />
-                </div>
-                <p className="font-semibold text-surface-900 dark:text-white text-sm">{tx.magaza || '—'}</p>
-                <p className="text-xs text-surface-700 dark:text-surface-200 mt-0.5 truncate">{tx.aciklama}</p>
-                {tx.etiketler?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {tx.etiketler.map(e => (
-                      <span key={e} className="text-[10px] px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-200">{e}</span>
+                <button onClick={() => setFisModalAcik(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid ${P.green}40`, background: `${P.green}18`, color: P.green, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = `${P.green}28`}
+                  onMouseLeave={e => e.currentTarget.style.background = `${P.green}18`}>
+                  <Camera size={15} /> Fiş Tara
+                </button>
+                <button onClick={() => setCsvAcik(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid ${P.border}`, background: csvAcik ? P.bg4 : P.bg3, color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <Upload size={15} /> Ekstre Yükle
+                </button>
+                <button onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${P.purple},#4F46E5)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+                  <Plus size={16} /> Yeni İşlem
+                </button>
+                {/* View toggle */}
+                {aktifTab === 'islemler' && (
+                  <div style={{ display: 'flex', gap: 3, padding: 4, background: P.bg4, borderRadius: 11, border: `1px solid ${P.border}` }}>
+                    {[{ k: 'tablo', icon: LayoutList }, { k: 'kart', icon: LayoutGrid }].map(({ k, icon: Icon }) => (
+                      <button key={k} onClick={() => setGorunum(k)} style={{
+                        width: 34, height: 34, borderRadius: 8, border: 'none',
+                        background: gorunum === k ? P.bg2 : 'transparent',
+                        color: gorunum === k ? P.purpleLight : P.text3,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        boxShadow: gorunum === k ? `0 2px 8px rgba(0,0,0,0.3)` : 'none',
+                      }}><Icon size={16} /></button>
                     ))}
                   </div>
                 )}
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-surface-100 dark:border-surface-700">
-                  <span className="text-xs text-surface-700 dark:text-surface-200">{tx.tarih}</span>
-                  <span className={`font-bold text-sm ${tx.tur === 'gelir' ? 'text-accent-500' : 'text-danger-500'}`}>
-                    {tx.tur === 'gelir' ? '+' : '-'}{fmt(tx.tutar)}
-                  </span>
+              </div>
+            </div>
+
+            {/* Mini stats */}
+            <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+              <StatMini label="Toplam Gelir" value={fmt(totalIncome)} icon="📈" color={P.green} delay={100} />
+              <StatMini label="Toplam Gider" value={fmt(totalExpense)} icon="📉" color={P.red} delay={180} />
+              <StatMini label="Net Bakiye" value={fmt(totalIncome - totalExpense)} icon="💰" color={P.purple} delay={260} />
+              <StatMini label="İşlem Sayısı" value={ham.length} icon="📋" color={P.amber} delay={340} />
+            </div>
+          </div>
+
+          {/* CSV Uploader */}
+          {csvAcik && (
+            <CsvUploader onImport={handleCsvImport} onKapat={() => setCsvAcik(false)} />
+          )}
+
+          {/* ── TABS ── */}
+          <div style={{ display: 'flex', gap: 4, padding: 4, background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 14, width: 'fit-content' }}>
+            {[
+              { k: 'islemler', label: 'İşlemler', icon: Receipt },
+              { k: 'abonelikler', label: 'Abonelikler', icon: RefreshCw },
+            ].map(({ k, label, icon: Icon }) => (
+              <button key={k} className="tab-btn" onClick={() => setAktifTab(k)} style={{
+                display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none',
+                background: aktifTab === k ? `linear-gradient(135deg,${P.purple},#4F46E5)` : 'transparent',
+                color: aktifTab === k ? '#fff' : P.text3,
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                boxShadow: aktifTab === k ? `0 4px 12px ${P.purpleGlow}` : 'none',
+              }}>
+                <Icon size={15} /> {label}
+              </button>
+            ))}
+          </div>
+
+          {/* ── ABONELİKLER ── */}
+          {aktifTab === 'abonelikler' && <SubscriptionsTab islemler={ham} />}
+
+          {aktifTab === 'islemler' && (<>
+
+            {/* ── FİLTRE PANELİ ── */}
+            <div style={{ background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 18, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12, animation: 'fadeUp 0.4s ease 0.15s both' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+                  <Search size={15} color={P.text3} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                  <input className="tx-input" type="text" value={aramaHam} onChange={e => setAramaHam(e.target.value)}
+                    placeholder="Mağaza veya açıklama ara..."
+                    style={{ ...inputStyle, paddingLeft: 38, width: '100%', boxSizing: 'border-box' }} />
+                </div>
+                <KatDropdown secili={seciliKatlar} onChange={setSeciliKatlar} />
+                <input className="tx-input" type="date" value={tarihBas} onChange={e => setTarihBas(e.target.value)} style={inputStyle} title="Başlangıç tarihi" />
+                <input className="tx-input" type="date" value={tarihBit} onChange={e => setTarihBit(e.target.value)} style={inputStyle} title="Bitiş tarihi" />
+                <input className="tx-input" type="number" value={minTutar} onChange={e => setMinTutar(e.target.value)} placeholder="Min ₺" style={{ ...inputStyle, width: 90 }} />
+                <input className="tx-input" type="number" value={maxTutar} onChange={e => setMaxTutar(e.target.value)} placeholder="Max ₺" style={{ ...inputStyle, width: 90 }} />
+              </div>
+              {aktifFiltreler.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                  {aktifFiltreler.map((f, i) => <FiltreBadge key={i} etiket={f.etiket} onRemove={f.temizle} />)}
+                  <button onClick={tumunuTemizle} style={{ fontSize: 12, fontWeight: 700, color: P.red, background: 'none', border: 'none', cursor: 'pointer', marginLeft: 4, opacity: 0.8 }}>
+                    Tüm Filtreleri Temizle
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ── TABLO ── */}
+            {gorunum === 'tablo' && (
+              <div style={{ background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 20, overflow: 'hidden', animation: 'fadeUp 0.4s ease 0.25s both' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: P.bg3, borderBottom: `1px solid ${P.border}` }}>
+                        {[
+                          { label: 'Tarih', kolon: 'tarih' },
+                          { label: 'Mağaza', kolon: 'magaza' },
+                          { label: 'Kategori', kolon: 'kategori' },
+                          { label: 'Tutar', kolon: 'tutar' },
+                        ].map(({ label, kolon }) => (
+                          <th key={kolon} style={thStyle}>
+                            <button onClick={() => handleSort(kolon)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', transition: 'color 0.15s' }}
+                              onMouseEnter={e => e.currentTarget.style.color = P.purpleLight}
+                              onMouseLeave={e => e.currentTarget.style.color = ''}>
+                              {label} <SortIcon kolon={kolon} aktif={sortKolon} yon={sortYon} />
+                            </button>
+                          </th>
+                        ))}
+                        <th style={{ ...thStyle, width: 80 }} />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sayfadakiler.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} style={{ padding: '56px 20px', textAlign: 'center', color: P.text3 }}>
+                            <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+                            <p style={{ fontWeight: 700, color: P.text2, marginBottom: 6 }}>Eşleşen işlem bulunamadı</p>
+                            <button onClick={tumunuTemizle} style={{ marginTop: 10, padding: '7px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                              <RefreshCw size={12} /> Filtreleri Temizle
+                            </button>
+                          </td>
+                        </tr>
+                      ) : sayfadakiler.map((tx, i) => (
+                        <TxTableRow key={tx.id} tx={tx} index={i} onDuzenle={handleDuzenle} onSil={setSilinecek} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Table footer */}
+                <div style={{ padding: '12px 20px', borderTop: `1px solid ${P.border}`, background: P.bg3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12, color: P.text3 }}>{filtrelenmis.length} / {ham.length} işlem</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[{ color: P.green, icon: ArrowUpRight, value: fmt(totalIncome) }, { color: P.red, icon: ArrowDownRight, value: fmt(totalExpense) }].map(({ color, icon: Icon, value }) => (
+                      <span key={color} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 999, background: `${color}15`, color, fontSize: 11, fontWeight: 700, border: `1px solid ${color}25` }}>
+                        <Icon size={11} />{value}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
-        </div>
-      )}
+            )}
 
-      {/* ── SAYFALAMA ── */}
-      {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-surface-700 dark:text-surface-200">{sayfa} / {toplamSayfa} sayfa · {filtrelenmis.length} işlem</p>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setSayfa(s => Math.max(1, s - 1))} disabled={sayfa === 1}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-500 transition-colors cursor-pointer">
-              <ChevronLeft className="w-4 h-4" /> Önceki
-            </button>
-            {Array.from({ length: Math.min(5, toplamSayfa) }, (_, i) => {
-              let p = i + 1;
-              if (toplamSayfa > 5) {
-                if (sayfa <= 3) p = i + 1;
-                else if (sayfa >= toplamSayfa - 2) p = toplamSayfa - 4 + i;
-                else p = sayfa - 2 + i;
-              }
-              return (
-                <button key={p} onClick={() => setSayfa(p)}
-                  className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors cursor-pointer ${sayfa === p ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25' : 'bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-700 dark:text-surface-200 hover:border-primary-500'}`}>
-                  {p}
-                </button>
-              );
-            })}
-            <button onClick={() => setSayfa(s => Math.min(toplamSayfa, s + 1))} disabled={sayfa === toplamSayfa}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-500 transition-colors cursor-pointer">
-              Sonraki <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-      </>)}{/* end aktifTab === 'islemler' */}
+            {/* ── KART ── */}
+            {gorunum === 'kart' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
+                {sayfadakiler.length === 0
+                  ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '56px 20px', color: P.text3 }}>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+                    <p style={{ fontWeight: 700, color: P.text2, marginBottom: 10 }}>Eşleşen işlem bulunamadı</p>
+                    <button onClick={tumunuTemizle} style={{ padding: '7px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Filtreleri Temizle</button>
+                  </div>
+                  : sayfadakiler.map((tx, i) => <TxKartRow key={tx.id} tx={tx} index={i} onDuzenle={handleDuzenle} onSil={setSilinecek} />)}
+              </div>
+            )}
 
-      {/* ── MODAL ── */}
-      {modalAcik && (
-        <TransactionModal
-          islem={duzenlenen}
-          initialValues={taslakIslem}
-          onKaydet={handleKaydet}
-          onKapat={() => { setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null); }}
-        />
-      )}
+            {/* ── SAYFALAMA ── */}
+            {toplamSayfa > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <span style={{ fontSize: 12, color: P.text3 }}>{sayfa} / {toplamSayfa} sayfa · {filtrelenmis.length} işlem</span>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <button onClick={() => setSayfa(s => Math.max(1, s - 1))} disabled={sayfa === 1} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 10, border: `1px solid ${P.border}`, background: P.bg3, color: P.text2, fontSize: 12, fontWeight: 600, cursor: sayfa === 1 ? 'not-allowed' : 'pointer', opacity: sayfa === 1 ? 0.4 : 1 }}>
+                    <ChevronLeft size={14} /> Önceki
+                  </button>
+                  {Array.from({ length: Math.min(5, toplamSayfa) }, (_, i) => {
+                    let p = i + 1;
+                    if (toplamSayfa > 5) { if (sayfa <= 3) p = i + 1; else if (sayfa >= toplamSayfa - 2) p = toplamSayfa - 4 + i; else p = sayfa - 2 + i; }
+                    return (
+                      <button key={p} onClick={() => setSayfa(p)} style={{
+                        width: 34, height: 34, borderRadius: 10, border: 'none',
+                        background: sayfa === p ? `linear-gradient(135deg,${P.purple},#4F46E5)` : P.bg3,
+                        border: sayfa === p ? 'none' : `1px solid ${P.border}`,
+                        color: sayfa === p ? '#fff' : P.text2,
+                        fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                        boxShadow: sayfa === p ? `0 4px 12px ${P.purpleGlow}` : 'none',
+                        transition: 'all 0.2s',
+                      }}>{p}</button>
+                    );
+                  })}
+                  <button onClick={() => setSayfa(s => Math.min(toplamSayfa, s + 1))} disabled={sayfa === toplamSayfa} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 10, border: `1px solid ${P.border}`, background: P.bg3, color: P.text2, fontSize: 12, fontWeight: 600, cursor: sayfa === toplamSayfa ? 'not-allowed' : 'pointer', opacity: sayfa === toplamSayfa ? 0.4 : 1 }}>
+                    Sonraki <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>)}
 
-      {fisModalAcik && (
-        <FisTaraModal
-          onSonuc={handleFisSonucu}
-          onApiError={() => {
-            toast.error('Şu an fiş okuma çalışmıyor, manuel ekle');
-            setFisModalAcik(false);
-            setTaslakIslem(null);
-            setDuzenlenen(null);
-            setModalAcik(true);
-          }}
-          onKapat={() => setFisModalAcik(false)}
-        />
-      )}
+          {/* ── MODALS ── */}
+          {modalAcik && <TransactionModal islem={duzenlenen} initialValues={taslakIslem} onKaydet={handleKaydet} onKapat={() => { setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null); }} />}
+          {fisModalAcik && <FisTaraModal onSonuc={handleFisSonucu} onApiError={() => { toast.error('Fiş okuma çalışmıyor, manuel ekle'); setFisModalAcik(false); setModalAcik(true); }} onKapat={() => setFisModalAcik(false)} />}
+          {silinecek && <SilOnay islem={silinecek} onOnayla={handleSil} onIptal={() => setSilinecek(null)} />}
+          {alisilmadik && <AlisilmadikHarcamaModal alert={alisilmadik} onNormal={() => handleAlisilmadikSecim('false_alarm')} onReview={() => handleAlisilmadikSecim('review')} />}
 
-      {/* ── SİLME ONAYI ── */}
-      {silinecek && (
-        <SilOnay
-          islem={silinecek}
-          onOnayla={handleSil}
-          onIptal={() => setSilinecek(null)}
-        />
-      )}
-
-      {alisilmadik && (
-        <AlisilmadikHarcamaModal
-          alert={alisilmadik}
-          onNormal={() => handleAlisilmadikSecim('false_alarm')}
-          onReview={() => handleAlisilmadikSecim('review')}
-        />
-      )}
-    </div>
-  );
-}
-
-function AlisilmadikHarcamaModal({ alert, onNormal, onReview }) {
-  return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 border border-warn-500/20 animate-fade-in-up">
-        <div className="w-12 h-12 rounded-2xl bg-warn-500/15 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-warn-500" />
-        </div>
-        <h3 className="text-lg font-black text-surface-900 dark:text-white mb-2">Alışılmadık harcama</h3>
-        <p className="text-sm leading-6 text-surface-700 dark:text-surface-200 mb-5">
-          Bu harcama sana alışılmadık geliyor
-          {' '}<span className="font-bold text-surface-900 dark:text-white">
-            (Ortalama: {fmt(alert.average)}, Bu: {fmt(alert.amount)})
-          </span>
-        </p>
-        <div className="rounded-xl bg-surface-50 dark:bg-surface-800/70 px-4 py-3 mb-5">
-          <p className="text-sm font-bold text-surface-900 dark:text-white">{alert.transaction.magaza || alert.transaction.aciklama}</p>
-          <p className="text-xs text-surface-700 dark:text-surface-200 mt-0.5">{alert.transaction.kategori} · {alert.transaction.tarih}</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={onNormal}
-            className="flex-1 px-4 py-3 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 text-sm font-bold hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors cursor-pointer"
-          >
-            Normal, yanlış alarm
-          </button>
-          <button
-            onClick={onReview}
-            className="flex-1 px-4 py-3 rounded-xl bg-warn-500 text-white text-sm font-bold hover:bg-warn-600 transition-colors cursor-pointer"
-          >
-            İnceleyeceğim
-          </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function FisTaraModal({ onSonuc, onApiError, onKapat }) {
-  const [fileInfo, setFileInfo] = useState(null);
-  const [compressed, setCompressed] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const canvasRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const drawAndCompress = (file) => {
-    setError('');
-    const reader = new FileReader();
-    reader.onload = () => {
-      const image = new Image();
-      image.onload = () => {
-        const maxSide = 1600;
-        const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
-        const width = Math.round(image.width * ratio);
-        const height = Math.round(image.height * ratio);
-        const canvas = canvasRef.current;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(image, 0, 0, width, height);
-
-        const shouldCompress = file.size > 1024 * 1024;
-        const outputMime = file.type === 'image/png' && !shouldCompress ? 'image/png' : 'image/jpeg';
-        const dataUrl = canvas.toDataURL(outputMime, shouldCompress ? 0.7 : 0.92);
-        setCompressed({
-          base64: dataUrl.split(',')[1],
-          mimeType: outputMime,
-        });
-        setFileInfo({
-          name: file.name,
-          size: file.size,
-          compressed: shouldCompress,
-        });
-      };
-      image.onerror = () => setError('Görüntü net değil, tekrar dene');
-      image.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleFile = (file) => {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Lütfen bir fotoğraf seç');
-      return;
-    }
-    drawAndCompress(file);
-  };
-
-  const handleAnalyze = async () => {
-    if (!compressed) return;
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch(apiUrl('/api/ocr'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: compressed.base64,
-          mimeType: compressed.mimeType,
-        }),
-      });
-
-      if (res.status === 422) {
-        setError('Görüntü net değil, tekrar dene');
-        return;
-      }
-      if (!res.ok) throw new Error('api');
-      const data = await res.json();
-      onSonuc(data);
-    } catch {
-      onApiError();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={e => e.target === e.currentTarget && !loading && onKapat()}>
-      <div className="w-full max-w-lg bg-white dark:bg-surface-850 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 overflow-hidden animate-fade-in-up">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-100 dark:border-surface-700">
-          <div>
-            <h2 className="text-lg font-bold text-surface-900 dark:text-white">Fiş Tara</h2>
-            <p className="text-xs text-surface-700 dark:text-surface-200">Fotoğrafı seç, BütçeAI tutar ve tarihi çıkarsın.</p>
-          </div>
-          <button onClick={onKapat} disabled={loading}
-            className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 disabled:opacity-50 transition-colors cursor-pointer">
-            <X className="w-5 h-5 text-surface-700 dark:text-surface-200" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={e => handleFile(e.target.files?.[0])}
-          />
-
-          <div
-            onDragOver={e => e.preventDefault()}
-            onDrop={e => {
-              e.preventDefault();
-              handleFile(e.dataTransfer.files?.[0]);
-            }}
-            className="rounded-2xl border-2 border-dashed border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-surface-900/40 p-5 text-center"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-primary-500/10 flex items-center justify-center mx-auto mb-3">
-              <ImagePlus className="w-6 h-6 text-primary-500" />
-            </div>
-            <p className="text-sm font-bold text-surface-900 dark:text-white mb-1">Fotoğrafı buraya sürükle-bırak</p>
-            <p className="text-xs text-surface-700 dark:text-surface-200 mb-4">JPG, PNG veya telefon kamerası fotoğrafı</p>
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 transition-colors cursor-pointer"
-            >
-              Fotoğraf Seç
-            </button>
-          </div>
-
-          <canvas
-            ref={canvasRef}
-            className={`w-full max-h-72 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-900 object-contain ${fileInfo ? 'block' : 'hidden'}`}
-          />
-
-          {fileInfo && (
-            <div className="rounded-xl bg-surface-50 dark:bg-surface-800/70 px-4 py-3 text-xs text-surface-700 dark:text-surface-200">
-              <span className="font-bold text-surface-900 dark:text-white">{fileInfo.name}</span>
-              {' '}· {(fileInfo.size / 1024 / 1024).toFixed(2)} MB
-              {fileInfo.compressed && <span className="text-primary-500 font-bold"> · 1MB üstü olduğu için sıkıştırıldı</span>}
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-xl border border-danger-500/20 bg-danger-500/10 px-4 py-3 text-sm font-semibold text-danger-500">
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={handleAnalyze}
-            disabled={!compressed || loading}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-            {loading ? 'Fiş okunuyor...' : 'Analiz Et'}
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

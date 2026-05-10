@@ -9,13 +9,13 @@ import ChatPage from './pages/ChatPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import Onboarding from './components/Onboarding';
-import { getTheme, saveTheme } from './utils/storage';
+import { saveTheme } from './utils/storage';
 import { seedDataIfEmpty } from './utils/seedData';
 import { initMockData } from './data/mockData';
 import { ToastProvider } from './components/ToastProvider';
 
 export default function App() {
-  const [theme, setTheme] = useState(() => getTheme());
+  const [theme, setTheme] = useState('dark');
   const [onboardingCompleted, setOnboardingCompleted] = useState(
     () => localStorage.getItem('butceai_onboarding_completed') === 'true'
   );
@@ -27,15 +27,11 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    saveTheme(theme);
+    root.classList.add('dark');
+    saveTheme('dark');
   }, [theme]);
 
-  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  const toggleTheme = () => setTheme('dark');
 
   return (
     <ToastProvider>

@@ -1,40 +1,44 @@
 import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 
-const fmt = (v) =>
-  new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+const P = {
+  bg2: '#141728', bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  red: '#EF4444', purple: '#7C3AED',
+};
+
+const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
 const GUN_ISIMLERI = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
-function renk(tutar, maxTutar) {
-  if (tutar === 0) return 'bg-surface-100 dark:bg-surface-800';
+function getCellStyle(tutar, maxTutar, isSelected) {
+  if (tutar === 0) {
+    return { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', border: `1px solid ${isSelected ? '#7c3aed' : 'rgba(255,255,255,0.06)'}` };
+  }
   const oran = Math.min(tutar / maxTutar, 1);
-  if (oran < 0.25) return 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300';
-  if (oran < 0.5) return 'bg-blue-200 dark:bg-blue-800/50 text-blue-800 dark:text-blue-200';
-  if (oran < 0.75) return 'bg-blue-400 dark:bg-blue-700/60 text-white dark:text-blue-100';
-  return 'bg-blue-600 dark:bg-blue-600 text-white';
+  let bg, color;
+  if (oran < 0.25)      { bg = 'rgba(99,102,241,0.15)';  color = '#a5b4fc'; }
+  else if (oran < 0.5)  { bg = 'rgba(99,102,241,0.28)';  color = '#818cf8'; }
+  else if (oran < 0.75) { bg = 'rgba(99,102,241,0.45)';  color = '#e0e7ff'; }
+  else                  { bg = 'rgba(124,58,237,0.75)';   color = '#ffffff'; }
+  return { background: bg, color, border: `1px solid ${isSelected ? '#a78bfa' : 'rgba(124,58,237,0.2)'}` };
 }
 
 export default function HeatmapCalendar({ islemler }) {
   const [seciliGun, setSeciliGun] = useState(null);
 
-  // Mayıs 2025 takvimi oluştur
   const { gunler, maxTutar } = useMemo(() => {
     const yil = 2025, ay = 5;
     const gunSayisi = new Date(yil, ay, 0).getDate();
-    const ilkGunHafta = (new Date(yil, ay - 1, 1).getDay() + 6) % 7; // Pzt=0
-
+    const ilkGunHafta = (new Date(yil, ay - 1, 1).getDay() + 6) % 7;
     const gunMap = {};
-    islemler
-      .filter(i => i.tarih.startsWith('2025-05'))
-      .forEach(i => {
-        const gun = parseInt(i.tarih.split('-')[2], 10);
-        gunMap[gun] = (gunMap[gun] || 0) + i.tutar;
-      });
-
+    islemler.filter(i => i.tarih.startsWith('2025-05')).forEach(i => {
+      const gun = parseInt(i.tarih.split('-')[2], 10);
+      gunMap[gun] = (gunMap[gun] || 0) + i.tutar;
+    });
     let max = 0;
     const arr = [];
-    // Boş hücreler (aybaşı offset)
     for (let i = 0; i < ilkGunHafta; i++) arr.push(null);
     for (let d = 1; d <= gunSayisi; d++) {
       const t = gunMap[d] || 0;
@@ -51,37 +55,37 @@ export default function HeatmapCalendar({ islemler }) {
   }, [islemler, seciliGun]);
 
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-1">
-        Günlük Harcama Haritası
-      </h2>
-      <p className="text-xs text-surface-700 dark:text-surface-200 mb-4">Mayıs 2025 · Güne tıklayarak detay görün</p>
+    <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', bottom: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
+      <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>Günlük Harcama Haritası</h2>
+      <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Mayıs 2025 · Güne tıklayarak detay görün</p>
 
-      {/* Gün başlıkları */}
-      <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+      {/* Day headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 6 }}>
         {GUN_ISIMLERI.map(g => (
-          <div key={g} className="text-center text-[10px] font-semibold text-surface-700 dark:text-surface-200 py-1">{g}</div>
+          <div key={g} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: P.text3, padding: '4px 0', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{g}</div>
         ))}
       </div>
 
-      {/* Takvim grid */}
-      <div className="grid grid-cols-7 gap-1.5">
+      {/* Calendar grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
         {gunler.map((g, i) => {
           if (!g) return <div key={`e${i}`} />;
-          const cls = renk(g.tutar, maxTutar);
           const isSelected = seciliGun === g.gun;
+          const cellStyle = getCellStyle(g.tutar, maxTutar, isSelected);
           return (
-            <button
-              key={g.gun}
-              onClick={() => setSeciliGun(isSelected ? null : g.gun)}
-              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs cursor-pointer
-                transition-all duration-200 hover:scale-105 hover:shadow-md
-                ${cls}
-                ${isSelected ? 'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-surface-900' : ''}`}
-            >
-              <span className="font-semibold leading-none">{g.gun}</span>
+            <button key={g.gun} onClick={() => setSeciliGun(isSelected ? null : g.gun)} style={{
+              aspectRatio: '1',
+              borderRadius: 8,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: isSelected ? '0 0 12px rgba(124,58,237,0.5)' : 'none',
+              transform: isSelected ? 'scale(1.1)' : 'none',
+              ...cellStyle,
+            }}>
+              <span style={{ fontWeight: 600, lineHeight: 1 }}>{g.gun}</span>
               {g.tutar > 0 && (
-                <span className="text-[9px] leading-none mt-0.5 opacity-80">
+                <span style={{ fontSize: 9, lineHeight: 1, marginTop: 2, opacity: 0.85 }}>
                   {g.tutar >= 1000 ? `${(g.tutar / 1000).toFixed(1)}k` : Math.round(g.tutar)}
                 </span>
               )}
@@ -90,46 +94,42 @@ export default function HeatmapCalendar({ islemler }) {
         })}
       </div>
 
-      {/* Renk skalası */}
-      <div className="flex items-center gap-2 mt-4 text-[10px] text-surface-700 dark:text-surface-200">
+      {/* Legend */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, fontSize: 11, color: P.text3 }}>
         <span>Az</span>
-        <div className="flex gap-0.5">
-          <div className="w-4 h-3 rounded-sm bg-surface-100 dark:bg-surface-800" />
-          <div className="w-4 h-3 rounded-sm bg-blue-100 dark:bg-blue-900/40" />
-          <div className="w-4 h-3 rounded-sm bg-blue-200 dark:bg-blue-800/50" />
-          <div className="w-4 h-3 rounded-sm bg-blue-400 dark:bg-blue-700/60" />
-          <div className="w-4 h-3 rounded-sm bg-blue-600 dark:bg-blue-600" />
+        <div style={{ display: 'flex', gap: 3 }}>
+          {['rgba(255,255,255,0.04)', 'rgba(99,102,241,0.15)', 'rgba(99,102,241,0.28)', 'rgba(99,102,241,0.45)', 'rgba(124,58,237,0.75)'].map((bg, i) => (
+            <div key={i} style={{ width: 16, height: 11, borderRadius: 3, background: bg, border: '1px solid rgba(255,255,255,0.08)' }} />
+          ))}
         </div>
         <span>Çok</span>
       </div>
 
-      {/* Modal – seçili gün detayı */}
+      {/* Day modal */}
       {seciliGun && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSeciliGun(null)}>
-          <div className="w-full max-w-md bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-surface-900 dark:text-white">
-                {seciliGun} Mayıs 2025
-              </h3>
-              <button onClick={() => setSeciliGun(null)} className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer">
-                <X className="w-5 h-5 text-surface-700 dark:text-surface-200" />
+        <div onClick={() => setSeciliGun(null)} style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 440, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 24, padding: 28, boxShadow: '0 40px 120px rgba(0,0,0,0.8)', animation: 'slideUp 0.22s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1 }}>{seciliGun} Mayıs 2025</h3>
+              <button onClick={() => setSeciliGun(null)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.text2 }}>
+                <X size={15} />
               </button>
             </div>
             {gunIslemleri.length === 0 ? (
-              <p className="text-center text-surface-700 dark:text-surface-200 py-6">Bu gün harcama yok 🎉</p>
+              <p style={{ textAlign: 'center', color: P.text3, padding: '24px 0', fontSize: 14 }}>Bu gün harcama yok 🎉</p>
             ) : (
               <>
-                <p className="text-sm text-surface-700 dark:text-surface-200 mb-3">
-                  Toplam: <span className="font-bold text-danger-500">{fmt(gunIslemleri.reduce((s, t) => s + t.tutar, 0))}</span>
+                <p style={{ fontSize: 13, color: P.text2, marginBottom: 12 }}>
+                  Toplam: <span style={{ fontWeight: 800, color: P.red }}>{fmt(gunIslemleri.reduce((s, t) => s + t.tutar, 0))}</span>
                 </p>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 240, overflowY: 'auto' }}>
                   {gunIslemleri.map(tx => (
-                    <div key={tx.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-surface-50 dark:bg-surface-800/50">
+                    <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}` }}>
                       <div>
-                        <p className="text-sm font-medium text-surface-900 dark:text-white">{tx.aciklama}</p>
-                        <p className="text-xs text-surface-700 dark:text-surface-200">{tx.magaza} · {tx.kategori}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: P.text1 }}>{tx.aciklama}</p>
+                        <p style={{ fontSize: 11, color: P.text3 }}>{tx.magaza} · {tx.kategori}</p>
                       </div>
-                      <span className="text-sm font-bold text-danger-500">{fmt(tx.tutar)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: P.red }}>{fmt(tx.tutar)}</span>
                     </div>
                   ))}
                 </div>

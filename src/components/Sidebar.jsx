@@ -1,14 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  Target,
-  Bot,
-  BarChart3,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Wallet,
+  LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
+  ChevronLeft, ChevronRight, Wallet,
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +13,11 @@ const navItems = [
   { to: '/settings', label: 'Ayarlar', icon: Settings },
 ];
 
+const P = {
+  purple: '#7C3AED', bg2: '#141728', border: 'rgba(255,255,255,0.06)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+};
+
 export default function Sidebar({ collapsed, onToggle }) {
   const userName = localStorage.getItem('butceai_user_name') || 'Kullanıcı';
   const userBank = localStorage.getItem('butceai_bank') || 'Finansal Koç';
@@ -27,90 +25,92 @@ export default function Sidebar({ collapsed, onToggle }) {
 
   return (
     <aside
-      className={`
-        fixed top-0 left-0 z-40 h-screen flex flex-col
-        bg-white/70 dark:bg-surface-950/76 backdrop-blur-2xl
-        border-r border-white/60 dark:border-surface-800/70
-        shadow-2xl shadow-surface-950/5 dark:shadow-black/30
-        transition-all duration-300 ease-in-out
-        ${collapsed ? 'w-[72px]' : 'w-[260px]'}
-      `}
+      style={{
+        position: 'fixed', top: 0, left: 0, zIndex: 40, height: '100vh',
+        display: 'flex', flexDirection: 'column',
+        background: 'rgba(13,15,30,0.85)', backdropFilter: 'blur(24px)',
+        borderRight: `1px solid ${P.border}`,
+        width: collapsed ? 80 : 260,
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
+      }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-18 border-b border-white/60 dark:border-surface-800/70 shrink-0">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 via-primary-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-primary-500/25 ring-1 ring-white/40">
-          <Wallet className="w-5 h-5 text-white" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px', height: 72, borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(124,58,237,0.3)', border: '1px solid rgba(255,255,255,0.15)'
+        }}>
+          <Wallet size={20} color="#fff" />
         </div>
         {!collapsed && (
-          <div>
-            <span className="text-lg font-black gradient-text whitespace-nowrap">BütçeAI</span>
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-surface-500">Finance cockpit</p>
+          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
+            <span style={{ fontSize: 18, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em' }}>BütçeAI</span>
+            <p style={{ fontSize: 10, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.22em', margin: 0 }}>Finance Cockpit</p>
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-5 px-3 space-y-1.5 overflow-y-auto">
+      <nav style={{ flex: 1, padding: '24px 16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              `group flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-bold
-               transition-all duration-200 relative overflow-hidden
-               ${
-                 isActive
-                   ? 'bg-gradient-to-r from-primary-500/14 to-emerald-500/10 text-primary-700 dark:text-white sidebar-active shadow-sm'
-                   : 'text-surface-600 dark:text-surface-300 hover:bg-white/70 dark:hover:bg-surface-800/70 hover:text-surface-950 dark:hover:text-white'
-               }`
-            }
-          >
-            <Icon
-              className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110`}
-            />
-            {!collapsed && <span className="whitespace-nowrap">{label}</span>}
+          <NavLink key={to} to={to} end={to === '/'}>
+            {({ isActive }) => {
+              const baseStyle = {
+                display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 14,
+                fontSize: 14, fontWeight: isActive ? 800 : 600, textDecoration: 'none',
+                transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden',
+                color: isActive ? '#fff' : P.text2,
+                background: isActive ? 'rgba(124,58,237,0.15)' : 'transparent',
+                border: `1px solid ${isActive ? 'rgba(124,58,237,0.35)' : 'transparent'}`,
+              };
+
+              return (
+                <div
+                  style={baseStyle}
+                  onMouseEnter={e => {
+                    if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#fff'; }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = P.text2; }
+                  }}
+                >
+                  {isActive && <div style={{ position: 'absolute', left: 0, top: '15%', bottom: '15%', width: 3, borderRadius: '0 4px 4px 0', background: P.purple, boxShadow: '0 0 12px rgba(124,58,237,0.8)' }} />}
+                  <Icon size={20} color={isActive ? P.purple : 'currentColor'} style={{ flexShrink: 0, transition: 'transform 0.2s' }} />
+                  {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+                </div>
+              );
+            }}
           </NavLink>
         ))}
       </nav>
 
       {/* User Profile */}
       {!collapsed && (
-        <div className="px-4 pb-2">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-100/50 dark:bg-surface-900/50 border border-surface-200/50 dark:border-surface-800/50">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+        <div style={{ padding: '0 16px 16px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: `1px solid ${P.border}` }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
               {initial}
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-surface-900 dark:text-white truncate">
-                {userName}
-              </p>
-              <p className="text-[10px] text-surface-500 font-semibold uppercase tracking-wider truncate">
-                {userBank}
-              </p>
+            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: P.text1, margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{userName}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{userBank}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Collapse Button */}
-      <div className="px-3 pb-4 shrink-0 mt-2">
+      <div style={{ padding: '0 16px 16px', flexShrink: 0 }}>
         <button
           onClick={onToggle}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg
-                     text-sm font-bold text-surface-600 dark:text-surface-300
-                     hover:bg-white/70 dark:hover:bg-surface-800/70
-                     transition-all duration-200 cursor-pointer"
-          aria-label={collapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: 'none', color: P.text3, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = P.text3; }}
         >
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <>
-              <ChevronLeft className="w-5 h-5" />
-              <span>Daralt</span>
-            </>
-          )}
+          {collapsed ? <ChevronRight size={18} /> : <><ChevronLeft size={18} /> Daralt</>}
         </button>
       </div>
     </aside>

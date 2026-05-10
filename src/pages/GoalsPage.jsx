@@ -1,29 +1,85 @@
 import { useState } from 'react';
-import { Plus, Target, Calendar, Edit2, Trash2, X, CheckCircle, Sparkles, Scissors, TrendingUp } from 'lucide-react';
+import {
+  Plus, Target, Calendar, Edit2, Trash2, X,
+  CheckCircle, Sparkles, Scissors, TrendingUp, Flame, Wallet, CheckSquare
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getGoals, addGoal, updateGoal, deleteGoal } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
 const IKONLAR = ['✈️', '🚗', '🏠', '💍', '📱', '🎓', '💰', '🏖️', '🎮', '🛋️'];
+
 const RENKLER = [
-  { id: 'primary', hex: '#6366f1', cls: 'bg-primary-500' },
-  { id: 'emerald', hex: '#10b981', cls: 'bg-emerald-500' },
-  { id: 'purple', hex: '#a855f7', cls: 'bg-purple-500' },
-  { id: 'rose', hex: '#e11d48', cls: 'bg-rose-500' },
-  { id: 'amber', hex: '#f59e0b', cls: 'bg-amber-500' },
-  { id: 'cyan', hex: '#06b6d4', cls: 'bg-cyan-500' },
+  { id: 'violet', hex: '#7c3aed', glow: '124,58,237' },
+  { id: 'emerald', hex: '#10b981', glow: '16,185,129' },
+  { id: 'fuchsia', hex: '#d946ef', glow: '217,70,239' },
+  { id: 'rose', hex: '#f43f5e', glow: '244,63,94' },
+  { id: 'amber', hex: '#f59e0b', glow: '245,158,11' },
+  { id: 'cyan', hex: '#06b6d4', glow: '6,182,212' },
 ];
+
+const KESINTI_KATEGORILERI = [
+  { id: 'yemek-siparisi', ad: 'Yemek Siparişi', icon: '🍔', aylik: 2400, varsayilan: 50 },
+  { id: 'abonelikler', ad: 'Abonelikler', icon: '📺', aylik: 680, varsayilan: 25 },
+  { id: 'disarida-yemek', ad: 'Dışarıda Yemek', icon: '🍽️', aylik: 1800, varsayilan: 20 },
+  { id: 'alisveris', ad: 'Alışveriş', icon: '🛍️', aylik: 3200, varsayilan: 0 },
+  { id: 'eglence', ad: 'Eğlence', icon: '🎭', aylik: 920, varsayilan: 15 },
+];
+
+const P = {
+  purple: '#7C3AED', green: '#10B981', red: '#EF4444',
+  bg2: '#141728', bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+};
+
+const liraFmt = v => `${Math.round(v).toLocaleString('tr-TR')}₺`;
+const dayMs = 86_400_000;
+function ayEkle(tarih, ay) {
+  const d = new Date(tarih);
+  d.setMonth(d.getMonth() + Math.max(0, Math.ceil(ay)));
+  return d;
+}
+function tarihFmt(t) {
+  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(t);
+}
+
+function StatCard({ label, value, icon: Icon, color, isCurrency = false }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        padding: 24, borderRadius: 24, background: P.bg2,
+        border: `1px solid ${hov ? 'rgba(124,58,237,0.4)' : P.border}`,
+        transition: 'all 0.3s ease',
+        transform: hov ? 'translateY(-3px)' : 'none',
+        boxShadow: hov ? '0 12px 32px rgba(0,0,0,0.3)' : 'none',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{label}</p>
+          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, margin: 0 }}>
+            {isCurrency ? <><span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>{Math.round(value).toLocaleString('tr-TR')}</> : value}
+          </p>
+        </div>
+        <div style={{ width: 46, height: 46, borderRadius: 14, background: `${color}22`, border: `1px solid ${color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={20} color={color} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState(() => getGoals());
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
-  const [completedModal, setCompletedModal] = useState(null); // { name }
+  const [completedModal, setCompletedModal] = useState(null);
 
-  const handleOpenModal = (g = null) => {
-    setDuzenlenen(g);
-    setModalAcik(true);
-  };
+  const handleOpenModal = (g = null) => { setDuzenlenen(g); setModalAcik(true); };
 
   const handleSave = (yeniHedef) => {
     let newGoals;
@@ -36,9 +92,8 @@ export default function GoalsPage() {
     setGoals(newGoals);
     setModalAcik(false);
     setDuzenlenen(null);
-
-    // Check completion
-    if (yeniHedef.currentAmount >= yeniHedef.targetAmount && (!duzenlenen || duzenlenen.currentAmount < duzenlenen.targetAmount)) {
+    const wasIncomplete = !duzenlenen || Number(duzenlenen.currentAmount) < Number(duzenlenen.targetAmount);
+    if (Number(yeniHedef.currentAmount) >= Number(yeniHedef.targetAmount) && wasIncomplete) {
       triggerConfetti();
       setCompletedModal(yeniHedef.name);
     }
@@ -46,135 +101,104 @@ export default function GoalsPage() {
 
   const handleDelete = (id) => {
     if (confirm('Bu hedefi silmek istediğinize emin misiniz?')) {
-      const newGoals = deleteGoal(id);
-      setGoals(newGoals);
+      setGoals(deleteGoal(id));
     }
   };
 
   const triggerConfetti = () => {
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-
+    const end = Date.now() + 3000;
     const frame = () => {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#6366f1', '#10b981', '#a855f7']
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#6366f1', '#10b981', '#a855f7']
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
+      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#7c3aed', '#10b981', '#d946ef'] });
+      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#7c3aed', '#10b981', '#d946ef'] });
+      if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
   };
 
-  // Ayırma: Aktif vs Tamamlanan
   const aktif = goals.filter(g => Number(g.currentAmount) < Number(g.targetAmount));
   const tamamlanan = goals.filter(g => Number(g.currentAmount) >= Number(g.targetAmount));
+  const totalTarget = goals.reduce((s, g) => s + Number(g.targetAmount), 0);
+  const totalCurrent = goals.reduce((s, g) => s + Number(g.currentAmount), 0);
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* ── BAŞLIK & YENİ EKLENTİ ── */}
-      <div className="page-hero p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="pt-24 pb-32 px-6 max-w-7xl mx-auto animate-fade-in-up">
+
+      {/* HEADER EXACTLY LIKE DASHBOARD */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36 }}>
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Hedef motoru</p>
-          <h1 className="text-3xl md:text-4xl font-black text-surface-950 dark:text-white flex items-center gap-2">
-            Hedefler
-            <Target className="w-6 h-6 text-primary-500" />
-          </h1>
-          <p className="text-surface-700 dark:text-surface-200 mt-1 text-sm">
-            Hayallerinize ulaşmak için plan yapın ve birikimlerinizi takip edin.
-          </p>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: P.text1, margin: '0 0 6px 0' }}>Hedefler</h1>
+          <p style={{ fontSize: 15, color: P.text3, margin: 0 }}>Hayallerinize ulaşmak için plan yapın ve birikimlerinizi takip edin.</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 shadow-lg shadow-primary-500/30 transition-all cursor-pointer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 8px 32px rgba(124,58,237,0.45)', transition: 'transform 0.15s, opacity 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'none'}
         >
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">Yeni Hedef</span>
+          <Plus size={18} /> Yeni Hedef
         </button>
       </div>
 
-      {/* ── AKTİF HEDEFLER ── */}
+      {/* STAT CARDS EXACTLY LIKE DASHBOARD */}
+      {goals.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 40 }}>
+          <StatCard label="Toplam Hedef" value={goals.length} icon={Target} color="#7c3aed" />
+          <StatCard label="Tamamlanan" value={tamamlanan.length} icon={CheckSquare} color="#10b981" />
+          <StatCard label="Toplam Birikim" value={totalCurrent} icon={Wallet} color="#f59e0b" isCurrency />
+        </div>
+      )}
+
+      {/* AKTİF HEDEFLER */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.16em', whiteSpace: 'nowrap' }}>Aktif Hedefler ({aktif.length})</span>
+        <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(124,58,237,0.3), transparent)` }} />
+      </div>
+
       {aktif.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-          {aktif.map(g => (
-            <HedefKarti 
-              key={g.id} 
-              hedef={g} 
-              onEdit={() => handleOpenModal(g)} 
-              onDelete={() => handleDelete(g.id)} 
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          {aktif.map(g => <HedefKarti key={g.id} hedef={g} onEdit={() => handleOpenModal(g)} onDelete={() => handleDelete(g.id)} />)}
         </div>
       ) : (
-        <div className="glass-card rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-            <Target className="w-8 h-8 text-surface-400" />
+        <div style={{ borderRadius: 24, padding: '72px 32px', textAlign: 'center', background: P.bg2, border: `1px dashed ${P.border}`, marginBottom: 40 }}>
+          <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 20, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Target size={30} color="#7c3aed" />
           </div>
-          <p className="text-lg font-semibold text-surface-900 dark:text-white mb-1">Aktif hedefin yok</p>
-          <p className="text-sm text-surface-500">Hemen yeni bir hedef ekleyerek birikim yapmaya başla.</p>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Aktif hedefin yok</h3>
+          <p style={{ fontSize: 14, color: P.text3, margin: 0 }}>Hemen yeni bir hedef ekleyerek birikim yapmaya başla.</p>
         </div>
       )}
 
+      {/* KESİNTİ SİMÜLATÖRÜ */}
       <KesintiSimulator goals={aktif.length > 0 ? aktif : goals} />
 
-      {/* ── TAMAMLANAN HEDEFLER ── */}
+      {/* TAMAMLANAN HEDEFLER */}
       {tamamlanan.length > 0 && (
-        <div className="pt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <CheckCircle className="w-5 h-5 text-emerald-500" />
-            <h2 className="text-xl font-bold text-surface-900 dark:text-white">Tamamlanan Hedefler</h2>
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.16em', whiteSpace: 'nowrap' }}>Tamamlanan Hedefler ({tamamlanan.length})</span>
+            <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(16,185,129,0.3), transparent)` }} />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 opacity-70 hover:opacity-100 transition-opacity">
-            {tamamlanan.map(g => (
-              <HedefKarti 
-                key={g.id} 
-                hedef={g} 
-                onEdit={() => handleOpenModal(g)} 
-                onDelete={() => handleDelete(g.id)} 
-                isCompleted={true}
-              />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
+            {tamamlanan.map(g => <HedefKarti key={g.id} hedef={g} onEdit={() => handleOpenModal(g)} onDelete={() => handleDelete(g.id)} isCompleted />)}
           </div>
         </div>
       )}
 
-      {/* ── MODALS ── */}
+      {/* MODALLAR */}
       {modalAcik && (
-        <HedefModal
-          mevcut={duzenlenen}
-          onKaydet={handleSave}
-          onKapat={() => setModalAcik(false)}
-        />
+        <HedefModal mevcut={duzenlenen} onKaydet={handleSave} onKapat={() => { setModalAcik(false); setDuzenlenen(null); }} />
       )}
 
-      {/* TEBRİKLER MODALI */}
       {completedModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm bg-white dark:bg-surface-850 rounded-3xl shadow-2xl p-8 text-center relative animate-bounce-in">
-            <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center mb-5">
-              <span className="text-4xl">🎉</span>
-            </div>
-            <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-2">Tebrikler!</h2>
-            <p className="text-surface-700 dark:text-surface-200 mb-6">
-              <strong className="text-primary-500">{completedModal}</strong> hedefine başarıyla ulaştın. Hayallerine bir adım daha yaklaştın!
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)', animation: 'fadeSlideUp 0.2s ease' }} onClick={e => e.target === e.currentTarget && setCompletedModal(null)}>
+          <div style={{ width: '100%', maxWidth: 380, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+            <div style={{ width: 88, height: 88, margin: '0 auto 24px', borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>🎉</div>
+            <h2 style={{ fontSize: 28, fontWeight: 900, color: P.text1, marginBottom: 14 }}>Tebrikler!</h2>
+            <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.65, marginBottom: 28 }}>
+              <strong style={{ color: '#a78bfa' }}>{completedModal}</strong> hedefine başarıyla ulaştın. Hayallerine bir adım daha yaklaştın!
             </p>
-            <button
-              onClick={() => setCompletedModal(null)}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-lg shadow-emerald-500/30 hover:opacity-90 transition-opacity cursor-pointer"
-            >
-              Harika!
+            <button onClick={() => setCompletedModal(null)} style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(16,185,129,0.35)', transition: 'opacity 0.2s' }}>
+              Harika! 🚀
             </button>
           </div>
         </div>
@@ -183,108 +207,58 @@ export default function GoalsPage() {
   );
 }
 
-const KESINTI_KATEGORILERI = [
-  { id: 'yemek-siparisi', ad: 'Yemek Siparişi', aylik: 2400, varsayilan: 50 },
-  { id: 'abonelikler', ad: 'Abonelikler', aylik: 680, varsayilan: 25 },
-  { id: 'disarida-yemek', ad: 'Dışarıda Yemek', aylik: 1800, varsayilan: 20 },
-  { id: 'alisveris', ad: 'Alışveriş', aylik: 3200, varsayilan: 0 },
-  { id: 'eglence', ad: 'Eğlence', aylik: 920, varsayilan: 15 },
-];
-
-const liraFmt = (v) => `${Math.round(v).toLocaleString('tr-TR')}₺`;
-
-function ayEkle(tarih, ay) {
-  const yeniTarih = new Date(tarih);
-  yeniTarih.setMonth(yeniTarih.getMonth() + Math.max(0, Math.ceil(ay)));
-  return yeniTarih;
-}
-
-function tarihFmt(tarih) {
-  return new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(tarih);
-}
-
 function KesintiSimulator({ goals }) {
   const [seciliHedefId, setSeciliHedefId] = useState(goals[0]?.id || '');
-  const [oranlar, setOranlar] = useState(() =>
-    KESINTI_KATEGORILERI.reduce((acc, kategori) => ({ ...acc, [kategori.id]: kategori.varsayilan }), {})
-  );
+  const [oranlar, setOranlar] = useState(() => KESINTI_KATEGORILERI.reduce((acc, k) => ({ ...acc, [k.id]: k.varsayilan }), {}));
 
   if (goals.length === 0) return null;
 
-  const etkinHedefId = goals.some(g => g.id === seciliHedefId) ? seciliHedefId : goals[0]?.id;
-  const hedef = goals.find(g => g.id === etkinHedefId) || goals[0];
-  const hedefAdi = hedef?.name || 'Hedef';
+  const etkinId = goals.some(g => g.id === seciliHedefId) ? seciliHedefId : goals[0]?.id;
+  const hedef = goals.find(g => g.id === etkinId) || goals[0];
+
   const kalanTutar = Math.max(0, Number(hedef?.targetAmount || 0) - Number(hedef?.currentAmount || 0));
   const bugun = new Date();
   const hedefTarihi = hedef?.deadline ? new Date(hedef.deadline) : ayEkle(bugun, 6);
-  const kalanGun = Math.max(1, Math.ceil((hedefTarihi - bugun) / (1000 * 60 * 60 * 24)));
-  const mevcutKalanAy = Math.max(1, Math.ceil(kalanGun / 30));
-  const mevcutAylikTasarruf = kalanTutar > 0 ? Math.max(1, Math.ceil(kalanTutar / mevcutKalanAy)) : 0;
-  const ekTasarruf = KESINTI_KATEGORILERI.reduce(
-    (toplam, kategori) => toplam + Math.round(kategori.aylik * ((oranlar[kategori.id] || 0) / 100)),
-    0
-  );
-  const yeniAylikTasarruf = mevcutAylikTasarruf + ekTasarruf;
-  const yeniKalanAy = kalanTutar > 0 && yeniAylikTasarruf > 0 ? Math.max(1, Math.ceil(kalanTutar / yeniAylikTasarruf)) : 0;
-  const erkenAy = Math.max(0, mevcutKalanAy - yeniKalanAy);
-  const eskiTamamlanma = kalanTutar > 0 ? ayEkle(bugun, mevcutKalanAy) : bugun;
-  const yeniTamamlanma = kalanTutar > 0 ? ayEkle(bugun, yeniKalanAy) : bugun;
-  const enBuyukEtki = KESINTI_KATEGORILERI
-    .map(kategori => ({ ...kategori, tasarruf: Math.round(kategori.aylik * ((oranlar[kategori.id] || 0) / 100)) }))
-    .sort((a, b) => b.tasarruf - a.tasarruf)[0];
-  const eskiBar = kalanTutar > 0 ? 100 : 100;
-  const yeniBar = kalanTutar > 0 ? Math.max(12, Math.min(100, (yeniKalanAy / mevcutKalanAy) * 100)) : 100;
+  const kalanGun = Math.max(1, Math.ceil((hedefTarihi - bugun) / dayMs));
+  const mevcutAy = Math.max(1, Math.ceil(kalanGun / 30));
+  const mevcut$ = kalanTutar > 0 ? Math.max(1, Math.ceil(kalanTutar / mevcutAy)) : 0;
 
-  const handleOranDegistir = (id, deger) => {
-    setOranlar(prev => ({ ...prev, [id]: Number(deger) }));
-  };
+  const ekTasarruf = KESINTI_KATEGORILERI.reduce((t, k) => t + Math.round(k.aylik * ((oranlar[k.id] || 0) / 100)), 0);
+  const yeni$ = mevcut$ + ekTasarruf;
+  const yeniAy = kalanTutar > 0 && yeni$ > 0 ? Math.max(1, Math.ceil(kalanTutar / yeni$)) : 0;
+  const erkenAy = Math.max(0, mevcutAy - yeniAy);
+  const eskiTarih = kalanTutar > 0 ? ayEkle(bugun, mevcutAy) : bugun;
+  const yeniTarih = kalanTutar > 0 ? ayEkle(bugun, yeniAy) : bugun;
+  const yeniBar = kalanTutar > 0 ? Math.max(12, Math.min(100, (yeniAy / mevcutAy) * 100)) : 100;
+  const enBuyuk = KESINTI_KATEGORILERI.map(k => ({ ...k, tasarruf: Math.round(k.aylik * ((oranlar[k.id] || 0) / 100)) })).sort((a, b) => b.tasarruf - a.tasarruf)[0];
 
   return (
-    <section className="glass-card rounded-3xl overflow-hidden border border-surface-200 dark:border-surface-700/50 shadow-xl shadow-surface-900/5">
-      <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="p-5 md:p-6 border-b xl:border-b-0 xl:border-r border-surface-200 dark:border-surface-700/50">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 text-xs font-bold uppercase tracking-wider mb-2">
-                <Scissors className="w-4 h-4" />
-                Ne Kessem Ne Birikirim?
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-surface-900 dark:text-white">
-                Küçük kesintilerin hedef tarihini nasıl değiştirdiğini gör.
-              </h2>
-            </div>
-          </div>
-
-          <div className="space-y-5">
-            {KESINTI_KATEGORILERI.map(kategori => {
-              const oran = oranlar[kategori.id] || 0;
-              const tasarruf = Math.round(kategori.aylik * (oran / 100));
-
+    <div style={{ borderRadius: 28, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.22)', background: P.bg2, marginBottom: 48, boxShadow: '0 24px 60px rgba(0,0,0,0.1)' }}>
+      <div style={{ padding: '14px 24px', background: 'linear-gradient(90deg, rgba(124,58,237,0.15) 0%, rgba(6,182,212,0.05) 100%)', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Scissors size={15} color="#c4b5fd" />
+        <span style={{ fontSize: 12, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.16em' }}>Ne Kessem Ne Birikirim?</span>
+      </div>
+      <div className="flex flex-col lg:flex-row">
+        {/* LEFT */}
+        <div style={{ flex: 1.2, padding: '36px 40px', borderRight: `1px solid ${P.border}` }}>
+          <p style={{ fontSize: 20, fontWeight: 800, color: P.text1, marginBottom: 32, lineHeight: 1.35 }}>Küçük kesintilerin hedef tarihini nasıl değiştirdiğini gör.</p>
+          <div className="space-y-6">
+            {KESINTI_KATEGORILERI.map(k => {
+              const oran = oranlar[k.id] || 0;
+              const tasarruf = Math.round(k.aylik * (oran / 100));
               return (
-                <div key={kategori.id} className="space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                <div key={k.id}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                     <div>
-                      <p className="text-sm font-bold text-surface-900 dark:text-white">{kategori.ad}</p>
-                      <p className="text-xs text-surface-500">Mevcut aylık harcama: {liraFmt(kategori.aylik)}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: P.text1 }}>{k.icon} {k.ad}</p>
+                      <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Aylık harcama: {liraFmt(k.aylik)}</p>
                     </div>
-                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                      Aylık {liraFmt(tasarruf)} tasarruf
-                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: P.green, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', padding: '4px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>+{liraFmt(tasarruf)}</span>
                   </div>
-                  <div className="grid grid-cols-[42px_1fr_46px] items-center gap-3">
-                    <span className="text-xs font-semibold text-surface-500">%0</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={oran}
-                      onChange={e => handleOranDegistir(kategori.id, e.target.value)}
-                      onInput={e => handleOranDegistir(kategori.id, e.target.value)}
-                      className="w-full accent-primary-500 cursor-pointer"
-                      aria-label={`${kategori.ad} kesinti oranı`}
-                    />
-                    <span className="text-xs font-bold text-surface-700 dark:text-surface-200 text-right">%{oran}</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 40px', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 11, color: P.text3 }}>%0</span>
+                    <input type="range" min="0" max="100" step="5" value={oran} onChange={e => setOranlar(p => ({ ...p, [k.id]: Number(e.target.value) }))} style={{ width: '100%', height: 4, borderRadius: 99, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', accentColor: '#7c3aed' }} />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#c4b5fd', textAlign: 'right' }}>%{oran}</span>
                   </div>
                 </div>
               );
@@ -292,162 +266,134 @@ function KesintiSimulator({ goals }) {
           </div>
         </div>
 
-        <div className="p-5 md:p-6 bg-surface-50/70 dark:bg-surface-900/30">
-          <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-2 uppercase tracking-wider">
-            Hedef seç
-          </label>
-          <select
-            value={etkinHedefId}
-            onChange={e => setSeciliHedefId(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-          >
-            {goals.map(g => (
-              <option key={g.id} value={g.id}>{g.icon} {g.name}</option>
-            ))}
+        {/* RIGHT */}
+        <div style={{ flex: 0.8, padding: '36px 32px', background: P.bg3 }}>
+          <label style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, display: 'block' }}>Hedef seç</label>
+          <select value={etkinId} onChange={e => setSeciliHedefId(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text1, fontSize: 14, fontWeight: 600, outline: 'none', cursor: 'pointer' }}>
+            {goals.map(g => <option key={g.id} value={g.id} style={{ background: P.bg3 }}>{g.icon} {g.name}</option>)}
           </select>
 
-          <div className="mt-7">
-            <p className="text-xs font-bold uppercase tracking-wider text-surface-500 mb-2">Aylık ek tasarruf</p>
-            <div className="text-4xl md:text-5xl font-black text-surface-900 dark:text-white tracking-tight">
-              +{liraFmt(ekTasarruf)}
+          <div style={{ marginTop: 32 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Aylık Ek Tasarruf</p>
+            <div style={{ fontSize: 42, fontWeight: 900, color: P.green, lineHeight: 1, letterSpacing: '-0.02em' }}>+{liraFmt(ekTasarruf)}</div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 32 }}>
+            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}` }}>
+              <p style={{ fontSize: 11, color: P.text3, marginBottom: 5 }}>Mevcut tarih</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{tarihFmt(eskiTarih)}</p>
+            </div>
+            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <p style={{ fontSize: 11, color: 'rgba(52,211,153,0.7)', marginBottom: 5 }}>Yeni tarih</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: P.green }}>{tarihFmt(yeniTarih)}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-7">
-            <div className="rounded-2xl bg-white/80 dark:bg-surface-850/70 border border-surface-200 dark:border-surface-700/60 p-4">
-              <p className="text-xs text-surface-500 mb-1">Mevcut tarih</p>
-              <p className="text-sm font-bold text-surface-900 dark:text-white">{tarihFmt(eskiTamamlanma)}</p>
-            </div>
-            <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4">
-              <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-1">Yeni tarih</p>
-              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{tarihFmt(yeniTamamlanma)}</p>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 24, fontSize: 16, fontWeight: 800, color: P.green }}>
+            <TrendingUp size={20} />
+            {erkenAy > 0 ? `${erkenAy} ay daha erken ulaşırsın!` : 'Hedef aynı hızda ilerliyor.'}
           </div>
 
-          <div className="mt-5 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black text-lg">
-            <TrendingUp className="w-5 h-5" />
-            {erkenAy > 0 ? `${erkenAy} ay daha erken ulaşırsın!` : 'Hedef planın aynı hızda ilerliyor.'}
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[
+              { label: 'Eski plan', ay: mevcutAy, bar: 100, fill: 'rgba(255,255,255,0.18)', track: 'rgba(255,255,255,0.05)', tc: P.text3 },
+              { label: 'Yeni plan', ay: yeniAy, bar: yeniBar, fill: '#7c3aed', track: 'rgba(124,58,237,0.12)', tc: '#c4b5fd' },
+            ].map(item => (
+              <div key={item.label}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 8, color: item.tc }}>
+                  <span>{item.label}</span><span>{item.ay} ay</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', background: item.track }}>
+                  <div style={{ height: '100%', borderRadius: 99, transition: 'width 0.5s ease', width: `${item.bar}%`, background: item.fill }} />
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-6 space-y-3">
-            <div>
-              <div className="flex justify-between text-xs font-semibold text-surface-500 mb-1">
-                <span>Eski plan</span>
-                <span>{mevcutKalanAy} ay</span>
-              </div>
-              <div className="h-2.5 rounded-full bg-surface-200 dark:bg-surface-800 overflow-hidden">
-                <div className="h-full rounded-full bg-surface-400 dark:bg-surface-600" style={{ width: `${eskiBar}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
-                <span>Yeni plan</span>
-                <span>{yeniKalanAy} ay</span>
-              </div>
-              <div className="h-2.5 rounded-full bg-emerald-500/15 overflow-hidden">
-                <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${yeniBar}%` }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 rounded-2xl bg-primary-500/10 border border-primary-500/20">
-            <p className="text-sm font-semibold text-surface-900 dark:text-white leading-relaxed">
-              {enBuyukEtki.ad} kesintisini %{oranlar[enBuyukEtki.id] || 0} azaltırsan, {hedefAdi} hedefine{' '}
-              <span className="text-emerald-600 dark:text-emerald-400">{erkenAy} ay daha erken</span> ulaşırsın.
+          <div style={{ marginTop: 24, padding: '16px 18px', borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.22)' }}>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
+              {enBuyuk.ad} harcamasını %{oranlar[enBuyuk.id] || 0} azaltırsan, {hedef?.name || 'hedefine'}&nbsp;
+              <strong style={{ color: P.green, fontWeight: 800 }}>{erkenAy} ay daha erken</strong> ulaşırsın.
             </p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-// ─── HEDEF KARTI BİLEŞENİ ──────────────────────────────────────
 function HedefKarti({ hedef, onEdit, onDelete, isCompleted = false }) {
   const mevcut = Number(hedef.currentAmount) || 0;
   const target = Number(hedef.targetAmount) || 1;
   const pct = Math.min(100, (mevcut / target) * 100);
-  const colorHex = RENKLER.find(r => r.id === hedef.color)?.hex || '#6366f1';
-
-  // Kalan hesaplamaları
+  const renk = RENKLER.find(r => r.id === hedef.color) || RENKLER[0];
   const kalan = target - mevcut;
-  const bitisTarihi = new Date(hedef.deadline);
-  const bugun = new Date();
-  const kalanGun = Math.ceil((bitisTarihi - bugun) / (1000 * 60 * 60 * 24));
+  const kalanGun = Math.ceil((new Date(hedef.deadline) - new Date()) / dayMs);
   const kalanAy = Math.max(1, Math.ceil(kalanGun / 30));
-  
-  // Bu ay biriktirilmesi gereken (kalan / kalan_ay)
-  const aylikGereken = kalan > 0 && kalanGun > 0 ? Math.ceil(kalan / kalanAy) : 0;
+  const aylik$ = kalan > 0 && kalanGun > 0 ? Math.ceil(kalan / kalanAy) : 0;
+  const urgent = !isCompleted && kalanGun > 0 && kalanGun < 30;
+
+  const [hover, setHover] = useState(false);
 
   return (
-    <div className="glass-card rounded-3xl p-5 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-surface-200 dark:border-surface-700/50">
-      {/* Kart Arkaplan Glow */}
-      <div 
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-10"
-        style={{ backgroundColor: colorHex }}
-      />
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        position: 'relative', borderRadius: 24, padding: 26, background: P.bg2,
+        border: `1px solid rgba(${renk.glow}, ${hover ? '0.32' : '0.14'})`,
+        overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+        transform: hover ? 'translateY(-5px)' : 'none',
+        boxShadow: hover ? `0 18px 56px rgba(${renk.glow}, 0.14)` : 'none',
+      }}
+    >
+      <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${renk.hex}, transparent)`, pointerEvents: 'none', opacity: hover ? 0.22 : 0.12, transition: 'opacity 0.3s' }} />
 
-      <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-white/10"
-            style={{ backgroundColor: `${colorHex}15` }}
-          >
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 24, position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 54, height: 54, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0, background: `rgba(${renk.glow}, 0.12)`, border: `1px solid rgba(${renk.glow}, 0.2)` }}>
             {hedef.icon}
           </div>
           <div>
-            <h3 className="text-lg font-bold text-surface-900 dark:text-white line-clamp-1">{hedef.name}</h3>
+            <p style={{ fontSize: 17, fontWeight: 800, color: P.text1, margin: '0 0 5px', lineHeight: 1.2 }}>{hedef.name}</p>
             {isCompleted ? (
-              <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1 mt-1">
-                <CheckCircle className="w-3 h-3" /> Tamamlandı
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: P.green, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.22)', padding: '3px 10px', borderRadius: 99 }}>
+                <CheckCircle size={10} /> Tamamlandı
               </span>
             ) : (
-              <span className="text-xs font-medium text-surface-500 flex items-center gap-1 mt-1">
-                <Calendar className="w-3 h-3" />
-                {kalanGun > 0 ? `${kalanGun} gün kaldı` : 'Süresi doldu'}
-              </span>
+              <p style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: P.text3, margin: 0 }}>
+                {urgent && <Flame size={12} color="#f59e0b" />}
+                <Calendar size={12} /> {kalanGun > 0 ? `${kalanGun} gün kaldı` : 'Süresi doldu'}
+              </p>
             )}
           </div>
         </div>
-
-        {/* Aksiyon İkonları (Hoverda çıkar) */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-500 hover:text-primary-500 transition-colors">
-            <Edit2 className="w-4 h-4" />
+        <div style={{ display: 'flex', gap: 4, opacity: hover ? 1 : 0, transition: 'opacity 0.2s' }}>
+          <button onClick={onEdit} title="Düzenle" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)'; e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.35)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; e.currentTarget.style.borderColor = P.border; }}>
+            <Edit2 size={14} />
           </button>
-          <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-danger-500/10 text-surface-500 hover:text-danger-500 transition-colors">
-            <Trash2 className="w-4 h-4" />
+          <button onClick={onDelete} title="Sil" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,63,94,0.15)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(244,63,94,0.3)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; e.currentTarget.style.borderColor = P.border; }}>
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
 
-      <div className="space-y-2 mt-6 relative z-10">
-        <div className="flex justify-between text-sm font-semibold">
-          <span className="text-surface-900 dark:text-white">{fmt(mevcut)}</span>
-          <span className="text-surface-500">{fmt(target)}</span>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="h-3 w-full bg-surface-100 dark:bg-surface-800 rounded-full overflow-hidden shadow-inner">
-          <div 
-            className="h-full rounded-full transition-all duration-1000 ease-out"
-            style={{ width: `${pct}%`, backgroundColor: colorHex }}
-          />
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, marginBottom: 8, position: 'relative', zIndex: 1 }}>
+        <span style={{ color: P.text1 }}>{fmt(mevcut)}</span>
+        <span style={{ color: P.text3 }}>{fmt(target)}</span>
       </div>
+      <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+        <div style={{ height: '100%', borderRadius: 99, transition: 'width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1)', width: `${pct}%`, background: `linear-gradient(90deg, ${renk.hex}cc, ${renk.hex})`, boxShadow: `0 0 10px rgba(${renk.glow},0.55)` }} />
+      </div>
+      <p style={{ fontSize: 11, fontWeight: 600, color: P.text3, marginTop: 6, position: 'relative', zIndex: 1 }}>{Math.round(pct)}% tamamlandı</p>
 
       {!isCompleted && (
-        <div className="mt-5 pt-4 border-t border-surface-200 dark:border-surface-700/50 flex items-center justify-between">
-          <div className="text-xs text-surface-500 font-medium">
-            Kalan: <strong className="text-surface-900 dark:text-white">{fmt(kalan)}</strong>
-          </div>
-          {aylikGereken > 0 && (
-            <div 
-              className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
-              style={{ backgroundColor: `${colorHex}15`, color: colorHex }}
-            >
-              Bu ay: {fmt(aylikGereken)}
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, paddingTop: 16, borderTop: `1px solid ${P.border}`, position: 'relative', zIndex: 1 }}>
+          <span style={{ fontSize: 12, color: P.text3 }}>Kalan: <strong style={{ color: '#fff', fontWeight: 700 }}>{fmt(kalan)}</strong></span>
+          {aylik$ > 0 && (
+            <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 12px', borderRadius: 8, background: `rgba(${renk.glow}, 0.12)`, color: renk.hex, border: `1px solid rgba(${renk.glow}, 0.25)` }}>
+              Bu ay: {fmt(aylik$)}
+            </span>
           )}
         </div>
       )}
@@ -455,165 +401,91 @@ function HedefKarti({ hedef, onEdit, onDelete, isCompleted = false }) {
   );
 }
 
-// ─── HEDEF MODALI ─────────────────────────────────────────────
 function HedefModal({ mevcut, onKaydet, onKapat }) {
+  const varsayilanTarih = new Date();
+  varsayilanTarih.setMonth(varsayilanTarih.getMonth() + 6);
+
   const [name, setName] = useState(mevcut?.name || '');
   const [targetAmount, setTargetAmount] = useState(mevcut?.targetAmount || '');
   const [currentAmount, setCurrentAmount] = useState(mevcut?.currentAmount || 0);
-  
-  // Varsayılan tarih 6 ay sonrası
-  const varsayilanTarih = new Date();
-  varsayilanTarih.setMonth(varsayilanTarih.getMonth() + 6);
   const [deadline, setDeadline] = useState(mevcut?.deadline || varsayilanTarih.toISOString().slice(0, 10));
-  
   const [icon, setIcon] = useState(mevcut?.icon || '✈️');
-  const [color, setColor] = useState(mevcut?.color || 'primary');
+  const [color, setColor] = useState(mevcut?.color || 'violet');
 
-  const handleSave = (e) => {
+  const kalan = Math.max(0, Number(targetAmount) - Number(currentAmount));
+  const kalanGun = Math.ceil((new Date(deadline) - new Date()) / dayMs);
+  const kalanAy = Math.max(1, Math.ceil(kalanGun / 30));
+  const aylik$ = kalan > 0 && kalanGun > 0 ? Math.ceil(kalan / kalanAy) : 0;
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!name || !targetAmount || !deadline) return;
-
-    onKaydet({
-      name,
-      targetAmount: Number(targetAmount),
-      currentAmount: Number(currentAmount) || 0,
-      deadline,
-      icon,
-      color,
-    });
+    onKaydet({ name, targetAmount: Number(targetAmount), currentAmount: Number(currentAmount) || 0, deadline, icon, color });
   };
 
-  // Anlık aylık birikim hesabı
-  const kalan = Math.max(0, Number(targetAmount) - Number(currentAmount));
-  const kalanGun = Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
-  const kalanAy = Math.max(1, Math.ceil(kalanGun / 30));
-  const aylikGereken = kalan > 0 && kalanGun > 0 ? Math.ceil(kalan / kalanAy) : 0;
+  const inputStyle = { width: '100%', padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text1, fontSize: 14, fontWeight: 600, outline: 'none', transition: 'border-color 0.2s, background 0.2s' };
+  const labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      onClick={(e) => e.target === e.currentTarget && onKapat()}>
-      <div className="w-full max-w-md bg-white dark:bg-surface-850 rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
-        <div className="px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex justify-between items-center bg-surface-50 dark:bg-surface-800/50">
-          <h3 className="text-lg font-bold text-surface-900 dark:text-white">
-            {mevcut ? 'Hedefi Düzenle' : 'Yeni Hedef Oluştur'}
-          </h3>
-          <button onClick={onKapat} className="p-2 rounded-xl hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-500 transition-colors">
-            <X className="w-5 h-5" />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)', animation: 'fadeSlideUp 0.2s ease' }} onClick={e => e.target === e.currentTarget && onKapat()}>
+      <div style={{ width: '100%', maxWidth: 500, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.32)', borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 26px', borderBottom: `1px solid ${P.border}`, background: 'rgba(124,58,237,0.08)' }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1, margin: 0 }}>{mevcut ? 'Hedefi Düzenle' : 'Yeni Hedef Oluştur'}</h3>
+          <button onClick={onKapat} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,63,94,0.15)'; e.currentTarget.style.color = '#f87171'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = P.text2; }}>
+            <X size={16} />
           </button>
         </div>
-
-        <form onSubmit={handleSave} className="p-6 space-y-5">
-          {/* İsim */}
+        <form onSubmit={handleSubmit} style={{ padding: 26, display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div>
-            <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-1.5 uppercase tracking-wider">Hedef Adı</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Örn: Tatil Fonu, Yeni Araba"
-              className="w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-            />
+            <label style={labelStyle}>Hedef Adı</label>
+            <input type="text" required placeholder="Örn: Tatil Fonu, Yeni Araba" value={name} onChange={e => setName(e.target.value)} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.55)'; e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }} onBlur={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }} />
           </div>
-
-          {/* Tutarlar */}
-          <div className="grid grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-1.5 uppercase tracking-wider">Hedef Tutar (₺)</label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={targetAmount}
-                onChange={e => setTargetAmount(e.target.value)}
-                placeholder="10000"
-                className="w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-              />
+              <label style={labelStyle}>Hedef Tutar (₺)</label>
+              <input type="number" required min="1" placeholder="10000" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.55)'; e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }} onBlur={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-1.5 uppercase tracking-wider">Mevcut Birikim (₺)</label>
-              <input
-                type="number"
-                min="0"
-                value={currentAmount}
-                onChange={e => setCurrentAmount(e.target.value)}
-                placeholder="0"
-                className="w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-              />
+              <label style={labelStyle}>Mevcut Birikim (₺)</label>
+              <input type="number" min="0" placeholder="0" value={currentAmount} onChange={e => setCurrentAmount(e.target.value)} style={inputStyle} onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.55)'; e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }} onBlur={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }} />
             </div>
           </div>
-
-          {/* Tarih */}
           <div>
-            <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-1.5 uppercase tracking-wider">Hedef Tarihi</label>
-            <input
-              type="date"
-              required
-              value={deadline}
-              onChange={e => setDeadline(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all [color-scheme:light] dark:[color-scheme:dark]"
-            />
+            <label style={labelStyle}>Hedef Tarihi</label>
+            <input type="date" required value={deadline} onChange={e => setDeadline(e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.55)'; e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; }} onBlur={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }} />
           </div>
-
-          {/* İkon & Renk */}
-          <div className="space-y-4 pt-2">
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-2 uppercase tracking-wider">İkon Seç</label>
-              <div className="flex flex-wrap gap-2">
-                {IKONLAR.map(i => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setIcon(i)}
-                    className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all border ${
-                      icon === i 
-                        ? 'bg-primary-500/10 border-primary-500 scale-110 shadow-sm' 
-                        : 'bg-surface-50 dark:bg-surface-800 border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-700'
-                    }`}
-                  >
-                    {i}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-200 mb-2 uppercase tracking-wider">Tema Rengi</label>
-              <div className="flex gap-3">
-                {RENKLER.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setColor(r.id)}
-                    className={`w-8 h-8 rounded-full transition-transform ${color === r.id ? 'scale-125 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-surface-850' : 'hover:scale-110'}`}
-                    style={{ backgroundColor: r.hex, ringColor: r.hex }}
-                  />
-                ))}
-              </div>
+          <div>
+            <label style={labelStyle}>İkon Seç</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {IKONLAR.map(i => (
+                <button key={i} type="button" onClick={() => setIcon(i)} style={{ width: 46, height: 46, borderRadius: 13, fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', border: `1px solid ${icon === i ? 'rgba(124,58,237,0.55)' : 'rgba(255,255,255,0.07)'}`, background: icon === i ? 'rgba(124,58,237,0.22)' : 'rgba(255,255,255,0.04)', transform: icon === i ? 'scale(1.1)' : 'none' }}>
+                  {i}
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Otomatik Hesap Özeti */}
-          {aylikGereken > 0 && (
-            <div className="p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-start gap-3 mt-4">
-              <Sparkles className="w-5 h-5 text-primary-500 shrink-0 mt-0.5" />
+          <div>
+            <label style={labelStyle}>Tema Rengi</label>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {RENKLER.map(r => (
+                <button key={r.id} type="button" onClick={() => setColor(r.id)} style={{ width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', border: `3px solid ${color === r.id ? 'rgba(255,255,255,0.6)' : 'transparent'}`, transition: 'all 0.15s', background: r.hex, transform: color === r.id ? 'scale(1.2)' : 'none', boxShadow: color === r.id ? `0 0 16px rgba(${r.glow},0.7)` : 'none' }} />
+              ))}
+            </div>
+          </div>
+          {aylik$ > 0 && (
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '16px 18px', borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.22)' }}>
+              <Sparkles size={18} color="#a78bfa" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">Yapay Zeka Önerisi</p>
-                <p className="text-sm font-semibold text-surface-900 dark:text-white mt-0.5">
-                  Bu hedefe zamanında ulaşmak için her ay <span className="text-primary-500">{fmt(aylikGereken)}</span> biriktirmelisin.
+                <p style={{ fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px' }}>AI Önerisi</p>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.5 }}>
+                  Bu hedefe zamanında ulaşmak için her ay <strong style={{ color: '#a78bfa', fontWeight: 800 }}>{fmt(aylik$)}</strong> biriktirmelisin.
                 </p>
               </div>
             </div>
           )}
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-primary-500 text-white font-bold hover:bg-primary-600 shadow-lg shadow-primary-500/30 transition-all active:scale-[0.98]"
-            >
-              {mevcut ? 'Değişiklikleri Kaydet' : 'Hedefi Oluştur'}
-            </button>
-          </div>
+          <button type="submit" style={{ padding: 16, width: '100%', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: '#fff', fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15)', transition: 'transform 0.15s, opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 0.9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+            {mevcut ? 'Değişiklikleri Kaydet' : 'Hedefi Oluştur ✨'}
+          </button>
         </form>
       </div>
     </div>

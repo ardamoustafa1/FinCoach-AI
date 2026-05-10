@@ -10,26 +10,33 @@ import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { API_URL, apiUrl } from '../utils/api';
 
+/* ─── Palette ─── */
+const P = {
+  purple: '#7C3AED',
+  purpleLight: '#A78BFA',
+  purpleDim: 'rgba(124,58,237,0.15)',
+  green: '#10B981',
+  red: '#EF4444',
+  amber: '#F59E0B',
+  bg0: '#050714',
+  bg1: '#0D0F1E',
+  bg2: '#141728',
+  bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)',
+  borderHover: 'rgba(124,58,237,0.4)',
+  text1: '#F1F5F9',
+  text2: '#94A3B8',
+  text3: '#64748B',
+};
+
+const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#06B6D4'];
+
 const getInitialMessages = () => {
   const userName = localStorage.getItem('butceai_user_name') || '';
   const greeting = userName ? `Merhaba ${userName}! 👋` : 'Merhaba! 👋';
   return [
     { role: 'bot', content: `${greeting} Ben BütçeAI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
-    { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' },
-    { role: 'bot', actionable: {
-      type: 'cancel_subscription',
-      title: 'Kullanılmayan Abonelik Tespit Edildi',
-      desc: "Aboneliklerinde Exxen'i 3 aydır hiç kullanmıyorsun. İptal edelim mi?",
-      btnText: 'Tek Tıkla İptal Et',
-      payload: 'Exxen'
-    }},
-    { role: 'bot', actionable: {
-      type: 'transfer_goal',
-      title: 'Tasarruf Fırsatı',
-      desc: "Bu ay hedeflenenden 500₺ fazla paran arttı. Bunu 'Tatil Fonu' hedefine aktarayım mı?",
-      btnText: 'Hemen Aktar',
-      payload: { goal: 'Tatil Fonu', amount: 500 }
-    }}
+    { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' }
   ];
 };
 
@@ -42,7 +49,6 @@ const QUICK_QUESTIONS = [
   "Bu haftanın özeti"
 ];
 
-// ─── Yardımcı: Kullanıcı bağlamını topla ────────────────────────
 function getUserContext() {
   try {
     const txs = getTransactions();
@@ -50,325 +56,329 @@ function getUserContext() {
     const limits = getBudgetLimits();
     const { toplam: totalScore } = aySkoru(txs, [], 2025, 5, limits);
     const { ad: personalityTitle } = kisilikTipiBelirle(txs);
-
-    // Sadece bu ayki harcamaları topla (basitçe son 30 gün diyebiliriz)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
     const recentTxs = txs.filter(t => new Date(t.tarih) >= thirtyDaysAgo);
-    
     const aylikOzet = recentTxs.reduce((acc, tx) => {
       const isGider = tx.tur === 'gider' || (!tx.tur && Number(tx.tutar) < 0);
-      if (isGider) {
-        acc[tx.kategori] = (acc[tx.kategori] || 0) + Math.abs(Number(tx.tutar));
-      }
+      if (isGider) { acc[tx.kategori] = (acc[tx.kategori] || 0) + Math.abs(Number(tx.tutar)); }
       return acc;
     }, {});
-
     return {
-      aylikOzet,
-      limitler: limits,
+      aylikOzet, limitler: limits,
       hedefler: goals.map(g => ({ ad: g.name, hedef: g.targetAmount, mevcut: g.currentAmount })),
-      skor: totalScore,
-      kisilik: personalityTitle
+      skor: totalScore, kisilik: personalityTitle
     };
-  } catch (e) {
-    console.error('Kullanıcı bağlamı alınamadı:', e);
-    return {};
-  }
+  } catch (e) { return {}; }
 }
 
 export default function ChatPage() {
   const [messages, setMessages] = useState(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [modalChart, setModalChart] = useState(null); // { type, title, data }
+  const [modalChart, setModalChart] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
-
-  const handleAction = (action) => {
-    setMessages(prev => [...prev, { role: 'user', content: action.btnText }]);
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      let botResponse = '';
-      if (action.type === 'cancel_subscription') {
-        botResponse = `✅ **${action.payload}** aboneliğin başarıyla iptal edildi! (Simülasyon)\n\nArtık aylık bütçende ekstra yerin var. Bu tutarı birikim hedefine aktarabiliriz.`;
-      } else if (action.type === 'transfer_goal') {
-        botResponse = `✅ **${action.payload.amount}₺** başarıyla '${action.payload.goal}' hedefine aktarıldı! (Simülasyon)\n\nHedefine bir adım daha yaklaştın. Harika gidiyorsun! 🎉`;
-      }
-      setMessages(prev => [...prev, { role: 'bot', content: botResponse }]);
-      setIsLoading(false);
-    }, 1500);
-  };
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
 
   const handleSend = async (text = input) => {
     if (!text.trim() || isLoading) return;
-    
     const userMsg = { role: 'user', content: text };
     const newMessages = [...messages, userMsg];
-    
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
-
     try {
       const userContext = getUserContext();
-      
       const response = await fetch(apiUrl('/api/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: newMessages,
-          userContext
-        }),
+        body: JSON.stringify({ messages: newMessages, userContext }),
       });
-
       if (!response.ok) throw new Error('API yanıt vermedi.');
-
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
+      if (data.error) throw new Error(data.error);
       setMessages(prev => [...prev, { role: 'bot', content: data.response }]);
     } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
+      setMessages(prev => [...prev, {
+        role: 'bot',
         content: `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?`
       }]);
-    } finally {
-      setIsLoading(false);
-    }
+    } finally { setIsLoading(false); }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full animate-fade-in-up">
-      
-      {/* ── ÜST BAŞLIK ── */}
-      <div className="page-hero p-4 md:p-5 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/25">
-          <Bot className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary-600 dark:text-primary-300">AI cockpit</p>
-          <h1 className="text-xl md:text-2xl font-black text-surface-950 dark:text-white flex items-center gap-2">
-            AI Finansal Koçun
-            <Sparkles className="w-5 h-5 text-warn-500" />
-          </h1>
-          <p className="text-sm text-surface-700 dark:text-surface-200">Kişiselleştirilmiş içgörüler ve tavsiyeler</p>
-        </div>
-      </div>
+    <>
+      <style>{`
+        @keyframes ping { 0% { transform: scale(1); opacity: 0.8; } 75%, 100% { transform: scale(2); opacity: 0; } }
+        @keyframes bounce-dot { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.4); border-radius: 999px; }
+        .quick-btn:hover { background: rgba(124,58,237,0.18) !important; border-color: rgba(124,58,237,0.4) !important; color: #a78bfa !important; }
+        .send-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.04); }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .chat-input:focus { border-color: rgba(124,58,237,0.5) !important; background: rgba(124,58,237,0.06) !important; outline: none; }
+      `}</style>
 
-      {/* ── MESAJLAR ALANI ── */}
-      <div className="flex-1 overflow-y-auto mt-4 space-y-6 pr-2 scrollbar-thin scrollbar-thumb-surface-200 dark:scrollbar-thumb-surface-700">
-        {messages.map((msg, i) => {
-          // Parse chart data if exists
-          let text = msg.content;
-          let chartData = null;
-          
-          if (msg.role === 'bot' && typeof text === 'string') {
-            const match = text.match(/CHART_DATA:(\{.*\})/);
-            if (match) {
-              try {
-                chartData = JSON.parse(match[1]);
-                text = text.replace(match[0], '').trim();
-              } catch (e) {
-                console.error("Chart parse error:", e);
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 8rem)', maxWidth: 900, margin: '0 auto', width: '100%' }}>
+
+        {/* ── HEADER ── */}
+        <div style={{
+          background: P.bg2,
+          border: `1px solid ${P.border}`,
+          borderRadius: 20,
+          padding: '20px 28px',
+          marginBottom: 16,
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Top gradient line */}
+          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 16,
+              background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 24px rgba(124,58,237,0.4)',
+              flexShrink: 0,
+            }}>
+              <Bot size={22} color="#fff" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>AI Cockpit</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'ping 1.5s ease-out infinite', opacity: 0.8 }} />
+              </div>
+              <h1 style={{ fontSize: 20, fontWeight: 900, color: P.text1, display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '-0.02em', margin: 0 }}>
+                AI Finansal Koçun
+                <Sparkles size={18} color={P.amber} />
+              </h1>
+              <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Kişiselleştirilmiş içgörüler ve tavsiyeler</p>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 10, padding: '8px 14px' }}>
+              <Zap size={14} color={P.purpleLight} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: P.purpleLight }}>Claude AI</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MESSAGES ── */}
+        <div className="chat-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingRight: 4 }}>
+          {messages.map((msg, i) => {
+            let text = msg.content;
+            let chartData = null;
+            if (msg.role === 'bot' && typeof text === 'string') {
+              const match = text.match(/CHART_DATA:(\{.*\})/);
+              if (match) {
+                try { chartData = JSON.parse(match[1]); text = text.replace(match[0], '').trim(); }
+                catch (e) {}
               }
             }
-          }
+            const isBot = msg.role === 'bot';
+            return (
+              <div key={i} style={{ display: 'flex', gap: 12, flexDirection: isBot ? 'row' : 'row-reverse' }}>
+                {/* Avatar */}
+                <div style={{
+                  width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+                  background: isBot ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.2))' : 'rgba(255,255,255,0.08)',
+                  border: `1px solid ${isBot ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {isBot ? <Bot size={18} color={P.purpleLight} /> : <User size={18} color={P.text2} />}
+                </div>
 
-          return (
-            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-              {/* Avatar */}
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                msg.role === 'bot' 
-                  ? 'bg-gradient-to-br from-primary-500/20 to-purple-500/20 border border-primary-500/20' 
-                  : 'bg-surface-200 dark:bg-surface-700'
-              }`}>
-                {msg.role === 'bot' 
-                  ? <Bot className="w-5 h-5 text-primary-500" /> 
-                  : <User className="w-5 h-5 text-surface-700 dark:text-surface-200" />}
-              </div>
-              
-              {/* Balon */}
-              <div className={`max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm ${
-                msg.role === 'bot' 
-                  ? 'bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white rounded-tl-sm' 
-                  : 'bg-primary-500 text-white rounded-tr-sm shadow-primary-500/20'
-              }`}>
-                {msg.role === 'bot' ? (
-                  msg.actionable ? (
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <Zap className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        <span className="font-bold text-surface-900 dark:text-white">{msg.actionable.title}</span>
-                      </div>
-                      <p className="text-sm text-surface-700 dark:text-surface-200 mb-3">{msg.actionable.desc}</p>
-                      <button 
-                        onClick={() => handleAction(msg.actionable)}
-                        className="w-full py-2.5 rounded-xl bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-md"
-                      >
-                        {msg.actionable.btnText}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3 w-full">
-                      <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0 max-w-none">
+                {/* Bubble */}
+                <div style={{
+                  maxWidth: '78%',
+                  padding: '12px 16px',
+                  borderRadius: isBot ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
+                  background: isBot ? P.bg2 : 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                  border: isBot ? `1px solid ${P.border}` : 'none',
+                  color: P.text1,
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  boxShadow: isBot ? '0 4px 16px rgba(0,0,0,0.3)' : '0 4px 20px rgba(124,58,237,0.3)',
+                }}>
+                  {isBot ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ color: P.text1 }}>
                         <ReactMarkdown>{text}</ReactMarkdown>
                       </div>
                       {chartData && (
-                        <div className="relative w-full rounded-xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 p-3 mt-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-bold text-surface-900 dark:text-white">{chartData.title || 'Grafik'}</h4>
-                            <button 
-                              onClick={() => setModalChart(chartData)}
-                              className="p-1 rounded-md hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-500"
-                              title="Büyüt"
-                            >
-                              <Maximize2 className="w-3.5 h-3.5" />
+                        <div style={{ borderRadius: 14, background: P.bg3, border: `1px solid ${P.border}`, padding: 16, marginTop: 4 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <h4 style={{ fontSize: 13, fontWeight: 700, color: P.text1 }}>{chartData.title || 'Grafik'}</h4>
+                            <button onClick={() => setModalChart(chartData)} style={{
+                              width: 28, height: 28, borderRadius: 8,
+                              background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', color: P.purpleLight,
+                            }}>
+                              <Maximize2 size={13} />
                             </button>
                           </div>
-                          <div className="h-[200px] w-full mt-2">
+                          <div style={{ height: 200 }}>
                             <ChatChart chartData={chartData} />
                           </div>
                         </div>
                       )}
                     </div>
-                  )
-                ) : (
-                  <span className="whitespace-pre-wrap">{msg.content}</span>
-                )}
+                  ) : (
+                    <span style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Loading dots */}
+          {isLoading && (
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 12,
+                background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.2))',
+                border: '1px solid rgba(124,58,237,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <Bot size={18} color={P.purpleLight} />
+              </div>
+              <div style={{
+                padding: '14px 18px', borderRadius: '4px 18px 18px 18px',
+                background: P.bg2, border: `1px solid ${P.border}`,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                {[0, 150, 300].map((delay, di) => (
+                  <div key={di} style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: P.purpleLight,
+                    animation: `bounce-dot 1.2s ease-in-out ${delay}ms infinite`,
+                  }} />
+                ))}
               </div>
             </div>
-          );
-        })}
-        
-        {/* Yazıyor Animasyonu */}
-        {isLoading && (
-          <div className="flex gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500/20 to-purple-500/20 border border-primary-500/20 flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5 text-primary-500" />
-            </div>
-            <div className="px-4 py-4 rounded-2xl bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 rounded-tl-sm shadow-sm flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary-500/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* ── CONTROLS ── */}
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Quick Questions */}
+          <div style={{ display: 'flex', overflowX: 'auto', gap: 8, paddingBottom: 4 }}>
+            {QUICK_QUESTIONS.map((q, idx) => (
+              <button key={idx} onClick={() => handleSend(q)} disabled={isLoading} className="quick-btn" style={{
+                flexShrink: 0,
+                padding: '7px 14px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.05)',
+                border: `1px solid ${P.border}`,
+                color: P.text2, fontSize: 12, fontWeight: 600,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s', whiteSpace: 'nowrap',
+                opacity: isLoading ? 0.5 : 1,
+              }}>
+                {q}
+              </button>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div style={{ position: 'relative' }}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              placeholder="Mesajınızı yazın... (Göndermek için Enter)"
+              rows={2}
+              className="chat-input"
+              style={{
+                width: '100%', padding: '14px 52px 14px 18px',
+                borderRadius: 16,
+                background: P.bg2, border: `1px solid ${P.border}`,
+                color: P.text1, fontSize: 14,
+                resize: 'none', fontFamily: 'inherit',
+                transition: 'border-color 0.2s, background 0.2s',
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isLoading}
+              className="send-btn"
+              style={{
+                position: 'absolute', right: 10, bottom: 10,
+                width: 36, height: 36, borderRadius: 12,
+                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s',
+                boxShadow: '0 4px 12px rgba(124,58,237,0.4)',
+              }}
+            >
+              <Send size={15} color="#fff" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── CHART MODAL ── */}
+        {modalChart && (
+          <div onClick={(e) => e.target === e.currentTarget && setModalChart(null)} style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)',
+          }}>
+            <div style={{
+              width: '100%', maxWidth: 720,
+              background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)',
+              border: '1px solid rgba(124,58,237,0.35)',
+              borderRadius: 24, padding: 32,
+              boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em' }}>{modalChart.title || 'Grafik Detayı'}</h3>
+                <button onClick={() => setModalChart(null)} style={{
+                  width: 34, height: 34, borderRadius: 10,
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: P.text2,
+                }}>
+                  <X size={16} />
+                </button>
+              </div>
+              <div style={{ height: 400 }}>
+                <ChatChart chartData={modalChart} />
+              </div>
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
-
-      {/* ── ALT KONTROLLER ── */}
-      <div className="mt-4 flex flex-col gap-3">
-        {/* Hazır Sorular (Yatay Scroll) */}
-        <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none snap-x">
-          {QUICK_QUESTIONS.map((q, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSend(q)}
-              disabled={isLoading}
-              className="snap-start shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium 
-                bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200
-                hover:bg-primary-500/10 hover:text-primary-500 dark:hover:bg-primary-500/15
-                border border-surface-200/50 dark:border-surface-700/50
-                transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Input Alanı */}
-        <div className="relative">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            placeholder="Mesajınızı yazın... (Göndermek için Enter)"
-            className="w-full px-4 py-3.5 pr-14 rounded-2xl bg-white dark:bg-surface-850 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-white placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none shadow-sm disabled:opacity-50"
-            rows="2"
-          />
-          <button 
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-2.5 bottom-2.5 p-2 rounded-xl bg-primary-500 text-white hover:bg-primary-600 disabled:bg-surface-200 dark:disabled:bg-surface-700 disabled:text-surface-400 transition-all shadow-md cursor-pointer"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* ── CHART MODAL ── */}
-      {modalChart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-          onClick={(e) => e.target === e.currentTarget && setModalChart(null)}>
-          <div className="w-full max-w-3xl bg-white dark:bg-surface-850 rounded-2xl shadow-2xl p-6 border border-surface-200 dark:border-surface-700 relative">
-            <button 
-              onClick={() => setModalChart(null)}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-6 pr-10">{modalChart.title || 'Grafik Detayı'}</h3>
-            <div className="w-full h-[400px]">
-              <ChatChart chartData={modalChart} />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
-// ─── Yardımcı Grafik Bileşeni ─────────────────────────────────
-const PIE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4'];
-
+/* ─── Chart Component ─── */
 function ChatChart({ chartData }) {
   if (!chartData || !chartData.data || chartData.data.length === 0) {
-    return <div className="text-sm text-surface-500">Grafik verisi bulunamadı.</div>;
+    return <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13, paddingTop: 40 }}>Grafik verisi bulunamadı.</div>;
   }
-
   const { type, data } = chartData;
-
-  // Pie chart expects data to have 'name' instead of 'label' for Recharts tooltips
   const pieData = type === 'pie' ? data.map(d => ({ name: d.label, value: d.value })) : data;
+  const tickStyle = { fill: '#64748B', fontSize: 11 };
 
   switch (type) {
     case 'bar':
       return (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.2} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(val) => `₺${val}`} />
-            <RechartsTooltip 
-              cursor={{ fill: 'rgba(99,102,241,0.05)' }}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={50} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="label" tick={tickStyle} tickLine={false} axisLine={false} />
+            <YAxis tick={tickStyle} tickLine={false} axisLine={false} tickFormatter={v => `₺${v}`} />
+            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
+            <Bar dataKey="value" fill="#7C3AED" radius={[6, 6, 0, 0]} maxBarSize={50} />
           </BarChart>
         </ResponsiveContainer>
       );
@@ -376,14 +386,11 @@ function ChatChart({ chartData }) {
       return (
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.2} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(val) => `₺${val}`} />
-            <RechartsTooltip 
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="label" tick={tickStyle} tickLine={false} axisLine={false} />
+            <YAxis tick={tickStyle} tickLine={false} axisLine={false} tickFormatter={v => `₺${v}`} />
+            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
+            <Line type="monotone" dataKey="value" stroke="#10B981" strokeWidth={2.5} dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 6 }} />
           </LineChart>
         </ResponsiveContainer>
       );
@@ -391,29 +398,15 @@ function ChatChart({ chartData }) {
       return (
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie
-              data={pieData}
-              cx="50%"
-              cy="50%"
-              innerRadius="50%"
-              outerRadius="80%"
-              paddingAngle={5}
-              dataKey="value"
-              stroke="none"
-            >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-              ))}
+            <Pie data={pieData} cx="50%" cy="50%" innerRadius="45%" outerRadius="75%" paddingAngle={4} dataKey="value" stroke="none">
+              {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
             </Pie>
-            <RechartsTooltip 
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-              formatter={(value) => [`₺${value}`, 'Tutar']}
-            />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: '#94A3B8' }} />
           </PieChart>
         </ResponsiveContainer>
       );
     default:
-      return <div className="text-sm text-surface-500">Desteklenmeyen grafik tipi: {type}</div>;
+      return <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13 }}>Desteklenmeyen grafik tipi: {type}</div>;
   }
 }

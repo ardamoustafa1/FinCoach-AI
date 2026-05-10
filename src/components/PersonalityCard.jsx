@@ -8,107 +8,75 @@ export default function PersonalityCard({ islemler }) {
 
   const tip = useMemo(() => kisilikTipiBelirle(islemler), [islemler]);
 
-  // Sayfa açılınca 300ms sonra fade-in
   useEffect(() => {
     const t = setTimeout(() => setGorunum(true), 300);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <div
-      className={`
-        rounded-2xl border p-6 transition-all duration-700 ease-out
-        bg-gradient-to-br ${tip.bg} ${tip.border}
-        ${gorunum ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-      `}
-      style={{ boxShadow: `0 4px 32px ${tip.glow}22` }}
-    >
-      {/* ── Başlık satırı ── */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {/* Emoji balonu */}
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 shadow-lg"
-            style={{ background: `${tip.renk}20`, border: `1px solid ${tip.renk}40` }}
-          >
+    <div style={{
+      borderRadius: 20, padding: '24px 28px',
+      background: 'rgba(255,255,255,0.035)',
+      border: `1px solid ${tip.renk}28`,
+      boxShadow: `0 4px 32px ${tip.glow || tip.renk}18`,
+      transition: 'all 0.7s ease',
+      opacity: gorunum ? 1 : 0,
+      transform: gorunum ? 'none' : 'translateY(16px)',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Background glow */}
+      <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: `${tip.renk}12`, filter: 'blur(50px)', pointerEvents: 'none' }} />
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 54, height: 54, borderRadius: 18, flexShrink: 0, background: `${tip.renk}20`, border: `1px solid ${tip.renk}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, boxShadow: `0 4px 16px ${tip.renk}30` }}>
             {tip.emoji}
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-0.5"
-              style={{ color: tip.renk }}>
-              Harcama Kişiliğin
-            </p>
-            <h3 className="text-xl font-extrabold text-surface-900 dark:text-white leading-tight">
-              {tip.ad}
-            </h3>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: tip.renk, marginBottom: 4 }}>Harcama Kişiliğin</p>
+            <h3 style={{ fontSize: 19, fontWeight: 800, color: '#F1F5F9', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{tip.ad}</h3>
           </div>
         </div>
-
-        {/* Aç/Kapa */}
-        <button
-          onClick={() => setAcik(!acik)}
-          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0 mt-1"
-        >
-          <ChevronDown
-            className="w-5 h-5 text-surface-700 dark:text-surface-200 transition-transform duration-300"
-            style={{ transform: acik ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-          />
+        <button onClick={() => setAcik(!acik)} style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}>
+          <ChevronDown size={18} color="#94A3B8" style={{ transform: acik ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s ease' }} />
         </button>
       </div>
 
-      {/* ── İçerik (açılır/kapanır) ── */}
-      <div
-        className="overflow-hidden transition-all duration-500 ease-in-out"
-        style={{ maxHeight: acik ? '600px' : '0px' }}
-      >
-        {/* Açıklama */}
-        <p className="text-sm text-surface-700 dark:text-surface-200 mt-4 leading-relaxed">
-          {tip.aciklama}
-        </p>
+      {/* Collapsible content */}
+      <div style={{ overflow: 'hidden', maxHeight: acik ? '800px' : '0px', transition: 'max-height 0.5s cubic-bezier(0.4,0,0.2,1)', position: 'relative', zIndex: 1 }}>
+        <p style={{ fontSize: 14, color: '#94A3B8', marginTop: 16, lineHeight: 1.75 }}>{tip.aciklama}</p>
 
-        {/* Güçlü / Dikkat */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-          <div
-            className="rounded-xl p-3.5 flex items-start gap-2.5"
-            style={{ background: '#10b98112', border: '1px solid #10b98122' }}
-          >
-            <CheckCircle className="w-4 h-4 text-accent-500 shrink-0 mt-0.5" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <CheckCircle size={15} color="#10b981" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <p className="text-xs font-bold text-accent-600 dark:text-accent-400 mb-0.5">Güçlü Yön</p>
-              <p className="text-xs text-surface-700 dark:text-surface-200 leading-snug">{tip.guclu}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Güçlü Yön</p>
+              <p style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.55 }}>{tip.guclu}</p>
             </div>
           </div>
-          <div
-            className="rounded-xl p-3.5 flex items-start gap-2.5"
-            style={{ background: '#f59e0b12', border: '1px solid #f59e0b22' }}
-          >
-            <AlertTriangle className="w-4 h-4 text-warn-500 shrink-0 mt-0.5" />
+          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+            <AlertTriangle size={15} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <p className="text-xs font-bold text-warn-500 mb-0.5">Dikkat Et</p>
-              <p className="text-xs text-surface-700 dark:text-surface-200 leading-snug">{tip.dikkat}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Dikkat Et</p>
+              <p style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.55 }}>{tip.dikkat}</p>
             </div>
           </div>
         </div>
 
-        {/* Tavsiyeler */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-4 h-4" style={{ color: tip.renk }} />
-            <p className="text-sm font-semibold text-surface-900 dark:text-white">
-              Sana Özel Tavsiyeler
-            </p>
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <Lightbulb size={15} color={tip.renk} />
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#F1F5F9' }}>Sana Özel Tavsiyeler</p>
           </div>
-          <ul className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {tip.tavsiyeler.map((t, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2.5 text-sm text-surface-700 dark:text-surface-200
-                           rounded-xl px-3.5 py-2.5 bg-white/30 dark:bg-white/5"
-              >
-                <span className="leading-5">{t}</span>
-              </li>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ width: 18, height: 18, borderRadius: 6, background: `${tip.renk}22`, border: `1px solid ${tip.renk}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: tip.renk, flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>{t}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     </div>

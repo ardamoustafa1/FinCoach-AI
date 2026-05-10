@@ -20,9 +20,9 @@ export default function MobileNav() {
     <nav
       className="
         fixed bottom-3 left-3 right-3 z-50
-        bg-white/76 dark:bg-surface-950/78 backdrop-blur-2xl
-        border border-white/60 dark:border-surface-800/70
-        shadow-2xl shadow-surface-950/12
+        bg-[#0d0f1e]/90 backdrop-blur-2xl
+        border border-white/8
+        shadow-2xl shadow-black/35
         flex items-center justify-around
         h-16 px-2 rounded-lg
         lg:hidden
@@ -48,7 +48,7 @@ export default function MobileNav() {
               <div
                 className={`p-1.5 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-br from-primary-500 to-emerald-500 text-white shadow-lg shadow-primary-500/25'
+                    ? 'bg-gradient-to-br from-[#7c3aed] to-[#6366f1] text-white shadow-lg shadow-primary-500/25'
                     : ''
                 }`}
               >

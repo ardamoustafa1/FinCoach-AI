@@ -3,32 +3,60 @@ import { X, ExternalLink } from 'lucide-react';
 
 export default function DemoQRCodeModal({ onClose }) {
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div 
-        className="w-full max-w-lg bg-white dark:bg-surface-850 rounded-3xl shadow-2xl p-8 md:p-12 text-center animate-slide-up border border-surface-200 dark:border-surface-700 relative"
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 150,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(20px)',
+        animation: 'fadeSlideUp 0.3s ease',
+      }}
+    >
+      <div
         onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 480,
+          background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)',
+          border: '1px solid rgba(124,58,237,0.35)',
+          borderRadius: 28, padding: '40px 36px',
+          boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+          textAlign: 'center', position: 'relative',
+        }}
       >
-        <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 p-2 rounded-xl text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
-        >
-          <X className="w-6 h-6" />
+        {/* Close */}
+        <button onClick={onClose} style={{
+          position: 'absolute', top: 16, right: 16,
+          width: 34, height: 34, borderRadius: 10,
+          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#94A3B8', transition: 'background 0.15s',
+        }}>
+          <X size={16} />
         </button>
 
-        <h2 className="text-3xl font-black text-surface-900 dark:text-white mb-2">Canlı Demo</h2>
-        <p className="text-surface-700 dark:text-surface-200 mb-8">Uygulamayı kendi telefonunuzda denemek için kameranızla tarayın.</p>
-
-        <div className="inline-block p-6 bg-white rounded-3xl shadow-xl shadow-surface-950/5 mx-auto">
-          <QRCodeSVG value="https://butceai.vercel.app" size={280} level="H" />
+        {/* Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 99, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', fontSize: 11, fontWeight: 700, color: '#A78BFA', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 20 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', animation: 'ping 1.5s ease-out infinite' }} />
+          Canlı Demo
         </div>
-        
-        <a 
-          href="https://butceai.vercel.app" 
-          target="_blank" 
-          rel="noreferrer"
-          className="mt-8 flex items-center justify-center gap-2 text-primary-600 dark:text-primary-400 font-bold hover:underline"
+
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#F1F5F9', letterSpacing: '-0.02em', marginBottom: 8 }}>Uygulamayı Deneyin</h2>
+        <p style={{ fontSize: 14, color: '#94A3B8', marginBottom: 28, lineHeight: 1.6 }}>
+          Kameranızla tarayarak uygulamayı<br />kendi telefonunuzda keşfedin.
+        </p>
+
+        {/* QR */}
+        <div style={{ display: 'inline-block', padding: 20, background: '#fff', borderRadius: 20, boxShadow: '0 8px 40px rgba(124,58,237,0.3)' }}>
+          <QRCodeSVG value="https://butceai.vercel.app" size={240} level="H" />
+        </div>
+
+        {/* URL */}
+        <a
+          href="https://butceai.vercel.app"
+          target="_blank" rel="noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 24, fontSize: 13, fontWeight: 700, color: '#A78BFA', textDecoration: 'none' }}
         >
-          butceai.vercel.app <ExternalLink className="w-4 h-4" />
+          butceai.vercel.app <ExternalLink size={14} />
         </a>
       </div>
     </div>

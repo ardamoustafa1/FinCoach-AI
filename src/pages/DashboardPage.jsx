@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUp, ArrowDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Activity, Zap } from 'lucide-react';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import TrendLineChart from '../components/charts/TrendLineChart';
 import HeatmapCalendar from '../components/charts/HeatmapCalendar';
@@ -10,115 +10,92 @@ import PersonalityCard from '../components/PersonalityCard';
 import { getBudgetLimits } from '../utils/storage';
 import { useToast } from '../hooks/useToast';
 
-// ─── localStorage'dan veri oku ───────────────────────────────
+/* ─── Palette ─── */
+const P = {
+  purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
+  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
+  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
+  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+};
+
 function getIslemler() {
-  try {
-    return JSON.parse(localStorage.getItem('butceai_transactions') || '[]');
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('butceai_transactions') || '[]'); } catch { return []; }
 }
-
 function getGelirler() {
-  try {
-    return JSON.parse(localStorage.getItem('butceai_gelir') || '[]');
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('butceai_gelir') || '[]'); } catch { return []; }
 }
-
-// ─── Aya göre filtrele (ay: 3,4,5 — Mart,Nisan,Mayıs) ──────
 function ayFiltre(liste, ay) {
   const prefix = `2025-${String(ay).padStart(2, '0')}`;
   return liste.filter((i) => i.tarih && i.tarih.startsWith(prefix));
 }
 
-// ─── Animasyonlu sayaç hook'u ────────────────────────────────
-function useCountUp(hedef, sure = 1500) {
-  const [deger, setDeger] = useState(0);
+const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+
+function useCountUp(target, duration = 1500) {
+  const [val, setVal] = useState(0);
   const rafRef = useRef(null);
-
   useEffect(() => {
-    if (hedef === 0) { setDeger(0); return; }
-
-    const baslangic = performance.now();
+    if (target === 0) { setVal(0); return; }
+    const start = performance.now();
     const animate = (now) => {
-      const gecen = now - baslangic;
-      const oran = Math.min(gecen / sure, 1);
-      // easeOutExpo — hızlı başla, yavaşça bitir
-      const eased = oran === 1 ? 1 : 1 - Math.pow(2, -10 * oran);
-      setDeger(eased * hedef);
-      if (oran < 1) rafRef.current = requestAnimationFrame(animate);
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(2, -10 * progress);
+      setVal(ease * target);
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
-
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [hedef, sure]);
-
-  return deger;
+  }, [target, duration]);
+  return val;
 }
 
-// ─── Para formatlayıcı ───────────────────────────────────────
-const fmt = (val) =>
-  new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(val);
+function StatCard({ label, target, icon: Icon, color, isCurrency = true, change, delay = 0 }) {
+  const [visible, setVisible] = useState(false);
+  const [hov, setHov] = useState(false);
+  const animated = useCountUp(target, 1400);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), delay); return () => clearTimeout(t); }, [delay]);
 
-// ─── Tek bir özet kartı ──────────────────────────────────────
-function SummaryCard({ label, hedefDeger, icon: Icon, gradientFrom, gradientTo, iconBg, textColor, altSatir, isCurrency = true }) {
-  const animated = useCountUp(hedefDeger, 1500);
-
+  const isPos = change > 0;
   return (
-    <div className="group glass-card relative overflow-hidden p-5">
-      {/* Arka plan dekoratif gradient */}
-      <div
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 dark:opacity-15 blur-2xl group-hover:opacity-20 transition-opacity duration-500"
-        style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-      />
-
-      <div className="relative z-10">
-        {/* Üst: etiket + ikon */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-surface-700 dark:text-surface-200">
-            {label}
-          </span>
-          <div
-            className="w-11 h-11 rounded-lg flex items-center justify-center shadow-lg"
-            style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-          >
-            <Icon className="w-5 h-5 text-white" />
-          </div>
+    <div
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        padding: '22px 24px', borderRadius: 20,
+        background: hov ? P.bg3 : P.bg2,
+        border: `1px solid ${hov ? P.borderHover : P.border}`,
+        transition: `all 0.5s ease ${delay}ms`,
+        transform: visible ? (hov ? 'translateY(-2px)' : 'none') : 'translateY(16px)',
+        opacity: visible ? 1 : 0,
+        boxShadow: hov ? `0 0 32px ${P.purpleGlow}` : '0 4px 24px rgba(0,0,0,0.4)',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <div style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: color, opacity: 0.08, filter: 'blur(28px)', pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</p>
+          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8 }}>
+            {isCurrency
+              ? <><span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>{Math.round(animated).toLocaleString('tr-TR')}</>
+              : `%${animated.toFixed(1)}`}
+          </p>
+          {change !== undefined && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {isPos ? <ArrowUpRight size={12} color={P.green} /> : <ArrowDownRight size={12} color={P.red} />}
+              <span style={{ fontSize: 12, color: isPos ? P.green : P.red, fontWeight: 600 }}>%{Math.abs(change).toFixed(1)} geçen aya göre</span>
+            </div>
+          )}
         </div>
-
-        {/* Büyük rakam */}
-        <p className={`text-2xl md:text-3xl font-extrabold tracking-tight ${textColor}`}>
-          {isCurrency ? fmt(animated) : `%${animated.toFixed(1)}`}
-        </p>
-
-        {/* Alt satır */}
-        {altSatir && (
-          <div className="flex items-center gap-1.5 mt-2">
-            {altSatir.yon === 'up' ? (
-              <span className="flex items-center gap-0.5 text-xs font-semibold text-accent-500">
-                <ArrowUp className="w-3.5 h-3.5" />
-                {altSatir.yuzde}
-              </span>
-            ) : (
-              <span className="flex items-center gap-0.5 text-xs font-semibold text-danger-500">
-                <ArrowDown className="w-3.5 h-3.5" />
-                {altSatir.yuzde}
-              </span>
-            )}
-            <span className="text-xs text-surface-700 dark:text-surface-200">
-              {altSatir.metin}
-            </span>
-          </div>
-        )}
+        <div style={{ width: 46, height: 46, borderRadius: 14, background: `${color}22`, border: `1px solid ${color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={20} color={color} />
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Dashboard Sayfası ───────────────────────────────────────
 export default function DashboardPage() {
   const toast = useToast();
   const [veriler, setVeriler] = useState(null);
@@ -126,6 +103,9 @@ export default function DashboardPage() {
   const [rawGelirler, setRawGelirler] = useState([]);
   const [budgetLimitler, setBudgetLimitler] = useState({});
   const [buAyHarcamalar, setBuAyHarcamalar] = useState({});
+  const [headerVis, setHeaderVis] = useState(false);
+
+  useEffect(() => { setTimeout(() => setHeaderVis(true), 100); }, []);
 
   useEffect(() => {
     const islemler = getIslemler();
@@ -136,163 +116,105 @@ export default function DashboardPage() {
     const limitler = getBudgetLimits();
     setBudgetLimitler(limitler);
 
-    // Bu ay kategoriye göre harcama toplamı
     const buAyPrefix = '2025-05';
     const harcamaMap = {};
-    islemler
-      .filter(i => i.tarih && i.tarih.startsWith(buAyPrefix))
-      .forEach(i => { harcamaMap[i.kategori] = (harcamaMap[i.kategori] || 0) + i.tutar; });
+    islemler.filter(i => i.tarih && i.tarih.startsWith(buAyPrefix)).forEach(i => { harcamaMap[i.kategori] = (harcamaMap[i.kategori] || 0) + i.tutar; });
     setBuAyHarcamalar(harcamaMap);
 
-    Object.entries(limitler).forEach(([kategori, limit]) => {
-      const harcanan = harcamaMap[kategori] || 0;
+    Object.entries(limitler).forEach(([kat, limit]) => {
+      const harcanan = harcamaMap[kat] || 0;
       const oran = limit > 0 ? (harcanan / limit) * 100 : 0;
-      if (oran >= 100) {
-        toast.error(`⚠️ ${kategori} limiti aşıldı`);
-      } else if (oran >= 80) {
-        toast.warning(`⚠️ ${kategori} limitine %${Math.max(0, Math.round(100 - oran))} kaldı`);
-      }
+      if (oran >= 100) toast.error(`⚠️ ${kat} limiti aşıldı`);
+      else if (oran >= 80) toast.warning(`⚠️ ${kat} limitine %${Math.max(0, Math.round(100 - oran))} kaldı`);
     });
 
-    // Bu ay = Mayıs (5), geçen ay = Nisan (4)
-    const buAyIslemler = ayFiltre(islemler, 5);
-    const gecenAyIslemler = ayFiltre(islemler, 4);
-
+    const buAyIs = ayFiltre(islemler, 5);
+    const gecenAyIs = ayFiltre(islemler, 4);
     const buAyGelir = ayFiltre(gelirler, 5).reduce((t, g) => t + g.tutar, 0);
     const gecenAyGelir = ayFiltre(gelirler, 4).reduce((t, g) => t + g.tutar, 0);
-
-    const buAyGider = buAyIslemler.reduce((t, i) => t + i.tutar, 0);
-    const gecenAyGider = gecenAyIslemler.reduce((t, i) => t + i.tutar, 0);
-
+    const buAyGider = buAyIs.reduce((t, i) => t + i.tutar, 0);
+    const gecenAyGider = gecenAyIs.reduce((t, i) => t + i.tutar, 0);
     const netBakiye = buAyGelir - buAyGider;
     const tasarrufOrani = buAyGelir > 0 ? ((buAyGelir - buAyGider) / buAyGelir) * 100 : 0;
+    const gelirDegisim = gecenAyGelir > 0 ? parseFloat((((buAyGelir - gecenAyGelir) / gecenAyGelir) * 100).toFixed(1)) : 0;
+    const giderDegisim = gecenAyGider > 0 ? parseFloat((((buAyGider - gecenAyGider) / gecenAyGider) * 100).toFixed(1)) : 0;
 
-    // Geçen aya göre % değişim
-    const gelirDegisim = gecenAyGelir > 0
-      ? (((buAyGelir - gecenAyGelir) / gecenAyGelir) * 100).toFixed(1)
-      : '0.0';
-    const giderDegisim = gecenAyGider > 0
-      ? (((buAyGider - gecenAyGider) / gecenAyGider) * 100).toFixed(1)
-      : '0.0';
-
-    setVeriler({
-      buAyGelir,
-      buAyGider,
-      netBakiye,
-      tasarrufOrani,
-      gelirDegisim: parseFloat(gelirDegisim),
-      giderDegisim: parseFloat(giderDegisim),
-    });
+    setVeriler({ buAyGelir, buAyGider, netBakiye, tasarrufOrani, gelirDegisim, giderDegisim });
   }, [toast]);
 
   if (!veriler) return null;
 
-  const kartlar = [
-    {
-      label: 'Bu Ay Gelir',
-      hedefDeger: veriler.buAyGelir,
-      icon: TrendingUp,
-      gradientFrom: '#10b981',
-      gradientTo: '#34d399',
-      textColor: 'text-accent-600 dark:text-accent-400',
-      altSatir: {
-        yuzde: `%${Math.abs(veriler.gelirDegisim).toFixed(1)}`,
-        yon: veriler.gelirDegisim >= 0 ? 'up' : 'down',
-        metin: 'geçen aya göre',
-      },
-    },
-    {
-      label: 'Bu Ay Gider',
-      hedefDeger: veriler.buAyGider,
-      icon: TrendingDown,
-      gradientFrom: '#ef4444',
-      gradientTo: '#f87171',
-      textColor: 'text-danger-500 dark:text-danger-400',
-      altSatir: {
-        yuzde: `%${Math.abs(veriler.giderDegisim).toFixed(1)}`,
-        yon: veriler.giderDegisim <= 0 ? 'up' : 'down',
-        metin: 'geçen aya göre',
-      },
-    },
-    {
-      label: 'Net Bakiye',
-      hedefDeger: veriler.netBakiye,
-      icon: Wallet,
-      gradientFrom: veriler.netBakiye >= 0 ? '#10b981' : '#ef4444',
-      gradientTo: veriler.netBakiye >= 0 ? '#6366f1' : '#f87171',
-      textColor: veriler.netBakiye >= 0
-        ? 'text-accent-600 dark:text-accent-400'
-        : 'text-danger-500 dark:text-danger-400',
-      altSatir: null,
-    },
-    {
-      label: 'Tasarruf Oranı',
-      hedefDeger: veriler.tasarrufOrani,
-      icon: PiggyBank,
-      gradientFrom: '#6366f1',
-      gradientTo: '#a855f7',
-      textColor: 'text-primary-600 dark:text-primary-400',
-      isCurrency: false,
-      altSatir: {
-        yuzde: '',
-        yon: 'up',
-        metin: 'Hedef: %20',
-      },
-    },
-  ];
-
-  // Limit aşan kategoriler
   const asimlar = Object.entries(budgetLimitler)
     .filter(([kat, limit]) => (buAyHarcamalar[kat] || 0) > limit)
     .map(([kategori, limit]) => ({ kategori, harcanan: buAyHarcamalar[kategori], limit }));
 
+  const kartlar = [
+    { label: 'Bu Ay Gelir', target: veriler.buAyGelir, icon: TrendingUp, color: P.green, change: veriler.gelirDegisim, delay: 100 },
+    { label: 'Bu Ay Gider', target: veriler.buAyGider, icon: TrendingDown, color: P.red, change: veriler.giderDegisim, delay: 180 },
+    { label: 'Net Bakiye', target: veriler.netBakiye, icon: Wallet, color: veriler.netBakiye >= 0 ? P.purple : P.red, delay: 260 },
+    { label: 'Tasarruf Oranı', target: veriler.tasarrufOrani, icon: PiggyBank, color: P.amber, isCurrency: false, delay: 340 },
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* Başlık */}
-      <div className="page-hero p-5 md:p-7">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 mb-2">Mayıs 2025</p>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-surface-950 dark:text-white">
-              Finansal kontrol paneli
-            </h1>
-            <p className="text-surface-700 dark:text-surface-200 mt-3">
-              Riskleri, fırsatları ve bütçe sağlığını tek bakışta oku.
-            </p>
-          </div>
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Canlı içgörü</p>
-            <p className="text-lg font-black text-surface-900 dark:text-white">AI koç hazır</p>
+    <>
+      <style>{`@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* ── HERO ── */}
+        <div style={{
+          opacity: headerVis ? 1 : 0, transform: headerVis ? 'none' : 'translateY(-16px)',
+          transition: 'all 0.7s cubic-bezier(0.4,0,0.2,1)',
+        }}>
+          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
+            <div style={{ position: 'absolute', top: -80, right: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, display: 'inline-block' }} />
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>Mayıs 2025</span>
+                </div>
+                <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 8 }}>Finansal Kontrol Paneli</h1>
+                <p style={{ fontSize: 14, color: P.text2 }}>Riskleri, fırsatları ve bütçe sağlığını tek bakışta oku.</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { icon: Zap, label: 'AI Motor', value: 'Aktif', color: P.purple },
+                  { icon: Activity, label: 'Skor', value: 'Canlı', color: P.green },
+                ].map(({ icon: Icon, label, value, color }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '10px 14px' }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 9, background: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={14} color={color} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 10, color: P.text3, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</p>
+                      <p style={{ fontSize: 12, color: P.text1, fontWeight: 700 }}>{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+
+        <LimitBanner asimlar={asimlar} persistent />
+        <HealthScore islemler={rawIslemler} gelirler={rawGelirler} />
+        <PersonalityCard islemler={rawIslemler} />
+
+        {/* ── STAT CARDS ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}>
+          {kartlar.map(k => <StatCard key={k.label} {...k} />)}
+        </div>
+
+        {/* ── CHARTS ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <CategoryPieChart islemler={rawIslemler} />
+          <TrendLineChart islemler={rawIslemler} gelirler={rawGelirler} />
+        </div>
+
+        <HeatmapCalendar islemler={rawIslemler} />
+        <BudgetBars harcamalar={buAyHarcamalar} limitler={budgetLimitler} />
       </div>
-
-      {/* Limit aşım uyarı banner'ı */}
-      <LimitBanner asimlar={asimlar} persistent />
-
-      {/* Finansal Sağlık Skoru */}
-      <HealthScore islemler={rawIslemler} gelirler={rawGelirler} />
-
-      {/* Harcama Kişiliği */}
-      <PersonalityCard islemler={rawIslemler} />
-
-      {/* 4 Özet Kart — mobilde 2×2, masaüstünde 4×1 */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {kartlar.map((k) => (
-          <SummaryCard key={k.label} {...k} />
-        ))}
-      </div>
-
-      {/* Grafikler — Pasta + Trend yan yana, Isı haritası altta */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CategoryPieChart islemler={rawIslemler} />
-        <TrendLineChart islemler={rawIslemler} gelirler={rawGelirler} />
-      </div>
-
-      <HeatmapCalendar islemler={rawIslemler} />
-
-      {/* Bütçe limiti çubukları */}
-      <BudgetBars harcamalar={buAyHarcamalar} limitler={budgetLimitler} />
-    </div>
+    </>
   );
 }
