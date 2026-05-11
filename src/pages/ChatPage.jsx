@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -10,6 +10,7 @@ import { getTransactions, getGoals, getBudgetLimits } from '../utils/storage';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { API_URL, apiUrl } from '../utils/api';
+import { useToast } from '../hooks/useToast';
 
 /* ─── Palette ─── */
 const P = {
@@ -76,7 +77,9 @@ function getUserContext() {
         banka: profil.bank || 'Belirtilmedi',
         kullaniciAdi: localStorage.getItem('butceai_user_name') || 'Kullanıcı',
       };
-    } catch {}
+    } catch {
+      kullaniciBilgisi = {};
+    }
 
     return {
       aylikOzet, limitler: limits,
@@ -85,12 +88,13 @@ function getUserContext() {
       roastMode: localStorage.getItem('butceai_roast_mode') === 'true',
       kullaniciBilgisi,
     };
-  } catch (e) { return {}; }
+  } catch { return {}; }
 }
 
 
 export default function ChatPage() {
   const location = useLocation();
+  const toast = useToast();
   const [messages, setMessages] = useState(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -99,16 +103,22 @@ export default function ChatPage() {
 
   const initialMsgHandled = useRef(false);
 
-  useEffect(() => {
-    if (location.state?.message && !initialMsgHandled.current) {
-      initialMsgHandled.current = true;
-      handleSend(location.state.message);
+  const shareWrappedCard = async (wrappedData) => {
+    const text = `Ben bir ${wrappedData.title}! En büyük günahım: ${wrappedData.worst_habit}. ${wrappedData.roast_text} #BütçeAI`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'BütçeAI Sarmalım', text });
+        toast.success('Paylaşım hazırlandı.');
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success('Paylaşım metni kopyalandı.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') toast.error('Paylaşım hazırlanamadı.');
     }
-  }, [location.state]);
+  };
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
-
-  const handleSend = async (text = input) => {
+  const handleSend = useCallback(async (text = input) => {
     if (!text.trim() || isLoading) return;
     const userMsg = { role: 'user', content: text };
     const newMessages = [...messages, userMsg];
@@ -138,7 +148,16 @@ export default function ChatPage() {
           : `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?\n\nDetay: ${error.message}`
       }]);
     } finally { setIsLoading(false); }
-  };
+  }, [input, isLoading, messages]);
+
+  useEffect(() => {
+    if (location.state?.message && !initialMsgHandled.current) {
+      initialMsgHandled.current = true;
+      handleSend(location.state.message);
+    }
+  }, [location.state, handleSend]);
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
@@ -216,8 +235,8 @@ export default function ChatPage() {
                   const jsonBlock = chartMatch[1];
                   chartData = JSON.parse(jsonBlock);
                   text = text.replace(/CHART_DATA:\{[\s\S]*\}/, '').trim();
-                } catch (e) {
-                  console.error("Chart parse error:", e);
+                } catch (error) {
+                  console.error("Chart parse error:", error);
                 }
               }
 
@@ -226,7 +245,9 @@ export default function ChatPage() {
                 try {
                   simulationData = JSON.parse(simMatch[1]);
                   text = text.replace(/SIMULATION:\{[\s\S]*\}/, '').trim();
-                } catch (e) {}
+                } catch (error) {
+                  console.error("Simulation parse error:", error);
+                }
               }
 
               const wrappedMatch = text.match(/WRAPPED_CARD:(\{[\s\S]*\})/);
@@ -234,7 +255,9 @@ export default function ChatPage() {
                 try {
                   wrappedData = JSON.parse(wrappedMatch[1]);
                   text = text.replace(/WRAPPED_CARD:\{[\s\S]*\}/, '').trim();
-                } catch (e) {}
+                } catch (error) {
+                  console.error("Wrapped card parse error:", error);
+                }
               }
             }
             const isBot = msg.role === 'bot';
@@ -322,16 +345,7 @@ export default function ChatPage() {
                             <p style={{ fontSize: 15, color: '#fff', fontStyle: 'italic', marginTop: 24, marginBottom: 28, lineHeight: 1.6, zIndex: 1 }}>"{wrappedData.roast_text}"</p>
                             
                             <button 
-                              onClick={() => {
-                                if (navigator.share) {
-                                  navigator.share({
-                                    title: 'BütçeAI Sarmalım',
-                                    text: `Ben bir ${wrappedData.title}! En büyük günahım: ${wrappedData.worst_habit}. ${wrappedData.roast_text} #BütçeAI`,
-                                  });
-                                } else {
-                                  alert('Paylaşım kopyalandı!');
-                                }
-                              }}
+                              onClick={() => shareWrappedCard(wrappedData)}
                               style={{
                                 width: '100%', padding: '14px 0', borderRadius: 14,
                                 background: 'linear-gradient(135deg, #FF1493, #7C3AED)',

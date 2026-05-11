@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
-  RefreshCw, X, Calendar, TrendingUp, AlertTriangle,
+  RefreshCw, X, Calendar, TrendingUp,
   Bell, CreditCard, Clock, ChevronRight, Zap,
 } from 'lucide-react';
 import { fmt } from '../utils/categories';

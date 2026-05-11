@@ -1,20 +1,29 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import HomePage from './pages/HomePage';
-import DashboardPage from './pages/DashboardPage';
-import TransactionsPage from './pages/TransactionsPage';
-import GoalsPage from './pages/GoalsPage';
-import ChatPage from './pages/ChatPage';
-import ReportsPage from './pages/ReportsPage';
-import SettingsPage from './pages/SettingsPage';
 import Onboarding from './components/Onboarding';
 import AuthPage from './pages/AuthPage';
 import { saveTheme } from './utils/storage';
-import { seedDataIfEmpty } from './utils/seedData';
-import { initMockData } from './data/mockData';
 import { ToastProvider } from './components/ToastProvider';
 import { supabase } from './utils/supabase';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const TransactionsPage = lazy(() => import('./pages/TransactionsPage'));
+const GoalsPage = lazy(() => import('./pages/GoalsPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+
+function LoadingScreen({ label = 'BütçeAI Başlatılıyor...' }) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: 20 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', animation: 'spin 1s linear infinite' }} />
+      <p style={{ fontSize: 14, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.05em' }}>{label}</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 export default function App() {
   const [theme] = useState('dark');
@@ -22,38 +31,30 @@ export default function App() {
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
-  useEffect(() => {
-    // 1. Mevcut session'ı kontrol et
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        checkUserStatus(session.user);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // 2. Auth değişikliklerini dinle
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        checkUserStatus(session.user);
-      } else {
-        setAuthUser(null);
-        setOnboardingCompleted(false);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkUserStatus = async (user) => {
+  const checkUserStatus = useCallback(async (user) => {
     try {
       // 1. Profil bilgisini çek
-      const { data: profile } = await supabase
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
+
+      let profile = existingProfile;
+      if (!profile) {
+        const fallbackProfile = {
+          id: user.id,
+          email: user.email,
+          full_name: user.email?.split('@')[0] || 'Kullanıcı',
+          onboarding_completed: false
+        };
+        const { data: createdProfile } = await supabase
+          .from('profiles')
+          .upsert([fallbackProfile])
+          .select()
+          .single();
+        profile = createdProfile || fallbackProfile;
+      }
 
       setAuthUser({
         id: user.id,
@@ -109,7 +110,31 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // 1. Mevcut session'ı kontrol et
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        checkUserStatus(session.user);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // 2. Auth değişikliklerini dinle
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkUserStatus(session.user);
+      } else {
+        setAuthUser(null);
+        setOnboardingCompleted(false);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [checkUserStatus]);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -117,13 +142,7 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: 20 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.05em' }}>BütçeAI Başlatılıyor...</p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Henüz giriş yapılmamış
@@ -140,7 +159,12 @@ export default function App() {
     return (
       <ToastProvider>
         <Onboarding onComplete={async () => {
-          await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', authUser.id);
+          await supabase.from('profiles').upsert({
+            id: authUser.id,
+            email: authUser.email,
+            full_name: authUser.name,
+            onboarding_completed: true
+          });
           setOnboardingCompleted(true);
         }} />
       </ToastProvider>
@@ -150,17 +174,20 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
-        <Routes>
-          <Route element={<Layout theme={theme} onToggleTheme={() => {}} />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/goals" element={<GoalsPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={() => {}} />} />
-          </Route>
-        </Routes>
+        <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
+          <Routes>
+            <Route element={<Layout theme={theme} onToggleTheme={() => {}} />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/goals" element={<GoalsPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={() => {}} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </ToastProvider>
   );

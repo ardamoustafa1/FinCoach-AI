@@ -19,13 +19,10 @@ const P = {
   text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
 };
 
-const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
-
 function useCountUp(target, duration = 1500) {
   const [val, setVal] = useState(0);
   const rafRef = useRef(null);
   useEffect(() => {
-    if (target === 0) { setVal(0); return; }
     const start = performance.now();
     const animate = (now) => {
       const elapsed = now - start;
@@ -88,9 +85,7 @@ function StatCard({ label, target, icon: Icon, color, isCurrency = true, change,
 export default function DashboardPage() {
   const toast = useToast();
   const { transactions, limits, loading } = useSupabaseData();
-  const [headerVis, setHeaderVis] = useState(false);
-
-  useEffect(() => { setHeaderVis(true); }, []);
+  const headerVis = true;
 
   const stats = useMemo(() => {
     if (!transactions.length) return { buAyGelir: 0, buAyGider: 0, netBakiye: 0, tasarrufOrani: 0, gelirDegisim: 0, giderDegisim: 0, harcamaMap: {} };

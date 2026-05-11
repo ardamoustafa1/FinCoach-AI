@@ -1,17 +1,33 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as cheerio from 'cheerio';
 import qrcode from 'qrcode-terminal';
+import { createClient } from '@supabase/supabase-js';
 import pkg from 'whatsapp-web.js';
+import {
+  createBotReplyTracker,
+  createSupabaseTransactionStore,
+  createWhatsAppMessageHandler,
+  extractJsonObject,
+} from './whatsappBot.js';
 const { Client, LocalAuth } = pkg;
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const runtimeEnv = { ...process.env };
+
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+dotenv.config({ path: path.resolve(__dirname, '.env'), override: true });
+Object.assign(process.env, runtimeEnv);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST;
 
 // Google Gemini İstemcisi
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -109,7 +125,7 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
         }
         
         extraContext = `\n[SİSTEM BİLGİSİ: Kullanıcı bir ürün linki paylaştı. Ürün Adı: "${title.trim()}", Fiyatı: "${price}". Lütfen kullanıcının boşta kalan bütçesine ve aylık durumuna bakarak bu ürünü almasının finansal açıdan mantıklı olup olmadığını "Satın Almadan Önce Sor" vizyonuyla analiz et. Gerekirse bu ürünü almak için hangi aboneliklerden vazgeçebileceğini söyle.]`;
-      } catch (err) {
+      } catch {
         extraContext = `\n[SİSTEM BİLGİSİ: Kullanıcı bir ürün linki paylaştı ancak site güvenliği nedeniyle otomatik fiyat okunamadı. Yinede linkteki ürünü analiz edip harcama yapıp yapmaması gerektiğini yorumla.]`;
       }
     }
@@ -161,8 +177,7 @@ app.post('/api/ocr', async (req, res) => {
       { text: prompt }
     ]);
 
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    res.json(JSON.parse(text));
+    res.json(extractJsonObject(result.response.text()));
   } catch (error) {
     console.error('[OCR Error]:', error);
     res.status(500).json({ error: 'Fiş okunamadı.' });
@@ -178,7 +193,7 @@ Veriler: ${JSON.stringify({ aylikVeri, limitler, hedefler })}`;
 
     const result = await model.generateContent(prompt);
     res.json({ summary: result.response.text() });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Analiz yapılamadı.' });
   }
 });
@@ -191,87 +206,82 @@ app.post('/api/voice', async (req, res) => {
 Cümle: "${text}"`;
 
     const result = await model.generateContent(prompt);
-    const resText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    res.json(JSON.parse(resText));
-  } catch (error) {
+    res.json(extractJsonObject(result.response.text()));
+  } catch {
     res.status(500).json({ error: 'Ses anlaşılamadı.' });
   }
 });
 
 // ─── WHATSAPP BOT ────────────────────────────────────────────────
-const whatsappClient = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: { 
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    headless: true
+if (process.env.WHATSAPP_ENABLED === 'false') {
+  console.log('[BütçeAI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
+} else {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  const supabaseAdmin = supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+    : null;
+
+  if (!supabaseAdmin) {
+    console.warn('[BütçeAI WhatsApp] Supabase admin anahtarı yok. Fişler okunur ama transactions tablosuna kaydedilemez.');
   }
-});
 
-whatsappClient.on('qr', (qr) => {
-  console.log('\n=========================================');
-  console.log('📱 WhatsApp Bot: Lütfen aşağıdaki QR kodu okutun:');
-  console.log('=========================================\n');
-  qrcode.generate(qr, { small: true });
-});
+  const whatsappReplyTracker = createBotReplyTracker();
+  const whatsappTransactionStore = createSupabaseTransactionStore({
+    supabaseAdmin,
+    defaultUserId: process.env.WHATSAPP_DEFAULT_USER_ID,
+    logger: console,
+  });
+  const handleWhatsAppMessage = createWhatsAppMessageHandler({
+    model,
+    transactionStore: whatsappTransactionStore,
+    logger: console,
+    allowGroups: process.env.WHATSAPP_ALLOW_GROUPS === 'true',
+    processOwnMessages: process.env.WHATSAPP_PROCESS_OWN_MESSAGES !== 'false',
+    replyTracker: whatsappReplyTracker,
+  });
 
-whatsappClient.on('ready', () => {
-  console.log('[BütçeAI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
-});
-
-whatsappClient.on('message', async msg => {
-  if (msg.from === 'status@broadcast') return;
-  // Kendi numaranıza veya bota atılan mesajları işler
-  
-  try {
-    if (msg.hasMedia) {
-      const media = await msg.downloadMedia();
-      if (media.mimetype.startsWith('image/')) {
-        const prompt = "Bu fişteki toplam tutarı, tarihi (YYYY-MM-DD) ve mağaza adını çıkar. SADECE JSON döndür: {tutar: number, tarih: string, magaza: string}";
-        
-        const result = await model.generateContent([
-          { inlineData: { data: media.data, mimeType: media.mimetype } },
-          { text: prompt }
-        ]);
-        
-        const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        const data = JSON.parse(text);
-        
-        if (data.tutar) {
-          const msgReply = `📸 Fiş Başarıyla Okundu!\n\n🏪 Mağaza: ${data.magaza || 'Bilinmiyor'}\n💰 Tutar: ₺${data.tutar}\n📅 Tarih: ${data.tarih || 'Bilinmiyor'}\n\n✅ İşlem bütçene eklendi. Uyarı: Bu ayki kahve limitine yaklaşıyorsun!`;
-          msg.reply(msgReply);
-        } else {
-          msg.reply('❌ Fişteki tutarı okuyamadım. Lütfen daha net bir fotoğraf gönderin.');
-        }
-      }
-    } else if (msg.body && msg.body.length > 0) {
-      // Mesajdan işlem çıkarma denemesi
-      const prompt = `Şu cümleden harcama detaylarını çıkar ve SADECE JSON döndür: {"tutar": number, "magaza": string, "kategori": string, "tur": "gelir"|"gider"}\nCümle: "${msg.body}"`;
-      
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-      
-      try {
-        const data = JSON.parse(text);
-        if (data.tutar && data.magaza) {
-           msg.reply(`💳 İşlem Anında Kaydedildi!\n\n🏪 Yer: ${data.magaza}\n💸 Tutar: ₺${data.tutar}\n📂 Kategori: ${data.kategori || 'Diğer'}`);
-        } else {
-           throw new Error('Tutar bulunamadı');
-        }
-      } catch (e) {
-        // Eğer json çıkarılamazsa normal sohbet
-        const chatPrompt = `Sen BütçeAI'ın WhatsApp asistanısın. Kullanıcıya kısa, samimi ve finansal tavsiye veren bir şekilde yanıtla (Maksimum 2 cümle). Mesaj: "${msg.body}"`;
-        const chatRes = await model.generateContent(chatPrompt);
-        msg.reply(chatRes.response.text());
-      }
+  const whatsappClient = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: { 
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: true
     }
-  } catch (err) {
-    console.error('[WhatsApp Error]', err);
-    msg.reply('Üzgünüm, bu mesajı işlerken bir sorun yaşadım. 😔');
-  }
-});
+  });
 
-whatsappClient.initialize();
+  whatsappClient.on('qr', (qr) => {
+    console.log('\n=========================================');
+    console.log('📱 WhatsApp Bot: Lütfen aşağıdaki QR kodu okutun:');
+    console.log('=========================================\n');
+    qrcode.generate(qr, { small: true });
+  });
 
-app.listen(PORT, () => {
-  console.log(`[BütçeAI Backend] Gemini API Server running on port ${PORT}`);
+  whatsappClient.on('ready', () => {
+    console.log('[BütçeAI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
+  });
+
+  whatsappClient.on('authenticated', () => {
+    console.log('[BütçeAI WhatsApp] Oturum doğrulandı.');
+  });
+
+  whatsappClient.on('auth_failure', (message) => {
+    console.error('[BütçeAI WhatsApp] Oturum doğrulanamadı:', message);
+  });
+
+  whatsappClient.on('disconnected', (reason) => {
+    console.warn('[BütçeAI WhatsApp] Bağlantı koptu:', reason);
+  });
+
+  whatsappClient.on('message', handleWhatsAppMessage);
+  whatsappClient.on('message_create', async (msg) => {
+    if (msg.fromMe) await handleWhatsAppMessage(msg);
+  });
+
+  whatsappClient.initialize();
+}
+
+app.listen(PORT, HOST || undefined, () => {
+  console.log(`[BütçeAI Backend] Gemini API Server running on ${HOST || '0.0.0.0'}:${PORT}`);
 });

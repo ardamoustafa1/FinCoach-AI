@@ -4,9 +4,9 @@ import {
   ChevronUp, ChevronDown, ChevronsUpDown, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
   RefreshCw, Receipt, Camera, ImagePlus, Loader2, Mic,
-  ArrowUpRight, ArrowDownRight, Calendar, Tag,
+  ArrowUpRight, ArrowDownRight, Calendar,
 } from 'lucide-react';
-import { katRenk, TUM_KATEGORILER, fmt } from '../utils/categories';
+import { TUM_KATEGORILER, fmt } from '../utils/categories';
 import { getTransactions, saveTransaction, removeTransaction } from '../utils/storage';
 import TransactionModal from '../components/TransactionModal';
 import CsvUploader from '../components/CsvUploader';
@@ -170,7 +170,7 @@ function SortIcon({ kolon, aktif, yon }) {
 /* ─── StatMini ─── */
 function StatMini({ label, value, icon, color, delay = 0 }) {
   const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), delay); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setVis(true), delay); return () => clearTimeout(t); }, [delay]);
   return (
     <div style={{
       background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14,
@@ -223,7 +223,7 @@ function AksiyonButonlari({ tx, onDuzenle, onSil }) {
 function TxTableRow({ tx, index, onDuzenle, onSil }) {
   const [hov, setHov] = useState(false);
   const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 35, 600)); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 35, 600)); return () => clearTimeout(t); }, [index]);
   const isGelir = tx.tur === 'gelir';
   const amtColor = isGelir ? P.green : P.red;
   return (
@@ -273,7 +273,7 @@ function TxTableRow({ tx, index, onDuzenle, onSil }) {
 function TxKartRow({ tx, index, onDuzenle, onSil }) {
   const [hov, setHov] = useState(false);
   const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 40, 600)); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 40, 600)); return () => clearTimeout(t); }, [index]);
   const isGelir = tx.tur === 'gelir';
   return (
     <div
@@ -547,9 +547,12 @@ export default function TransactionsPage() {
   const [minTutar, setMinTutar] = useState('');
   const [maxTutar, setMaxTutar] = useState('');
 
-  useEffect(() => { setTimeout(() => setHeaderVis(true), 80); }, []);
+  useEffect(() => { const t = setTimeout(() => setHeaderVis(true), 80); return () => clearTimeout(t); }, []);
   useEffect(() => { const t = setTimeout(() => setArama(aramaHam), 300); return () => clearTimeout(t); }, [aramaHam]);
-  useEffect(() => { setSayfa(1); }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
+  useEffect(() => {
+    const t = setTimeout(() => setSayfa(1), 0);
+    return () => clearTimeout(t);
+  }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
 
   const handleSort = useCallback((kolon) => {
     if (sortKolon === kolon) setSortYon(y => y === 'asc' ? 'desc' : 'asc');
@@ -574,7 +577,8 @@ export default function TransactionsPage() {
         const data = await res.json();
         const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
         if (!yeniIslem.tutar) { toast.warning('Tutar anlaşılamadı, formu doldurun.'); setTaslakIslem(yeniIslem); setModalAcik(true); return; }
-        saveTransaction(yeniIslem); setHam(yukleIslemler());
+        await saveTransaction(yeniIslem);
+        refreshLocal();
         toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
       } catch { toast.error('Ses analiz edilemedi.'); }
     };
@@ -698,7 +702,7 @@ export default function TransactionsPage() {
               {/* Action buttons */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                 <button onClick={startListening} style={{
-                  display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: 'none',
+                  display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12,
                   background: isListening ? P.red : `${P.purple}25`, border: `1px solid ${isListening ? P.red + '50' : P.purple + '40'}`,
                   color: isListening ? '#fff' : P.purpleLight,
                   fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
@@ -881,7 +885,7 @@ export default function TransactionsPage() {
                     if (toplamSayfa > 5) { if (sayfa <= 3) p = i + 1; else if (sayfa >= toplamSayfa - 2) p = toplamSayfa - 4 + i; else p = sayfa - 2 + i; }
                     return (
                       <button key={p} onClick={() => setSayfa(p)} style={{
-                        width: 34, height: 34, borderRadius: 10, border: 'none',
+                        width: 34, height: 34, borderRadius: 10,
                         background: sayfa === p ? `linear-gradient(135deg,${P.purple},#4F46E5)` : P.bg3,
                         border: sayfa === p ? 'none' : `1px solid ${P.border}`,
                         color: sayfa === p ? '#fff' : P.text2,

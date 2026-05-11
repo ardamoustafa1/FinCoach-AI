@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles, Phone } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
 
@@ -25,7 +25,6 @@ function PasswordStrength({ password }) {
     { label: 'Çok Güçlü', color: '#06B6D4', bg: 'rgba(6,182,212,0.15)', icon: ShieldCheck },
   ];
   const level = levels[Math.max(0, score - 1)];
-  const pct = (score / 5) * 100;
   const Icon = level.icon;
 
   return (
@@ -70,8 +69,35 @@ function PasswordStrength({ password }) {
   );
 }
 
+/* ─── Telefon Formatlayıcı ─── */
+const formatPhone = (val) => {
+  const digits = val.replace(/\D/g, '');
+  let res = '';
+  if (digits.length === 0) return '';
+  
+  // İlk rakam 0 ise atla (maske içinde 0 zaten var varsayacağız veya kullanıcı 0 ile başlarsa düzelt)
+  let pure = digits;
+  if (pure.startsWith('0')) pure = pure.substring(1);
+  pure = pure.substring(0, 10); // Max 10 hane (5xx...)
+
+  if (pure.length > 0) {
+    res = '0 (';
+    res += pure.substring(0, 3);
+    if (pure.length > 3) {
+      res += ') ' + pure.substring(3, 6);
+    }
+    if (pure.length > 6) {
+      res += ' ' + pure.substring(6, 8);
+    }
+    if (pure.length > 8) {
+      res += ' ' + pure.substring(8, 10);
+    }
+  }
+  return res;
+};
+
 /* ─── Input bileşeni ─── */
-function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, right }) {
+function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, right, maxLength }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -85,6 +111,7 @@ function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, ri
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        maxLength={maxLength}
         style={{
           flex: 1, background: 'none', border: 'none', outline: 'none',
           color: '#F1F5F9', fontSize: 15, fontFamily: 'inherit',
@@ -105,6 +132,8 @@ function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, ri
 
 export default function AuthPage({ onAuth }) {
   const [mode, setMode] = useState('login');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -137,16 +166,28 @@ export default function AuthPage({ onAuth }) {
 
     if (data.user) {
       // Profil bilgisini çek (opsiyonel, isterseniz app.jsx'de de yapabilirsiniz)
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      const { data: existingProfile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      let profile = existingProfile;
+      if (!profile) {
+        const { data: createdProfile } = await supabase.from('profiles').upsert([{
+          id: data.user.id,
+          full_name: data.user.email.split('@')[0],
+          email: data.user.email,
+          onboarding_completed: false
+        }]).select().single();
+        profile = createdProfile;
+      }
       
       const authData = { 
         name: profile?.full_name || data.user.email.split('@')[0], 
         email: data.user.email,
-        id: data.user.id
+        id: data.user.id,
+        phone: profile?.phone_text || ''
       };
       
       localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
       localStorage.setItem('butceai_user_name', authData.name);
+      if (authData.phone) localStorage.setItem('butceai_phone', authData.phone);
       onAuth(authData);
     }
     setLoading(false);
@@ -154,12 +195,23 @@ export default function AuthPage({ onAuth }) {
 
   const handleRegister = async () => {
     setError('');
-    if (!email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); return; }
+    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); return; }
+    
+    // Telefon kontrolü (10 hane + maske karakterleri)
+    const purePhone = phone.replace(/\D/g, '');
+    if (purePhone.length < 10) {
+      setError('Lütfen geçerli bir telefon numarası girin.');
+      return;
+    }
+    if (!purePhone.startsWith('05') && !purePhone.startsWith('5')) {
+      setError('Telefon numarası 5 ile başlamalıdır.');
+      return;
+    }
+
     if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.'); return; }
     if (password !== confirm) { setError('Şifreler eşleşmiyor.'); return; }
     
     setLoading(true);
-    const displayName = email.split('@')[0];
     const { data, error: authError } = await supabase.auth.signUp({
       email: email.toLowerCase(),
       password,
@@ -182,14 +234,20 @@ export default function AuthPage({ onAuth }) {
     }
 
     if (data.user) {
-      await supabase.from('profiles').upsert([
-        { id: data.user.id, full_name: displayName, email: data.user.email }
+      const { error: profileError } = await supabase.from('profiles').upsert([
+        { id: data.user.id, full_name: name, phone_text: phone, email: data.user.email }
       ]).select();
+      if (profileError) {
+        setError('Profil oluşturulamadı. Supabase RLS profil ekleme iznini kontrol edin.');
+        setLoading(false);
+        return;
+      }
 
       if (data.session) {
-        const authData = { name: displayName, email: data.user.email, id: data.user.id };
+        const authData = { name: name, email: data.user.email, id: data.user.id, phone };
         localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
-        localStorage.setItem('butceai_user_name', displayName);
+        localStorage.setItem('butceai_user_name', name);
+        localStorage.setItem('butceai_phone', phone);
         onAuth(authData);
         return;
       }
@@ -200,7 +258,7 @@ export default function AuthPage({ onAuth }) {
 
   const switchMode = (m) => {
     setMode(m); setError('');
-    setEmail(''); setPassword(''); setConfirm('');
+    setName(''); setPhone(''); setEmail(''); setPassword(''); setConfirm('');
   };
 
   return (
@@ -250,8 +308,20 @@ export default function AuthPage({ onAuth }) {
           </div>
 
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>{mode === 'login' ? 'Tekrar hoş geldin 👋' : 'Hesap oluştur ✨'}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Sadece e-posta ve şifren yeterli — geri kalanı biz hallederiz'}</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Hemen katıl ve akıllı finansal koçunla tanış'}</p>
 
+          {mode === 'register' && (
+            <>
+              <AuthInput icon={User} placeholder="Ad Soyad" value={name} onChange={e => setName(e.target.value)} />
+              <AuthInput 
+                icon={Phone} 
+                placeholder="0 (5xx) xxx xx xx" 
+                value={phone} 
+                onChange={e => setPhone(formatPhone(e.target.value))} 
+                maxLength={17}
+              />
+            </>
+          )}
           <AuthInput icon={Mail} type="email" placeholder="E-posta" value={email} onChange={e => setEmail(e.target.value)} />
           <AuthInput icon={Lock} type={showPass ? 'text' : 'password'} placeholder="Şifre" value={password} onChange={e => setPassword(e.target.value)} right={eyeBtn(showPass, () => setShowPass(v => !v))} />
           {mode === 'register' && <PasswordStrength password={password} />}

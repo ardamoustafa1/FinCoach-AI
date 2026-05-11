@@ -36,7 +36,10 @@ export function useSupabaseData() {
   }, []);
 
   useEffect(() => {
-    refreshData();
+    const id = setTimeout(() => {
+      refreshData();
+    }, 0);
+    return () => clearTimeout(id);
   }, [refreshData]);
 
   return { transactions, goals, limits, loading, error, refreshData };

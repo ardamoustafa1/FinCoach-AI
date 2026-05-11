@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, RadarChart, Radar,
-  PolarGrid, PolarAngleAxis,
+  PieChart, Pie, Cell,
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Wallet, Target,
@@ -16,6 +15,7 @@ import { getTransactions, getGoals, saveTransaction } from '../utils/storage';
 import { calculateEcoScore } from '../utils/ecoScore';
 import { calculatePrediction } from '../utils/predictive';
 import TransactionModal from '../components/TransactionModal';
+import { useToast } from '../hooks/useToast';
 
 /* ─── Palette ─── */
 const P = {
@@ -52,6 +52,10 @@ const fmtShort = (v) => {
   return `₺${v}`;
 };
 
+const WHATSAPP_BOT_NUMBER = (import.meta.env.VITE_WHATSAPP_BOT_NUMBER || '905070271251').replace(/\D/g, '');
+const WHATSAPP_TEST_TEXT = 'Merhaba BütçeAI, Migros harcamamı test için 125 TL olarak kaydet.';
+const WHATSAPP_TEST_URL = `https://wa.me/${WHATSAPP_BOT_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEST_TEXT)}`;
+
 /* ─── Micro-components ─── */
 function GlowOrb({ color = P.purple, size = 320, top, left, right, bottom, opacity = 0.18 }) {
   return (
@@ -71,7 +75,6 @@ function GlowOrb({ color = P.purple, size = 320, top, left, right, bottom, opaci
 
 function AnimNumber({ value, prefix = '', suffix = '', duration = 1200 }) {
   const [display, setDisplay] = useState(0);
-  const startRef = useRef(null);
   const rafRef = useRef(null);
 
   useEffect(() => {
@@ -279,7 +282,7 @@ function TxRow({ tx, index, onClick }) {
 /* ─── Main Component ─── */
 export default function HomePage() {
   const navigate = useNavigate();
-  const [txRefresh, setTxRefresh] = useState(0);
+  const toast = useToast();
   const transactions = getTransactions();
   const goals = getGoals();
   const ecoData = calculateEcoScore(transactions);
@@ -291,7 +294,21 @@ export default function HomePage() {
   const handleKaydet = (form) => {
     saveTransaction(form);
     setSeciliIslem(null);
-    setTxRefresh(r => r + 1);
+  };
+
+  const shareLeagueInvite = async () => {
+    const text = "Seni Bütçe Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim #BütçeAI";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'BütçeAI', text });
+        toast.success('Davet hazırlandı.');
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success('Davet metni kopyalandı.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') toast.error('Davet hazırlanamadı.');
+    }
   };
 
   const totalIncome = transactions
@@ -459,7 +476,7 @@ export default function HomePage() {
                   <p style={{ fontSize: 15, color: P.text2, maxWidth: 480, lineHeight: 1.7, marginBottom: 20 }}>
                     Harcamalar, hedefler, raporlar ve AI içgörüleri tek bir akıcı deneyimde.
                   </p>
-                  <a href="https://wa.me/905070271251?text=Merhaba BütçeAI, sana bir harcama göndereceğim!" target="_blank" rel="noopener noreferrer" style={{
+                  <a href={WHATSAPP_TEST_URL} target="_blank" rel="noopener noreferrer" style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     background: '#25D366', color: '#fff', textDecoration: 'none',
                     padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14,
@@ -835,13 +852,7 @@ export default function HomePage() {
                 <p style={{ fontSize: 13, color: P.text3, marginTop: 4 }}>Arkadaşlarını davet et, tasarruf yarışını başlat.</p>
               </div>
               <button 
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({ title: 'BütçeAI', text: 'Seni Bütçe Ligi\'ne davet ediyorum! Kim daha çok tasarruf edecek görelim 🏆 #BütçeAI' });
-                  } else {
-                    alert('Davet linki kopyalandı!');
-                  }
-                }}
+                onClick={shareLeagueInvite}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#fff',

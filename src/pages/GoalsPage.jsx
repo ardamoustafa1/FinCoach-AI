@@ -123,7 +123,6 @@ export default function GoalsPage() {
 
   const aktif = goals.filter(g => Number(g.currentAmount) < Number(g.targetAmount));
   const tamamlanan = goals.filter(g => Number(g.currentAmount) >= Number(g.targetAmount));
-  const totalTarget = goals.reduce((s, g) => s + Number(g.targetAmount), 0);
   const totalCurrent = goals.reduce((s, g) => s + Number(g.currentAmount), 0);
 
   return (

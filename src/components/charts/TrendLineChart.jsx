@@ -14,6 +14,11 @@ const P = {
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
 const AY_ISIMLERI = ['', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const DEMO_GIDER_SERISI = {
+  '2024-12': 14000,
+  '2025-01': 12600,
+  '2025-02': 14850,
+};
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -45,7 +50,7 @@ export default function TrendLineChart({ islemler, gelirler }) {
       return {
         name: `${AY_ISIMLERI[ay]} ${yil === 2024 ? "'24" : "'25"}`,
         gelir: gelir || (ay <= 2 && yil === 2025 ? 18000 : gelir) || (yil === 2024 ? 17500 : 0),
-        gider: gider || (ay <= 2 && yil === 2025 ? Math.round(12000 + Math.random() * 5000) : gider) || (yil === 2024 ? 14000 : 0),
+        gider: gider || DEMO_GIDER_SERISI[prefix] || 0,
         ay,
       };
     });

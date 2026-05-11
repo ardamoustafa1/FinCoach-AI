@@ -34,8 +34,8 @@ export function calculateEcoScore(transactions) {
   const footprint = Math.round(totalCarbonKg);
 
   // Geri bildirim mesajları
-  let message = '';
-  let status = ''; // 'excellent', 'good', 'warning'
+  let message;
+  let status; // 'excellent', 'good', 'warning'
   
   if (footprint < 50) {
     status = 'excellent';

@@ -59,7 +59,7 @@ export function calculatePrediction(transactions) {
   const potentialSavings = maxCategory ? Math.round(maxAmount * 0.20) : 0;
   
   // Tavsiye metni
-  let advice = '';
+  let advice;
   if (remainingDays === 0) {
     advice = 'Ayın son günündesin! Bütçe analizi tamamlandı.';
   } else if (predictedBalance < 0) {

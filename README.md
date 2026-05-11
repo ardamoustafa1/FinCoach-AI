@@ -29,7 +29,11 @@ npm install
 \`\`\`env
 PORT=3001
 GEMINI_API_KEY=sizin_gemini_api_anahtariniz_buraya
+SUPABASE_URL=https://proje-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sadece_serverda_kullanilacak_service_role_key
 \`\`\`
+WhatsApp fiş/metin kayıtlarının veritabanına yazılabilmesi için `SUPABASE_SERVICE_ROLE_KEY` gereklidir. Numara eşleştirme varsayılan olarak `profiles.phone_text` alanına göre yapılır; tek kullanıcı/demo kurulumunda tüm WhatsApp kayıtlarını belirli bir kullanıcıya yazmak için `WHATSAPP_DEFAULT_USER_ID` ayarlanabilir.
+
 Sunucuyu başlatın:
 \`\`\`bash
 npm start

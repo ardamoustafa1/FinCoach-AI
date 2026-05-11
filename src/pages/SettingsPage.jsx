@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Moon, Sun, Globe, Bell, Database, RotateCcw, Save,
   Wallet, QrCode, Shield, Sparkles, Flame, LogOut,
@@ -78,10 +78,11 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 }
 
 export default function SettingsPage({ theme, onToggleTheme }) {
-  const [limits, setLimits] = useState({});
+  const [limits, setLimits] = useState(() => getBudgetLimits());
   const [isSaved, setIsSaved] = useState(false);
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('butceai_roast_mode') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // Profile state
   const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('butceai_auth_user') || '{}'); } catch { return {}; } };
@@ -93,6 +94,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [editField, setEditField] = useState(null); // 'name' | 'email' | 'phone'
   const [editValue, setEditValue] = useState('');
   const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState('');
 
   // Password change state
   const [showPassSection, setShowPassSection] = useState(false);
@@ -109,49 +111,88 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('butceai_email_verified') === 'true');
   const [verificationSent, setVerificationSent] = useState(false);
 
-  useEffect(() => { setLimits(getBudgetLimits()); }, []);
-
   const startEdit = (field) => { setEditField(field); setEditValue(profile[field]); };
   const cancelEdit = () => { setEditField(null); setEditValue(''); };
-  const saveField = (field) => {
-    if (!editValue.trim()) return;
-    const updated = { ...profile, [field]: editValue.trim() };
+  const saveField = async (field) => {
+    const value = editValue.trim();
+    if (!value) return;
+
+    setProfileError('');
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        if (field === 'email') {
+          const { error: authError } = await supabase.auth.updateUser({ email: value });
+          if (authError) throw authError;
+        }
+
+        const payload = {};
+        if (field === 'name') payload.full_name = value;
+        if (field === 'phone') payload.phone_text = value;
+        if (field === 'email') payload.email = value;
+        if (Object.keys(payload).length) {
+          const { error } = await supabase.from('profiles').update(payload).eq('id', user.id);
+          if (error) throw error;
+        }
+      }
+    } catch (err) {
+      console.error('[Settings] Profil Supabase güncellemesi başarısız:', err);
+      setProfileError(err.message || 'Profil güncellenemedi. Lütfen tekrar deneyin.');
+      return;
+    }
+
+    const updated = { ...profile, [field]: value };
     setProfile(updated);
-    if (field === 'name') { localStorage.setItem('butceai_user_name', editValue.trim()); }
-    if (field === 'phone') { localStorage.setItem('butceai_phone', editValue.trim()); }
+    if (field === 'name') { localStorage.setItem('butceai_user_name', value); }
+    if (field === 'phone') { localStorage.setItem('butceai_phone', value); }
     if (field === 'email') {
       const auth = getAuthUser();
-      localStorage.setItem('butceai_auth_user', JSON.stringify({ ...auth, email: editValue.trim() }));
+      localStorage.setItem('butceai_auth_user', JSON.stringify({ ...auth, email: value }));
       setEmailVerified(false); localStorage.removeItem('butceai_email_verified');
     }
+
     setEditField(null); setEditValue('');
     setProfileSaved(true); setTimeout(() => setProfileSaved(false), 2500);
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     setPassError('');
-    const users = (() => { try { return JSON.parse(localStorage.getItem('butceai_users') || '[]'); } catch { return []; } })();
     const auth = getAuthUser();
-    const user = users.find(u => u.email === auth.email);
-    if (user && user.password !== currentPass) { setPassError('Mevcut şifre yanlış.'); return; }
+    if (!auth.email) { setPassError('Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.'); return; }
+    if (!currentPass) { setPassError('Mevcut şifrenizi girin.'); return; }
     if (newPass.length < 6) { setPassError('Yeni şifre en az 6 karakter olmalı.'); return; }
     if (newPass !== confirmPass) { setPassError('Yeni şifreler eşleşmiyor.'); return; }
-    if (user) {
-      const updated = users.map(u => u.email === auth.email ? { ...u, password: newPass } : u);
-      localStorage.setItem('butceai_users', JSON.stringify(updated));
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: auth.email,
+      password: currentPass,
+    });
+    if (signInError) {
+      setPassError('Mevcut şifre yanlış veya oturum doğrulanamadı.');
+      return;
     }
+
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPass });
+    if (updateError) {
+      setPassError(updateError.message || 'Şifre güncellenemedi.');
+      return;
+    }
+
     setCurrentPass(''); setNewPass(''); setConfirmPass('');
     setPassSaved(true); setPassError('');
     setTimeout(() => { setPassSaved(false); setShowPassSection(false); }, 2500);
   };
 
-  const sendVerification = () => {
+  const sendVerification = async () => {
     setVerificationSent(true);
-    // Simüle edilmiş doğrulama — 3 saniye sonra otomatik doğrula
-    setTimeout(() => {
-      setEmailVerified(true); localStorage.setItem('butceai_email_verified', 'true');
+    const { error } = await supabase.auth.resend({ type: 'signup', email: profile.email });
+    if (error) {
+      setProfileError(error.message || 'Doğrulama e-postası gönderilemedi.');
       setVerificationSent(false);
-    }, 3000);
+      return;
+    }
+    setTimeout(() => setVerificationSent(false), 3000);
   };
 
   const toggleRoastMode = () => {
@@ -167,17 +208,36 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     setTimeout(() => setIsSaved(false), 2000);
   };
 
-  const handleLoadDemoData = () => {
-    if (window.confirm('Demo verileri yeniden yüklenecek. Mevcut yerel veriler silinsin mi?')) {
-      localStorage.clear(); initMockData(); window.location.reload();
+  const clearLocalAppData = () => {
+    const keepKeys = ['butceai_auth_user', 'butceai_user_name', 'butceai_phone', 'butceai_roast_mode', 'butceai_email_verified'];
+    const preserved = Object.fromEntries(
+      keepKeys
+        .map(key => [key, localStorage.getItem(key)])
+        .filter(([, value]) => value !== null)
+    );
+
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('butceai_'))
+      .forEach(key => localStorage.removeItem(key));
+
+    Object.entries(preserved).forEach(([key, value]) => localStorage.setItem(key, value));
+  };
+
+  const executeDataAction = () => {
+    if (confirmAction === 'demo') {
+      clearLocalAppData();
+      initMockData();
+      window.location.reload();
+    }
+    if (confirmAction === 'clear') {
+      clearLocalAppData();
+      window.location.reload();
     }
   };
 
-  const handleClearData = () => {
-    if (window.confirm('Tüm veriler silinecek. Emin misiniz?')) {
-      localStorage.clear(); window.location.reload();
-    }
-  };
+  const handleLoadDemoData = () => setConfirmAction('demo');
+
+  const handleClearData = () => setConfirmAction('clear');
 
   const handleLogout = () => setShowLogoutModal(true);
 
@@ -190,6 +250,57 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
   return (
     <>
+      {confirmAction && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(5,7,20,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}>
+          <div style={{
+            background: '#141728',
+            border: `1px solid ${confirmAction === 'clear' ? 'rgba(239,68,68,0.25)' : 'rgba(124,58,237,0.28)'}`,
+            borderRadius: 24, padding: '34px 32px', maxWidth: 420, width: '100%',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+            animation: 'fadeSlideUp 0.2s ease',
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 16,
+              background: confirmAction === 'clear' ? 'rgba(239,68,68,0.12)' : 'rgba(124,58,237,0.14)',
+              border: `1px solid ${confirmAction === 'clear' ? 'rgba(239,68,68,0.25)' : 'rgba(124,58,237,0.3)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px'
+            }}>
+              {confirmAction === 'clear' ? <Database size={24} color={P.red} /> : <Sparkles size={24} color={P.purpleLight} />}
+            </div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#F1F5F9', textAlign: 'center', marginBottom: 10 }}>
+              {confirmAction === 'clear' ? 'Yerel Veriler Temizlensin mi?' : 'Demo Verileri Yüklensin mi?'}
+            </h3>
+            <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
+              {confirmAction === 'clear'
+                ? 'Bu işlem cihazdaki BütçeAI işlem, hedef ve tercih verilerini temizler. Supabase oturumunuz korunur.'
+                : 'Mevcut yerel işlem ve hedef verileri demo veri setiyle değiştirilecek. Supabase oturumunuz korunur.'}
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setConfirmAction(null)}
+                style={{ flex: 1, padding: '13px 0', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={executeDataAction}
+                style={{
+                  flex: 1, padding: '13px 0', borderRadius: 14, border: 'none',
+                  background: confirmAction === 'clear' ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+                  color: '#fff', fontWeight: 800, cursor: 'pointer'
+                }}
+              >
+                {confirmAction === 'clear' ? 'Temizle' : 'Yükle'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showLogoutModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -268,6 +379,12 @@ export default function SettingsPage({ theme, onToggleTheme }) {
               </span>
             )}
           </div>
+
+          {profileError && (
+            <div style={{ padding: '12px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(239,68,68,0.08)', color: P.red, fontSize: 12, fontWeight: 700 }}>
+              {profileError}
+            </div>
+          )}
 
           {/* Avatar + name row */}
           <div style={{ padding: '24px 28px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 20 }}>

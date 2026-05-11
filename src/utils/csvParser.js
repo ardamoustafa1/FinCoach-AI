@@ -86,7 +86,7 @@ function normalTarih(str) {
   const s = str.trim();
 
   // DD.MM.YYYY veya DD/MM/YYYY
-  const dmyMatch = s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{4})$/);
+  const dmyMatch = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
   if (dmyMatch) {
     const [, d, m, y] = dmyMatch;
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
@@ -128,7 +128,7 @@ function temizTutar(str) {
     }
   }
   // TL, ₺ vs temizle
-  s = s.replace(/[^\d.\-+]/g, '');
+  s = s.replace(/[^\d.+-]/g, '');
   return parseFloat(s) || 0;
 }
 
@@ -137,7 +137,7 @@ function magazaCikar(aciklama) {
   if (!aciklama) return '';
   // Genelde bankalar öncesinde tarih/referans koyar, sonrasında mağaza
   const temiz = aciklama
-    .replace(/\d{2,4}[./\-]\d{2}[./\-]\d{2,4}/g, '') // Tarihleri sil
+    .replace(/\d{2,4}[./-]\d{2}[./-]\d{2,4}/g, '') // Tarihleri sil
     .replace(/\b\d{6,}\b/g, '') // Uzun sayıları sil (referans no)
     .replace(/\s+/g, ' ')
     .trim();
@@ -247,7 +247,7 @@ export function parseCSV(file) {
 
           // Satırları normalize et
           const islemler = results.data
-            .map((row, idx) => {
+            .map((row) => {
               try {
                 const parsed = format.parse(row);
                 if (!parsed.aciklama && !parsed.tutar) return null; // Boş satır

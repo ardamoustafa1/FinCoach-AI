@@ -51,6 +51,7 @@ alter table budget_limits enable row level security;
 
 -- Sadece kendi verilerini görme/düzenleme izinleri
 create policy "Kullanıcılar sadece kendi profilini görebilir" on profiles for select using (auth.uid() = id);
+create policy "Kullanıcılar kendi profilini oluşturabilir" on profiles for insert with check (auth.uid() = id);
 create policy "Kullanıcılar kendi profilini güncelleyebilir" on profiles for update using (auth.uid() = id);
 
 create policy "Kullanıcılar kendi işlemlerini yönetebilir" on transactions for all using (auth.uid() = user_id);
