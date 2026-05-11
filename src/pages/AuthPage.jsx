@@ -169,20 +169,38 @@ export default function AuthPage({ onAuth }) {
     });
 
     if (authError) {
-      setError(authError.message);
+      // Türkçe hata çevirileri
+      const errMsg = authError.message;
+      if (errMsg.includes('email sending') || errMsg.includes('rate limit') || errMsg.includes('sending limit')) {
+        setError('E-posta gönderim limiti aşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin veya farklı bir e-posta kullanın.');
+      } else if (errMsg.includes('already registered') || errMsg.includes('User already registered')) {
+        setError('Bu e-posta zaten kayıtlı. Giriş Yap sekmesini deneyin.');
+      } else if (errMsg.includes('Password')) {
+        setError('Şifre en az 6 karakter olmalıdır.');
+      } else {
+        setError(errMsg);
+      }
       setLoading(false);
       return;
     }
 
     if (data.user) {
-      // Profili oluştur
-      await supabase.from('profiles').insert([
+      // Profili oluştur (hata olsa bile devam et)
+      await supabase.from('profiles').upsert([
         { id: data.user.id, full_name: name, email: data.user.email }
-      ]);
+      ]).select();
 
-      setError('Kayıt başarılı! Lütfen e-postanızı kontrol edin.');
-      // Hackathon demo için bazen direkt giriş yapması istenir:
-      // if (data.session) onAuth({ name, email, id: data.user.id });
+      // E-posta onayı kapalıysa (demo modu) direkt giriş yap
+      if (data.session) {
+        const authData = { name, email: data.user.email, id: data.user.id };
+        localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
+        localStorage.setItem('butceai_user_name', name);
+        onAuth(authData);
+        return;
+      }
+
+      // E-posta onayı açıksa bilgi mesajı göster
+      setError('✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.');
     }
     setLoading(false);
   };
@@ -247,7 +265,12 @@ export default function AuthPage({ onAuth }) {
           {mode === 'register' && <PasswordStrength password={password} />}
           {mode === 'register' && <AuthInput icon={Lock} type={showConfirm ? 'text' : 'password'} placeholder="Şifre (Tekrar)" value={confirm} onChange={e => setConfirm(e.target.value)} right={eyeBtn(showConfirm, () => setShowConfirm(v => !v))} />}
 
-          {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#fca5a5' }}>⚠️ {error}</div>}
+          {error && <div style={{
+            background: error.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+            border: `1px solid ${error.startsWith('✅') ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+            borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13,
+            color: error.startsWith('✅') ? '#6ee7b7' : '#fca5a5'
+          }}>{error.startsWith('✅') ? error : `⚠️ ${error}`}</div>}
 
           <button className="auth-submit" onClick={mode === 'login' ? handleLogin : handleRegister} disabled={loading} style={{ width: '100%', padding: '15px 0', borderRadius: 14, background: loading ? 'rgba(124,58,237,0.4)' : 'linear-gradient(135deg, #7c3aed, #6366f1)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'all 0.2s', boxShadow: loading ? 'none' : '0 12px 32px rgba(124,58,237,0.4)', marginBottom: 20 }}>
             {loading ? 'Yükleniyor...' : <>{mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'} <ArrowRight size={17} /></>}
