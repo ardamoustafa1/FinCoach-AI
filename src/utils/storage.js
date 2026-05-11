@@ -178,6 +178,25 @@ export function getBudgetLimits() {
   return getItem(KEYS.BUDGET_LIMITS, DEFAULT_LIMITS);
 }
 
+export async function saveBudgetLimits(limits) {
+  setItem(KEYS.BUDGET_LIMITS, limits);
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    // Toplu güncelleme Supabase tarafında biraz daha zahmetli olabilir, 
+    // ama her kategoriyi tek tek upsert edelim
+    const promises = Object.entries(limits).map(([kategori, limit]) => 
+      supabase.from('budget_limits').upsert({
+        user_id: user.id,
+        category: kategori,
+        limit_amount: Number(limit)
+      }, { onConflict: 'user_id,category' })
+    );
+    await Promise.all(promises);
+  }
+  return limits;
+}
+
 export async function updateBudgetLimit(kategori, limit) {
   const limits = getBudgetLimits();
   limits[kategori] = Number(limit);
@@ -204,4 +223,10 @@ export function saveCategoryRule(magaza, kategori) {
   const rules = getItem(KEYS.CATEGORY_RULES, {});
   rules[magaza.trim().toLowerCase()] = kategori;
   setItem(KEYS.CATEGORY_RULES, rules);
+}
+
+export function suggestCategory(magaza) {
+  if (!magaza) return '';
+  const rules = getItem(KEYS.CATEGORY_RULES, {});
+  return rules[magaza.trim().toLowerCase()] || '';
 }
