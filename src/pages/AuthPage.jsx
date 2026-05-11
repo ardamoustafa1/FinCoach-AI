@@ -1,6 +1,74 @@
 import { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '../utils/supabase';
+import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
+
+/* ─── Şifre Güç Ölçer ─── */
+function PasswordStrength({ password }) {
+  if (!password) return null;
+
+  let score = 0;
+  const checks = [
+    { label: 'En az 6 karakter', pass: password.length >= 6 },
+    { label: 'Büyük harf içeriyor', pass: /[A-Z]/.test(password) },
+    { label: 'Küçük harf içeriyor', pass: /[a-z]/.test(password) },
+    { label: 'Rakam içeriyor', pass: /[0-9]/.test(password) },
+    { label: 'Özel karakter içeriyor', pass: /[^A-Za-z0-9]/.test(password) },
+  ];
+  checks.forEach(c => { if (c.pass) score++; });
+
+  const levels = [
+    { label: 'Çok Zayıf', color: '#EF4444', bg: 'rgba(239,68,68,0.15)', icon: ShieldAlert },
+    { label: 'Zayıf', color: '#F97316', bg: 'rgba(249,115,22,0.15)', icon: ShieldAlert },
+    { label: 'Orta', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: Shield },
+    { label: 'Güçlü', color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: ShieldCheck },
+    { label: 'Çok Güçlü', color: '#06B6D4', bg: 'rgba(6,182,212,0.15)', icon: ShieldCheck },
+  ];
+  const level = levels[Math.max(0, score - 1)];
+  const pct = (score / 5) * 100;
+  const Icon = level.icon;
+
+  return (
+    <div style={{ marginTop: -4, marginBottom: 12 }}>
+      {/* Bar */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} style={{
+            flex: 1, height: 4, borderRadius: 99,
+            background: i <= score ? level.color : 'rgba(255,255,255,0.08)',
+            transition: 'background 0.3s ease',
+            boxShadow: i <= score ? `0 0 8px ${level.color}40` : 'none',
+          }} />
+        ))}
+      </div>
+      {/* Label */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Icon size={13} color={level.color} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: level.color }}>{level.label}</span>
+        </div>
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{score}/5 kriter</span>
+      </div>
+      {/* Criteria dots */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 8 }}>
+        {checks.map(c => (
+          <span key={c.label} style={{
+            fontSize: 10, color: c.pass ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.25)',
+            display: 'flex', alignItems: 'center', gap: 4,
+            transition: 'color 0.3s',
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: c.pass ? '#10B981' : 'rgba(255,255,255,0.12)',
+              transition: 'background 0.3s',
+            }} />
+            {c.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Input bileşeni ─── */
 function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, right }) {
@@ -176,6 +244,7 @@ export default function AuthPage({ onAuth }) {
           {mode === 'register' && <AuthInput icon={User} placeholder="Ad Soyad" value={name} onChange={e => setName(e.target.value)} />}
           <AuthInput icon={Mail} type="email" placeholder="E-posta" value={email} onChange={e => setEmail(e.target.value)} />
           <AuthInput icon={Lock} type={showPass ? 'text' : 'password'} placeholder="Şifre" value={password} onChange={e => setPassword(e.target.value)} right={eyeBtn(showPass, () => setShowPass(v => !v))} />
+          {mode === 'register' && <PasswordStrength password={password} />}
           {mode === 'register' && <AuthInput icon={Lock} type={showConfirm ? 'text' : 'password'} placeholder="Şifre (Tekrar)" value={confirm} onChange={e => setConfirm(e.target.value)} right={eyeBtn(showConfirm, () => setShowConfirm(v => !v))} />}
 
           {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#fca5a5' }}>⚠️ {error}</div>}
@@ -184,13 +253,6 @@ export default function AuthPage({ onAuth }) {
             {loading ? 'Yükleniyor...' : <>{mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'} <ArrowRight size={17} /></>}
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontWeight: 600 }}>veya</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-          </div>
-
-          <button onClick={() => setMode('login')} style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>BütçeAI Cloud'a Bağlan</button>
         </div>
       </div>
     </div>
