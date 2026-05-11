@@ -2,22 +2,15 @@ import { useState } from "react";
 
 const STEPS = [
   {
-    icon: "💰",
-    label: "Adım 1 / 3",
-    title: ["BütçeAI'a", "Hoş Geldin"],
-    sub: "Seni daha yakından tanımak istiyorum.",
-    progress: "33%",
-  },
-  {
     icon: "📈",
-    label: "Adım 2 / 3",
+    label: "Adım 1 / 2",
     title: ["Finansal profilini", "oluşturalım"],
     sub: "Bu bilgiler sana özel tavsiyeler üretmem için.",
-    progress: "66%",
+    progress: "50%",
   },
   {
     icon: "🏦",
-    label: "Adım 3 / 3",
+    label: "Adım 2 / 2",
     title: ["Son bir adım", "kaldı"],
     sub: "Banka formatını bilmek CSV yüklemeni kolaylaştırır.",
     progress: "100%",
@@ -33,7 +26,6 @@ const GOALS = [
 
 export default function Onboarding({ onComplete }) {
   const [step, setStep] = useState(1);
-  const [name, setName]   = useState("");
   const [income, setIncome] = useState("");
   const [goal, setGoal]   = useState("");
   const [bank, setBank]   = useState("");
@@ -49,10 +41,11 @@ export default function Onboarding({ onComplete }) {
 
   function finish() {
     const finalBank = bank === "Diğer" ? customBank : bank;
+    // İsim kayıt sırasında e-postadan alındı, localStorage'dan oku
+    const name = localStorage.getItem("butceai_user_name") || "Kullanıcı";
     const profile = { name, income: Number(income), goal, bank: finalBank };
     localStorage.setItem("butceai_onboarding_completed", "true");
     localStorage.setItem("butceai_profile", JSON.stringify(profile));
-    localStorage.setItem("butceai_user_name", name);
     localStorage.setItem("butceai_income", income);
     localStorage.setItem("butceai_bank", finalBank);
     setLeaving(true);
@@ -151,25 +144,8 @@ export default function Onboarding({ onComplete }) {
             {s.sub}
           </p>
 
-          {/* ADIM 1 */}
+          {/* ADIM 1 — Finansal profil */}
           {step === 1 && (
-            <div>
-              <Label>Adın ne?</Label>
-              <Input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Örn: Arda"
-                onKeyDown={e => e.key === "Enter" && name.trim() && next(2)}
-                autoFocus
-              />
-              <PrimaryBtn onClick={() => name.trim() && next(2)} disabled={!name.trim()}>
-                Devam Et <Arrow/>
-              </PrimaryBtn>
-            </div>
-          )}
-
-          {/* ADIM 2 */}
-          {step === 2 && (
             <div>
               <Label>Aylık gelirin (₺)</Label>
               <Input
@@ -187,12 +163,14 @@ export default function Onboarding({ onComplete }) {
                   </OptionBtn>
                 ))}
               </div>
-              <NavRow onBack={() => next(1)} onNext={() => next(3)} disabled={!income || !goal}/>
+              <PrimaryBtn onClick={() => next(2)} disabled={!income || !goal}>
+                Devam Et <Arrow/>
+              </PrimaryBtn>
             </div>
           )}
 
-          {/* ADIM 3 */}
-          {step === 3 && (
+          {/* ADIM 2 — Banka */}
+          {step === 2 && (
             <div>
               <Label>Hangi bankayı kullanıyorsun?</Label>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px", marginBottom:"20px" }}>
@@ -203,11 +181,10 @@ export default function Onboarding({ onComplete }) {
                 ))}
               </div>
 
-              {/* Diğer banka girişi */}
               {bank === "Diğer" && (
                 <div style={{ marginBottom: "20px" }}>
                   <Label>Banka adını girin</Label>
-                  <Input 
+                  <Input
                     value={customBank}
                     onChange={e => setCustomBank(e.target.value)}
                     placeholder="Örn: Enpara"
@@ -236,13 +213,13 @@ export default function Onboarding({ onComplete }) {
                 </div>
               </div>
 
-              <NavRow onBack={() => next(2)} onNext={finish} nextLabel="Başla ✓" disabled={!bank || (bank === "Diğer" && !customBank.trim())}/>
+              <NavRow onBack={() => next(1)} onNext={finish} nextLabel="Başla ✓" disabled={!bank || (bank === "Diğer" && !customBank.trim())}/>
             </div>
           )}
 
           {/* Dot göstergeler */}
           <div style={{ display:"flex", justifyContent:"center", gap:"6px", marginTop:"24px" }}>
-            {[1,2,3].map(i => (
+            {[1,2].map(i => (
               <div key={i} style={{
                 height:"6px", borderRadius:"100px",
                 background: i===step ? "#7c3aed" : "rgba(255,255,255,0.12)",

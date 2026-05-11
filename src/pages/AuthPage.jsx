@@ -105,7 +105,6 @@ function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, ri
 
 export default function AuthPage({ onAuth }) {
   const [mode, setMode] = useState('login');
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -155,17 +154,15 @@ export default function AuthPage({ onAuth }) {
 
   const handleRegister = async () => {
     setError('');
-    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); return; }
+    if (!email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); return; }
     if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.'); return; }
     if (password !== confirm) { setError('Şifreler eşleşmiyor.'); return; }
     
     setLoading(true);
+    const displayName = email.split('@')[0];
     const { data, error: authError } = await supabase.auth.signUp({
       email: email.toLowerCase(),
       password,
-      options: {
-        data: { full_name: name }
-      }
     });
 
     if (authError) {
@@ -185,21 +182,17 @@ export default function AuthPage({ onAuth }) {
     }
 
     if (data.user) {
-      // Profili oluştur (hata olsa bile devam et)
       await supabase.from('profiles').upsert([
-        { id: data.user.id, full_name: name, email: data.user.email }
+        { id: data.user.id, full_name: displayName, email: data.user.email }
       ]).select();
 
-      // E-posta onayı kapalıysa (demo modu) direkt giriş yap
       if (data.session) {
-        const authData = { name, email: data.user.email, id: data.user.id };
+        const authData = { name: displayName, email: data.user.email, id: data.user.id };
         localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
-        localStorage.setItem('butceai_user_name', name);
+        localStorage.setItem('butceai_user_name', displayName);
         onAuth(authData);
         return;
       }
-
-      // E-posta onayı açıksa bilgi mesajı göster
       setError('✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.');
     }
     setLoading(false);
@@ -207,7 +200,7 @@ export default function AuthPage({ onAuth }) {
 
   const switchMode = (m) => {
     setMode(m); setError('');
-    setName(''); setEmail(''); setPassword(''); setConfirm('');
+    setEmail(''); setPassword(''); setConfirm('');
   };
 
   return (
@@ -257,9 +250,8 @@ export default function AuthPage({ onAuth }) {
           </div>
 
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>{mode === 'login' ? 'Tekrar hoş geldin 👋' : 'Hesap oluştur ✨'}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Verilerinizi bulutta saklayın'}</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Sadece e-posta ve şifren yeterli — geri kalanı biz hallederiz'}</p>
 
-          {mode === 'register' && <AuthInput icon={User} placeholder="Ad Soyad" value={name} onChange={e => setName(e.target.value)} />}
           <AuthInput icon={Mail} type="email" placeholder="E-posta" value={email} onChange={e => setEmail(e.target.value)} />
           <AuthInput icon={Lock} type={showPass ? 'text' : 'password'} placeholder="Şifre" value={password} onChange={e => setPassword(e.target.value)} right={eyeBtn(showPass, () => setShowPass(v => !v))} />
           {mode === 'register' && <PasswordStrength password={password} />}
