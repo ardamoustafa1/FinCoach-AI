@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
-  Moon, Sun, Globe, Bell, Trash2, Database, RotateCcw, Save,
-  Wallet, QrCode, Shield, Sparkles, ChevronRight, Flame
+  Moon, Sun, Globe, Bell, Database, RotateCcw, Save,
+  Wallet, QrCode, Shield, Sparkles, Flame, LogOut,
+  User, Mail, Phone, Lock, Eye, EyeOff, Check, X, Edit3, BadgeCheck
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { initMockData } from '../data/mockData';
 import { getBudgetLimits, saveBudgetLimits } from '../utils/storage';
 import { TUM_KATEGORILER } from '../utils/categories';
+import { supabase } from '../utils/supabase';
 
 /* ─── Palette ─── */
 const P = {
@@ -79,8 +81,78 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [limits, setLimits] = useState({});
   const [isSaved, setIsSaved] = useState(false);
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('butceai_roast_mode') === 'true');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Profile state
+  const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('butceai_auth_user') || '{}'); } catch { return {}; } };
+  const [profile, setProfile] = useState(() => ({
+    name: localStorage.getItem('butceai_user_name') || getAuthUser().name || '',
+    email: getAuthUser().email || '',
+    phone: localStorage.getItem('butceai_phone') || '',
+  }));
+  const [editField, setEditField] = useState(null); // 'name' | 'email' | 'phone'
+  const [editValue, setEditValue] = useState('');
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  // Password change state
+  const [showPassSection, setShowPassSection] = useState(false);
+  const [currentPass, setCurrentPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [passError, setPassError] = useState('');
+  const [passSaved, setPassSaved] = useState(false);
+
+  // Email verification
+  const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('butceai_email_verified') === 'true');
+  const [verificationSent, setVerificationSent] = useState(false);
 
   useEffect(() => { setLimits(getBudgetLimits()); }, []);
+
+  const startEdit = (field) => { setEditField(field); setEditValue(profile[field]); };
+  const cancelEdit = () => { setEditField(null); setEditValue(''); };
+  const saveField = (field) => {
+    if (!editValue.trim()) return;
+    const updated = { ...profile, [field]: editValue.trim() };
+    setProfile(updated);
+    if (field === 'name') { localStorage.setItem('butceai_user_name', editValue.trim()); }
+    if (field === 'phone') { localStorage.setItem('butceai_phone', editValue.trim()); }
+    if (field === 'email') {
+      const auth = getAuthUser();
+      localStorage.setItem('butceai_auth_user', JSON.stringify({ ...auth, email: editValue.trim() }));
+      setEmailVerified(false); localStorage.removeItem('butceai_email_verified');
+    }
+    setEditField(null); setEditValue('');
+    setProfileSaved(true); setTimeout(() => setProfileSaved(false), 2500);
+  };
+
+  const handlePasswordChange = () => {
+    setPassError('');
+    const users = (() => { try { return JSON.parse(localStorage.getItem('butceai_users') || '[]'); } catch { return []; } })();
+    const auth = getAuthUser();
+    const user = users.find(u => u.email === auth.email);
+    if (user && user.password !== currentPass) { setPassError('Mevcut şifre yanlış.'); return; }
+    if (newPass.length < 6) { setPassError('Yeni şifre en az 6 karakter olmalı.'); return; }
+    if (newPass !== confirmPass) { setPassError('Yeni şifreler eşleşmiyor.'); return; }
+    if (user) {
+      const updated = users.map(u => u.email === auth.email ? { ...u, password: newPass } : u);
+      localStorage.setItem('butceai_users', JSON.stringify(updated));
+    }
+    setCurrentPass(''); setNewPass(''); setConfirmPass('');
+    setPassSaved(true); setPassError('');
+    setTimeout(() => { setPassSaved(false); setShowPassSection(false); }, 2500);
+  };
+
+  const sendVerification = () => {
+    setVerificationSent(true);
+    // Simüle edilmiş doğrulama — 3 saniye sonra otomatik doğrula
+    setTimeout(() => {
+      setEmailVerified(true); localStorage.setItem('butceai_email_verified', 'true');
+      setVerificationSent(false);
+    }, 3000);
+  };
 
   const toggleRoastMode = () => {
     const newVal = !roastMode;
@@ -107,8 +179,54 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     }
   };
 
+  const handleLogout = () => setShowLogoutModal(true);
+
+  const confirmLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('butceai_onboarding_completed');
+    localStorage.removeItem('butceai_auth_user');
+    window.location.replace('/');
+  };
+
   return (
     <>
+      {showLogoutModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(5,7,20,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}>
+          <div style={{
+            background: '#141728', border: '1px solid rgba(239,68,68,0.25)',
+            borderRadius: 24, padding: '36px 32px', maxWidth: 400, width: '100%',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+            animation: 'fadeSlideUp 0.2s ease',
+          }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <LogOut size={24} color='#EF4444' />
+            </div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#F1F5F9', textAlign: 'center', marginBottom: 10 }}>Çıkış Yapmak İstiyor Musunuz?</h3>
+            <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
+              Oturumunuz sonlandırılacak ve tekrar giriş ekranına yönlendirileceksiniz.
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              >İptal</button>
+              <button
+                onClick={confirmLogout}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #EF4444, #DC2626)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 20px rgba(239,68,68,0.35)', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >Çıkış Yap</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         .limit-input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.09) !important; border-radius: 11px !important; color: #F1F5F9 !important; font-family: inherit; }
@@ -129,6 +247,151 @@ export default function SettingsPage({ theme, onToggleTheme }) {
           <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.text3, marginBottom: 8 }}>Demo Kontrol Merkezi</p>
           <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 6 }}>Ayarlar</h1>
           <p style={{ fontSize: 14, color: P.text2 }}>Uygulama tercihlerinizi yönetin</p>
+        </div>
+
+        {/* ── PERSONAL INFORMATION ── */}
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, overflow: 'hidden' }}>
+          {/* Header */}
+          <div style={{ padding: '22px 28px 18px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: `${P.purple}1A`, border: `1px solid ${P.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <User size={18} color={P.purple} />
+              </div>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: P.text1, marginBottom: 1 }}>Kişisel Bilgiler</p>
+                <p style={{ fontSize: 12, color: P.text3 }}>Hesap bilgilerinizi yönetin</p>
+              </div>
+            </div>
+            {profileSaved && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>
+                <Check size={13} /> Kaydedildi
+              </span>
+            )}
+          </div>
+
+          {/* Avatar + name row */}
+          <div style={{ padding: '24px 28px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 3px rgba(124,58,237,0.2)', fontSize: 24, fontWeight: 800, color: '#fff' }}>
+              {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 2 }}>{profile.name || 'Ad girilmedi'}</p>
+              <p style={{ fontSize: 13, color: P.text3 }}>{profile.email || 'E-posta girilmedi'}</p>
+            </div>
+          </div>
+
+          {/* Fields */}
+          {[
+            { key: 'name', label: 'Ad Soyad', icon: User, value: profile.name, placeholder: 'Örn: Arda Yılmaz' },
+            { key: 'email', label: 'E-posta Adresi', icon: Mail, value: profile.email, placeholder: 'Örn: arda@email.com' },
+            { key: 'phone', label: 'Telefon Numarası', icon: Phone, value: profile.phone, placeholder: 'Örn: +90 555 000 00 00' },
+          ].map(({ key, label, icon: Icon, value, placeholder }) => (
+            <div key={key} style={{ padding: '18px 28px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={15} color={P.text3} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>{label}</p>
+                {editField === key ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      autoFocus
+                      value={editValue}
+                      onChange={e => setEditValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveField(key); if (e.key === 'Escape') cancelEdit(); }}
+                      placeholder={placeholder}
+                      style={{ flex: 1, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.4)', borderRadius: 10, padding: '8px 12px', color: P.text1, fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                    />
+                    <button onClick={() => saveField(key)} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} color={P.green} /></button>
+                    <button onClick={cancelEdit} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} color={P.red} /></button>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 14, color: value ? P.text1 : P.text3, fontStyle: value ? 'normal' : 'italic' }}>
+                    {value || `${label} girilmedi`}
+                    {key === 'email' && (
+                      <span style={{ marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, background: emailVerified ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)', border: `1px solid ${emailVerified ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`, fontSize: 11, fontWeight: 700, color: emailVerified ? P.green : P.amber, verticalAlign: 'middle' }}>
+                        {emailVerified ? <><BadgeCheck size={11} /> Doğrulandı</> : '⚠ Doğrulanmadı'}
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
+              {editField !== key && (
+                <button onClick={() => startEdit(key)} style={{ padding: '7px 14px', borderRadius: 10, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.18)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,58,237,0.08)'}
+                ><Edit3 size={12} /> Düzenle</button>
+              )}
+            </div>
+          ))}
+
+          {/* Email verification */}
+          {!emailVerified && profile.email && (
+            <div style={{ padding: '16px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(245,158,11,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 16 }}>📧</span>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: P.amber, marginBottom: 2 }}>E-posta adresi doğrulanmadı</p>
+                    <p style={{ fontSize: 12, color: P.text3 }}>Güvenliğiniz için e-posta adresinizi doğrulayın</p>
+                  </div>
+                </div>
+                <button
+                  onClick={sendVerification}
+                  disabled={verificationSent}
+                  style={{ padding: '8px 18px', borderRadius: 10, background: verificationSent ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', color: P.amber, fontSize: 13, fontWeight: 700, cursor: verificationSent ? 'default' : 'pointer', transition: 'all 0.2s', flexShrink: 0 }}
+                >
+                  {verificationSent ? '✓ Gönderildi...' : 'Doğrulama Gönder'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Password change */}
+          <div style={{ padding: '18px 28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setShowPassSection(v => !v)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Lock size={15} color={P.text3} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: P.text1 }}>Şifre Değiştir</p>
+                  <p style={{ fontSize: 12, color: P.text3 }}>Hesap güvenliğinizi güncelleyin</p>
+                </div>
+              </div>
+              <span style={{ fontSize: 18, color: P.text3, transition: 'transform 0.2s', display: 'inline-block', transform: showPassSection ? 'rotate(180deg)' : 'none' }}>⌄</span>
+            </div>
+
+            {showPassSection && (
+              <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[{ label: 'Mevcut Şifre', val: currentPass, set: setCurrentPass, show: showCurrent, toggle: () => setShowCurrent(v => !v) },
+                  { label: 'Yeni Şifre', val: newPass, set: setNewPass, show: showNew, toggle: () => setShowNew(v => !v) },
+                  { label: 'Yeni Şifre (Tekrar)', val: confirmPass, set: setConfirmPass, show: showConfirm, toggle: () => setShowConfirm(v => !v) }
+                ].map(({ label, val, set, show, toggle }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}`, borderRadius: 12, padding: '12px 16px' }}>
+                    <input
+                      type={show ? 'text' : 'password'}
+                      placeholder={label}
+                      value={val}
+                      onChange={e => set(e.target.value)}
+                      style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: P.text1, fontSize: 14, fontFamily: 'inherit' }}
+                    />
+                    <button onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 0, display: 'flex' }}>
+                      {show ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                ))}
+                {passError && <p style={{ fontSize: 12, color: P.red, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)' }}>⚠️ {passError}</p>}
+                {passSaved && <p style={{ fontSize: 12, color: P.green, padding: '8px 12px', background: 'rgba(16,185,129,0.08)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.2)' }}>✓ Şifre başarıyla güncellendi!</p>}
+                <button
+                  onClick={handlePasswordChange}
+                  style={{ padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed, #6366f1)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 20px rgba(124,58,237,0.3)', transition: 'opacity 0.2s', marginTop: 4 }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >Şifre Güncelle</button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── GENERAL SETTINGS ── */}
@@ -225,6 +488,22 @@ export default function SettingsPage({ theme, onToggleTheme }) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ── ACCOUNT MANAGEMENT ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Hesap Yönetimi</span>
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.3), transparent)' }} />
+          </div>
+
+          <SettingRow
+            icon={LogOut}
+            iconColor={P.red}
+            title="Çıkış Yap"
+            subtitle="Mevcut oturumunuzu sonlandırır"
+            action={<ActionButton onClick={handleLogout} label="Çıkış Yap" variant="danger" />}
+          />
         </div>
 
         {/* ── DATA MANAGEMENT ── */}

@@ -7,7 +7,7 @@ import {
   ArrowUpRight, ArrowDownRight, Calendar, Tag,
 } from 'lucide-react';
 import { katRenk, TUM_KATEGORILER, fmt } from '../utils/categories';
-import { saveTransaction, removeTransaction } from '../utils/storage';
+import { getTransactions, saveTransaction, removeTransaction } from '../utils/storage';
 import TransactionModal from '../components/TransactionModal';
 import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
@@ -39,18 +39,6 @@ const CAT_ICONS = {
   Yemek: '🍔', 'Yemek Siparişi': '🛵', Alışveriş: '🛍️',
   Sağlık: '💊', Eğitim: '📚', Diğer: '💳',
 };
-
-/* ─── localStorage ─── */
-function yukleIslemler() {
-  try {
-    const tx = JSON.parse(localStorage.getItem('butceai_transactions') || '[]');
-    const gl = JSON.parse(localStorage.getItem('butceai_gelir') || '[]');
-    return [
-      ...tx.map(i => ({ ...i, tur: 'gider' })),
-      ...gl.map(i => ({ ...i, tur: 'gelir' })),
-    ].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || ''));
-  } catch { return []; }
-}
 
 /* ─── GlowOrb ─── */
 function GlowOrb({ color, size = 300, style = {} }) {
@@ -534,7 +522,7 @@ function FisTaraModal({ onSonuc, onApiError, onKapat }) {
 /* ─── MAIN ─── */
 export default function TransactionsPage() {
   const toast = useToast();
-  const [ham, setHam] = useState(() => yukleIslemler());
+  const [ham, setHam] = useState(() => getTransactions().sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
   const [gorunum, setGorunum] = useState('tablo');
   const [sayfa, setSayfa] = useState(1);
   const [sortKolon, setSortKolon] = useState('tarih');
@@ -596,11 +584,16 @@ export default function TransactionsPage() {
   };
 
   /* ─ CRUD ─ */
-  const handleKaydet = (form) => {
+  const refreshLocal = () => {
+    const tx = getTransactions();
+    setHam(tx.sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
+  };
+
+  const handleKaydet = async (form) => {
     const yeniIslemMi = !duzenlenen;
-    const kaydedilen = saveTransaction({ ...form });
+    const kaydedilen = await saveTransaction({ ...form });
     if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
-    setHam(yukleIslemler()); setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
+    refreshLocal(); setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
   };
 
   const handleFisSonucu = (ocr) => {
@@ -611,9 +604,14 @@ export default function TransactionsPage() {
   };
 
   const handleAlisilmadikSecim = (d) => { if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, d); setAlisilmadik(null); };
-  const handleSil = () => { if (!silinecek) return; removeTransaction(silinecek.id); setHam(yukleIslemler()); setSilinecek(null); };
+  const handleSil = async () => { if (!silinecek) return; await removeTransaction(silinecek.id); refreshLocal(); setSilinecek(null); };
   const handleDuzenle = (tx) => { setDuzenlenen(tx); setModalAcik(true); };
-  const handleCsvImport = (islemler) => { islemler.forEach(tx => saveTransaction({ ...tx })); setHam(yukleIslemler()); setCsvAcik(false); };
+  const handleCsvImport = async (islemler) => { 
+    for (const tx of islemler) {
+      await saveTransaction({ ...tx });
+    }
+    refreshLocal(); setCsvAcik(false); 
+  };
 
   /* ─ Filtreleme ─ */
   const filtrelenmis = useMemo(() => {

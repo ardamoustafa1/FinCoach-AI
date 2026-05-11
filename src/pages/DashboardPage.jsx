@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Activity, Zap } from 'lucide-react';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import TrendLineChart from '../components/charts/TrendLineChart';
@@ -7,8 +7,8 @@ import BudgetBars from '../components/BudgetBars';
 import LimitBanner from '../components/LimitBanner';
 import HealthScore from '../components/HealthScore';
 import PersonalityCard from '../components/PersonalityCard';
-import { getBudgetLimits } from '../utils/storage';
 import { useToast } from '../hooks/useToast';
+import { useSupabaseData } from '../hooks/useSupabaseData';
 
 /* ─── Palette ─── */
 const P = {
@@ -18,17 +18,6 @@ const P = {
   border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
   text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
 };
-
-function getIslemler() {
-  try { return JSON.parse(localStorage.getItem('butceai_transactions') || '[]'); } catch { return []; }
-}
-function getGelirler() {
-  try { return JSON.parse(localStorage.getItem('butceai_gelir') || '[]'); } catch { return []; }
-}
-function ayFiltre(liste, ay) {
-  const prefix = `2025-${String(ay).padStart(2, '0')}`;
-  return liste.filter((i) => i.tarih && i.tarih.startsWith(prefix));
-}
 
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
@@ -98,89 +87,82 @@ function StatCard({ label, target, icon: Icon, color, isCurrency = true, change,
 
 export default function DashboardPage() {
   const toast = useToast();
-  const [veriler, setVeriler] = useState(null);
-  const [rawIslemler, setRawIslemler] = useState([]);
-  const [rawGelirler, setRawGelirler] = useState([]);
-  const [budgetLimitler, setBudgetLimitler] = useState({});
-  const [buAyHarcamalar, setBuAyHarcamalar] = useState({});
+  const { transactions, limits, loading } = useSupabaseData();
   const [headerVis, setHeaderVis] = useState(false);
 
-  useEffect(() => { setTimeout(() => setHeaderVis(true), 100); }, []);
+  useEffect(() => { setHeaderVis(true); }, []);
 
-  useEffect(() => {
-    const islemler = getIslemler();
-    const gelirler = getGelirler();
-    setRawIslemler(islemler);
-    setRawGelirler(gelirler);
+  const stats = useMemo(() => {
+    if (!transactions.length) return { buAyGelir: 0, buAyGider: 0, netBakiye: 0, tasarrufOrani: 0, gelirDegisim: 0, giderDegisim: 0, harcamaMap: {} };
 
-    const limitler = getBudgetLimits();
-    setBudgetLimitler(limitler);
+    const bugun = new Date();
+    const buAyPrefix = `${bugun.getFullYear()}-${String(bugun.getMonth() + 1).padStart(2, '0')}`;
+    const gecenAyPrefix = `${bugun.getFullYear()}-${String(bugun.getMonth()).padStart(2, '0')}`;
 
-    const buAyPrefix = '2025-05';
+    const buAyIs = transactions.filter(t => t.tarih.startsWith(buAyPrefix));
+    const gecenAyIs = transactions.filter(t => t.tarih.startsWith(gecenAyPrefix));
+
+    const buAyGelir = buAyIs.filter(t => t.tur === 'gelir').reduce((s, t) => s + t.tutar, 0);
+    const buAyGider = buAyIs.filter(t => t.tur === 'gider').reduce((s, t) => s + t.tutar, 0);
+    const gecenAyGelir = gecenAyIs.filter(t => t.tur === 'gelir').reduce((s, t) => s + t.tutar, 0);
+    const gecenAyGider = gecenAyIs.filter(t => t.tur === 'gider').reduce((s, t) => s + t.tutar, 0);
+
     const harcamaMap = {};
-    islemler.filter(i => i.tarih && i.tarih.startsWith(buAyPrefix)).forEach(i => { harcamaMap[i.kategori] = (harcamaMap[i.kategori] || 0) + i.tutar; });
-    setBuAyHarcamalar(harcamaMap);
-
-    Object.entries(limitler).forEach(([kat, limit]) => {
-      const harcanan = harcamaMap[kat] || 0;
-      const oran = limit > 0 ? (harcanan / limit) * 100 : 0;
-      if (oran >= 100) toast.error(`⚠️ ${kat} limiti aşıldı`);
-      else if (oran >= 80) toast.warning(`⚠️ ${kat} limitine %${Math.max(0, Math.round(100 - oran))} kaldı`);
+    buAyIs.filter(t => t.tur === 'gider').forEach(t => {
+      harcamaMap[t.kategori] = (harcamaMap[t.kategori] || 0) + t.tutar;
     });
 
-    const buAyIs = ayFiltre(islemler, 5);
-    const gecenAyIs = ayFiltre(islemler, 4);
-    const buAyGelir = ayFiltre(gelirler, 5).reduce((t, g) => t + g.tutar, 0);
-    const gecenAyGelir = ayFiltre(gelirler, 4).reduce((t, g) => t + g.tutar, 0);
-    const buAyGider = buAyIs.reduce((t, i) => t + i.tutar, 0);
-    const gecenAyGider = gecenAyIs.reduce((t, i) => t + i.tutar, 0);
     const netBakiye = buAyGelir - buAyGider;
     const tasarrufOrani = buAyGelir > 0 ? ((buAyGelir - buAyGider) / buAyGelir) * 100 : 0;
-    const gelirDegisim = gecenAyGelir > 0 ? parseFloat((((buAyGelir - gecenAyGelir) / gecenAyGelir) * 100).toFixed(1)) : 0;
-    const giderDegisim = gecenAyGider > 0 ? parseFloat((((buAyGider - gecenAyGider) / gecenAyGider) * 100).toFixed(1)) : 0;
+    const gelirDegisim = gecenAyGelir > 0 ? ((buAyGelir - gecenAyGelir) / gecenAyGelir) * 100 : 0;
+    const giderDegisim = gecenAyGider > 0 ? ((buAyGider - gecenAyGider) / gecenAyGider) * 100 : 0;
 
-    setVeriler({ buAyGelir, buAyGider, netBakiye, tasarrufOrani, gelirDegisim, giderDegisim });
-  }, [toast]);
+    return { buAyGelir, buAyGider, netBakiye, tasarrufOrani, gelirDegisim, giderDegisim, harcamaMap };
+  }, [transactions]);
 
-  if (!veriler) return null;
+  useEffect(() => {
+    if (loading) return;
+    Object.entries(limits).forEach(([kat, limit]) => {
+      const harcanan = stats.harcamaMap[kat] || 0;
+      const oran = limit > 0 ? (harcanan / limit) * 100 : 0;
+      if (oran >= 100) toast.error(`⚠️ ${kat} limiti aşıldı`);
+      else if (oran >= 80) toast.warning(`⚠️ ${kat} limitine çok az kaldı!`);
+    });
+  }, [limits, stats.harcamaMap, loading, toast]);
 
-  const asimlar = Object.entries(budgetLimitler)
-    .filter(([kat, limit]) => (buAyHarcamalar[kat] || 0) > limit)
-    .map(([kategori, limit]) => ({ kategori, harcanan: buAyHarcamalar[kategori], limit }));
+  if (loading) return null;
+
+  const asimlar = Object.entries(limits)
+    .filter(([kat, limit]) => (stats.harcamaMap[kat] || 0) > limit)
+    .map(([kategori, limit]) => ({ kategori, harcanan: stats.harcamaMap[kategori], limit }));
 
   const kartlar = [
-    { label: 'Bu Ay Gelir', target: veriler.buAyGelir, icon: TrendingUp, color: P.green, change: veriler.gelirDegisim, delay: 100 },
-    { label: 'Bu Ay Gider', target: veriler.buAyGider, icon: TrendingDown, color: P.red, change: veriler.giderDegisim, delay: 180 },
-    { label: 'Net Bakiye', target: veriler.netBakiye, icon: Wallet, color: veriler.netBakiye >= 0 ? P.purple : P.red, delay: 260 },
-    { label: 'Tasarruf Oranı', target: veriler.tasarrufOrani, icon: PiggyBank, color: P.amber, isCurrency: false, delay: 340 },
+    { label: 'Bu Ay Gelir', target: stats.buAyGelir, icon: TrendingUp, color: P.green, change: stats.gelirDegisim, delay: 100 },
+    { label: 'Bu Ay Gider', target: stats.buAyGider, icon: TrendingDown, color: P.red, change: stats.giderDegisim, delay: 180 },
+    { label: 'Net Bakiye', target: stats.netBakiye, icon: Wallet, color: stats.netBakiye >= 0 ? P.purple : P.red, delay: 260 },
+    { label: 'Tasarruf Oranı', target: stats.tasarrufOrani, icon: PiggyBank, color: P.amber, isCurrency: false, delay: 340 },
   ];
 
   return (
     <>
       <style>{`@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-        {/* ── HERO ── */}
-        <div style={{
-          opacity: headerVis ? 1 : 0, transform: headerVis ? 'none' : 'translateY(-16px)',
-          transition: 'all 0.7s cubic-bezier(0.4,0,0.2,1)',
-        }}>
+        <div style={{ opacity: headerVis ? 1 : 0, transform: headerVis ? 'none' : 'translateY(-16px)', transition: 'all 0.7s cubic-bezier(0.4,0,0.2,1)' }}>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
-            <div style={{ position: 'absolute', top: -80, right: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(60px)', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, display: 'inline-block' }} />
-                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>Mayıs 2025</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>{new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}</span>
                 </div>
                 <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 8 }}>Finansal Kontrol Paneli</h1>
-                <p style={{ fontSize: 14, color: P.text2 }}>Riskleri, fırsatları ve bütçe sağlığını tek bakışta oku.</p>
+                <p style={{ fontSize: 14, color: P.text2 }}>Riskleri, fırsatları ve bütçe sağlığını bulut üzerinden takip et. ☁️</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { icon: Zap, label: 'AI Motor', value: 'Aktif', color: P.purple },
-                  { icon: Activity, label: 'Skor', value: 'Canlı', color: P.green },
+                  { icon: Zap, label: 'Cloud Senkron', value: 'Aktif', color: P.purple },
+                  { icon: Activity, label: 'Bütçe Sağlığı', value: 'Canlı', color: P.green },
                 ].map(({ icon: Icon, label, value, color }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '10px 14px' }}>
                     <div style={{ width: 30, height: 30, borderRadius: 9, background: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -198,22 +180,20 @@ export default function DashboardPage() {
         </div>
 
         <LimitBanner asimlar={asimlar} persistent />
-        <HealthScore islemler={rawIslemler} gelirler={rawGelirler} />
-        <PersonalityCard islemler={rawIslemler} />
+        <HealthScore islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
+        <PersonalityCard islemler={transactions} />
 
-        {/* ── STAT CARDS ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}>
           {kartlar.map(k => <StatCard key={k.label} {...k} />)}
         </div>
 
-        {/* ── CHARTS ── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          <CategoryPieChart islemler={rawIslemler} />
-          <TrendLineChart islemler={rawIslemler} gelirler={rawGelirler} />
+          <CategoryPieChart islemler={transactions} />
+          <TrendLineChart islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
         </div>
 
-        <HeatmapCalendar islemler={rawIslemler} />
-        <BudgetBars harcamalar={buAyHarcamalar} limitler={budgetLimitler} />
+        <HeatmapCalendar islemler={transactions} />
+        <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
       </div>
     </>
   );

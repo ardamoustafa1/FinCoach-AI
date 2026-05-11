@@ -9,45 +9,156 @@ import ChatPage from './pages/ChatPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import Onboarding from './components/Onboarding';
+import AuthPage from './pages/AuthPage';
 import { saveTheme } from './utils/storage';
 import { seedDataIfEmpty } from './utils/seedData';
 import { initMockData } from './data/mockData';
 import { ToastProvider } from './components/ToastProvider';
+import { supabase } from './utils/supabase';
 
 export default function App() {
-  const [theme, setTheme] = useState('dark');
-  const [onboardingCompleted, setOnboardingCompleted] = useState(
-    () => localStorage.getItem('butceai_onboarding_completed') === 'true'
-  );
+  const [theme] = useState('dark');
+  const [loading, setLoading] = useState(true);
+  const [authUser, setAuthUser] = useState(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
-    seedDataIfEmpty();
-    initMockData();
+    // 1. Mevcut session'ı kontrol et
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        checkUserStatus(session.user);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // 2. Auth değişikliklerini dinle
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        checkUserStatus(session.user);
+      } else {
+        setAuthUser(null);
+        setOnboardingCompleted(false);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add('dark');
-    saveTheme('dark');
-  }, [theme]);
+  const checkUserStatus = async (user) => {
+    try {
+      // 1. Profil bilgisini çek
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-  const toggleTheme = () => setTheme('dark');
+      setAuthUser({
+        id: user.id,
+        email: user.email,
+        name: profile?.full_name || user.email.split('@')[0]
+      });
+
+      setOnboardingCompleted(profile?.onboarding_completed || false);
+
+      // 2. Veri Senkronizasyonu (Buluttan yerele)
+      const [tx, gl, lm] = await Promise.all([
+        supabase.from('transactions').select('*').eq('user_id', user.id),
+        supabase.from('goals').select('*').eq('user_id', user.id),
+        supabase.from('budget_limits').select('*').eq('user_id', user.id)
+      ]);
+
+      if (tx.data) {
+        const formattedTx = tx.data.map(t => ({
+          id: t.id,
+          aciklama: t.aciklama,
+          tutar: Number(t.tutar),
+          tarih: t.tarih,
+          kategori: t.kategori,
+          magaza: t.magaza,
+          tur: t.tur,
+          createdAt: t.created_at
+        }));
+        localStorage.setItem('butceai_transactions', JSON.stringify(formattedTx));
+      }
+
+      if (gl.data) {
+        const formattedGl = gl.data.map(g => ({
+          id: g.id,
+          name: g.baslik,
+          targetAmount: Number(g.hedef_tutar),
+          currentAmount: Number(g.mevcut_tutar),
+          deadline: g.deadline,
+          icon: g.icon,
+          color: g.renk,
+          createdAt: g.created_at
+        }));
+        localStorage.setItem('butceai_goals', JSON.stringify(formattedGl));
+      }
+
+      if (lm.data) {
+        const limits = {};
+        lm.data.forEach(l => { limits[l.category] = Number(l.limit_amount); });
+        localStorage.setItem('butceai_budget_limits', JSON.stringify(limits));
+      }
+
+    } catch (err) {
+      console.error('Statü kontrol hatası:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    saveTheme('dark');
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: 20 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', animation: 'spin 1s linear infinite' }} />
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.05em' }}>BütçeAI Başlatılıyor...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // Henüz giriş yapılmamış
+  if (!authUser) {
+    return (
+      <ToastProvider>
+        <AuthPage onAuth={(user) => setAuthUser(user)} />
+      </ToastProvider>
+    );
+  }
+
+  // Giriş yapıldı ama onboarding bitmedi
+  if (!onboardingCompleted) {
+    return (
+      <ToastProvider>
+        <Onboarding onComplete={async () => {
+          await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', authUser.id);
+          setOnboardingCompleted(true);
+        }} />
+      </ToastProvider>
+    );
+  }
 
   return (
     <ToastProvider>
-      {!onboardingCompleted && (
-        <Onboarding onComplete={() => setOnboardingCompleted(true)} />
-      )}
       <BrowserRouter>
         <Routes>
-          <Route element={<Layout theme={theme} onToggleTheme={toggleTheme} />}>
+          <Route element={<Layout theme={theme} onToggleTheme={() => {}} />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/goals" element={<GoalsPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={toggleTheme} />} />
+            <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={() => {}} />} />
           </Route>
         </Routes>
       </BrowserRouter>

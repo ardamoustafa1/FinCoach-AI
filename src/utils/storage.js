@@ -1,7 +1,7 @@
 /**
- * BütçeAI - localStorage Veri Yönetimi
- * Tüm veri işlemleri için temel CRUD fonksiyonları
+ * BütçeAI - localStorage & Supabase Senkronizasyon Katmanı
  */
+import { supabase } from './supabase';
 
 const KEYS = {
   TRANSACTIONS: 'butceai_transactions',
@@ -12,7 +12,6 @@ const KEYS = {
   CATEGORY_RULES: 'butceai_category_rules',
 };
 
-// ─── Varsayılan kategori limitleri ───────────────────────────
 export const DEFAULT_LIMITS = {
   Market: 3000,
   'Yemek Siparişi': 2000,
@@ -30,7 +29,6 @@ function getItem(key, fallback = []) {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : fallback;
   } catch {
-    console.error(`[BütçeAI] Veri okunamadı: ${key}`);
     return fallback;
   }
 }
@@ -40,7 +38,6 @@ function setItem(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch {
-    console.error(`[BütçeAI] Veri yazılamadı: ${key}`);
     return false;
   }
 }
@@ -50,80 +47,70 @@ export function getTransactions() {
   return getItem(KEYS.TRANSACTIONS, []);
 }
 
-export function saveTransactions(transactions) {
-  return setItem(KEYS.TRANSACTIONS, transactions);
+export async function saveTransaction(islem) {
+  // 1. Yerel kaydet (Offline-first / Hızlı UI için)
+  const list = getTransactions();
+  const idx = list.findIndex(i => i.id === islem.id);
+  
+  const islemToSave = { ...islem };
+  if (idx >= 0) {
+    list[idx] = islemToSave;
+  } else {
+    if (!islemToSave.id) islemToSave.id = crypto.randomUUID();
+    if (!islemToSave.createdAt) islemToSave.createdAt = new Date().toISOString();
+    list.unshift(islemToSave);
+  }
+  setItem(KEYS.TRANSACTIONS, list);
+
+  // 2. Supabase Senkronizasyonu
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const payload = {
+      user_id: user.id,
+      aciklama: islemToSave.aciklama,
+      tutar: Number(islemToSave.tutar),
+      tarih: islemToSave.tarih || new Date().toISOString().split('T')[0],
+      kategori: islemToSave.kategori,
+      magaza: islemToSave.magaza,
+      tur: islemToSave.tur || 'gider'
+    };
+
+    if (idx >= 0 && typeof islemToSave.id === 'string' && islemToSave.id.length > 30) {
+      // UUID ise update dene
+      await supabase.from('transactions').upsert({ id: islemToSave.id, ...payload });
+    } else {
+      // Yeni ekle
+      const { data } = await supabase.from('transactions').insert([payload]).select().single();
+      if (data) {
+        // ID'yi eşle
+        islemToSave.id = data.id;
+        setItem(KEYS.TRANSACTIONS, list.map(i => i.id === (islem.id || islemToSave.id) ? { ...i, id: data.id } : i));
+      }
+    }
+  }
+  
+  if (islemToSave.magaza) saveCategoryRule(islemToSave.magaza, islemToSave.kategori);
+  return islemToSave;
 }
 
-export function addTransaction(transaction) {
-  const transactions = getTransactions();
-  const newTransaction = {
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-    ...transaction,
-  };
-  transactions.unshift(newTransaction);
-  saveTransactions(transactions);
-  return newTransaction;
-}
+export async function removeTransaction(id) {
+  // 1. Yerel sil
+  const list = getTransactions().filter(i => i.id !== id);
+  setItem(KEYS.TRANSACTIONS, list);
 
-export function deleteTransaction(id) {
-  const transactions = getTransactions().filter((t) => t.id !== id);
-  saveTransactions(transactions);
-  return transactions;
+  // 2. Supabase sil
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from('transactions').delete().eq('id', id);
+  }
 }
 
 // ─── Hedefler (Goals) ────────────────────────────────────────
 export function getGoals() {
-  const existing = getItem(KEYS.GOALS, null);
-  if (existing) return existing;
-
-  // Demo verileri
-  const bugun = new Date();
-  const ucAySonra = new Date(bugun); ucAySonra.setMonth(ucAySonra.getMonth() + 3);
-  const altiAySonra = new Date(bugun); altiAySonra.setMonth(altiAySonra.getMonth() + 6);
-  const onIkiAySonra = new Date(bugun); onIkiAySonra.setMonth(onIkiAySonra.getMonth() + 12);
-
-  const demoGoals = [
-    {
-      id: crypto.randomUUID(),
-      createdAt: bugun.toISOString(),
-      name: 'Tatil Fonu',
-      targetAmount: 8000,
-      currentAmount: 5200,
-      deadline: ucAySonra.toISOString().slice(0, 10),
-      icon: '✈️',
-      color: 'blue'
-    },
-    {
-      id: crypto.randomUUID(),
-      createdAt: bugun.toISOString(),
-      name: 'Yeni Laptop',
-      targetAmount: 15000,
-      currentAmount: 4500,
-      deadline: altiAySonra.toISOString().slice(0, 10),
-      icon: '📱',
-      color: 'purple'
-    },
-    {
-      id: crypto.randomUUID(),
-      createdAt: bugun.toISOString(),
-      name: 'Acil Durum Fonu',
-      targetAmount: 20000,
-      currentAmount: 9000,
-      deadline: onIkiAySonra.toISOString().slice(0, 10),
-      icon: '💰',
-      color: 'emerald'
-    }
-  ];
-  saveGoals(demoGoals);
-  return demoGoals;
+  return getItem(KEYS.GOALS, []);
 }
 
-export function saveGoals(goals) {
-  return setItem(KEYS.GOALS, goals);
-}
-
-export function addGoal(goal) {
+export async function addGoal(goal) {
   const goals = getGoals();
   const newGoal = {
     id: crypto.randomUUID(),
@@ -132,44 +119,58 @@ export function addGoal(goal) {
     ...goal,
   };
   goals.push(newGoal);
-  saveGoals(goals);
+  setItem(KEYS.GOALS, goals);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data } = await supabase.from('goals').insert([{
+      user_id: user.id,
+      baslik: newGoal.name,
+      hedef_tutar: Number(newGoal.targetAmount),
+      mevcut_tutar: Number(newGoal.currentAmount),
+      icon: newGoal.icon,
+      renk: newGoal.color,
+      deadline: newGoal.deadline
+    }]).select().single();
+    
+    if (data) {
+      newGoal.id = data.id;
+      setItem(KEYS.GOALS, goals.map(g => g.id === (goal.id || newGoal.id) ? { ...g, id: data.id } : g));
+    }
+  }
   return newGoal;
 }
 
-export function updateGoal(id, updates) {
+export async function updateGoal(id, updates) {
   const goals = getGoals().map((g) =>
     g.id === id ? { ...g, ...updates } : g
   );
-  saveGoals(goals);
+  setItem(KEYS.GOALS, goals);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const payload = {};
+    if (updates.name) payload.baslik = updates.name;
+    if (updates.targetAmount) payload.hedef_tutar = Number(updates.targetAmount);
+    if (updates.currentAmount !== undefined) payload.mevcut_tutar = Number(updates.currentAmount);
+    if (updates.deadline) payload.deadline = updates.deadline;
+    if (updates.icon) payload.icon = updates.icon;
+    if (updates.color) payload.renk = updates.color;
+
+    await supabase.from('goals').update(payload).eq('id', id);
+  }
   return goals;
 }
 
-export function deleteGoal(id) {
+export async function deleteGoal(id) {
   const goals = getGoals().filter((g) => g.id !== id);
-  saveGoals(goals);
+  setItem(KEYS.GOALS, goals);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from('goals').delete().eq('id', id);
+  }
   return goals;
-}
-
-// ─── Ayarlar (Settings) ──────────────────────────────────────
-export function getSettings() {
-  return getItem(KEYS.SETTINGS, {
-    currency: 'TRY',
-    language: 'tr',
-    notifications: true,
-  });
-}
-
-export function saveSettings(settings) {
-  return setItem(KEYS.SETTINGS, settings);
-}
-
-// ─── Tema (Theme) ────────────────────────────────────────────
-export function getTheme() {
-  return localStorage.getItem(KEYS.THEME) || 'dark';
-}
-
-export function saveTheme(theme) {
-  localStorage.setItem(KEYS.THEME, theme);
 }
 
 // ─── Bütçe Limitleri ─────────────────────────────────────────
@@ -177,53 +178,30 @@ export function getBudgetLimits() {
   return getItem(KEYS.BUDGET_LIMITS, DEFAULT_LIMITS);
 }
 
-export function saveBudgetLimits(limits) {
-  return setItem(KEYS.BUDGET_LIMITS, limits);
-}
-
-export function updateBudgetLimit(kategori, limit) {
+export async function updateBudgetLimit(kategori, limit) {
   const limits = getBudgetLimits();
   limits[kategori] = Number(limit);
-  return saveBudgetLimits(limits);
+  setItem(KEYS.BUDGET_LIMITS, limits);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from('budget_limits').upsert({
+      user_id: user.id,
+      category: kategori,
+      limit_amount: Number(limit)
+    }, { onConflict: 'user_id,category' });
+  }
+  return limits;
 }
 
-// ─── Kategori Öğrenme Kuralları ──────────────────────────────
-export function getCategoryRules() {
-  return getItem(KEYS.CATEGORY_RULES, {});
+// ─── Diğerleri ───────────────────────────────────────────────
+export function saveTheme(theme) {
+  localStorage.setItem(KEYS.THEME, theme);
 }
 
 export function saveCategoryRule(magaza, kategori) {
   if (!magaza || !kategori) return;
-  const rules = getCategoryRules();
+  const rules = getItem(KEYS.CATEGORY_RULES, {});
   rules[magaza.trim().toLowerCase()] = kategori;
   setItem(KEYS.CATEGORY_RULES, rules);
-}
-
-export function suggestCategory(magaza) {
-  if (!magaza) return null;
-  const rules = getCategoryRules();
-  return rules[magaza.trim().toLowerCase()] || null;
-}
-
-// ─── İşlem CRUD ──────────────────────────────────────────────
-export function saveTransaction(islem) {
-  const list = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]');
-  const idx = list.findIndex(i => i.id === islem.id);
-  if (idx >= 0) {
-    list[idx] = islem;
-  } else {
-    islem.id = crypto.randomUUID();
-    islem.createdAt = new Date().toISOString();
-    list.unshift(islem);
-  }
-  localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(list));
-  // Kategori kuralı öğren
-  if (islem.magaza) saveCategoryRule(islem.magaza, islem.kategori);
-  return islem;
-}
-
-export function removeTransaction(id) {
-  const list = JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS) || '[]')
-    .filter(i => i.id !== id);
-  localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(list));
 }

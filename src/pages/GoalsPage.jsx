@@ -81,27 +81,33 @@ export default function GoalsPage() {
 
   const handleOpenModal = (g = null) => { setDuzenlenen(g); setModalAcik(true); };
 
-  const handleSave = (yeniHedef) => {
-    let newGoals;
+  const refreshGoals = () => {
+    setGoals(getGoals());
+  };
+
+  const handleSave = async (yeniHedef) => {
+    const wasIncomplete = !duzenlenen || Number(duzenlenen.currentAmount) < Number(duzenlenen.targetAmount);
+    
     if (duzenlenen) {
-      newGoals = updateGoal(duzenlenen.id, yeniHedef);
+      await updateGoal(duzenlenen.id, yeniHedef);
     } else {
-      addGoal(yeniHedef);
-      newGoals = getGoals();
+      await addGoal(yeniHedef);
     }
-    setGoals(newGoals);
+    
+    refreshGoals();
     setModalAcik(false);
     setDuzenlenen(null);
-    const wasIncomplete = !duzenlenen || Number(duzenlenen.currentAmount) < Number(duzenlenen.targetAmount);
+
     if (Number(yeniHedef.currentAmount) >= Number(yeniHedef.targetAmount) && wasIncomplete) {
       triggerConfetti();
       setCompletedModal(yeniHedef.name);
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Bu hedefi silmek istediğinize emin misiniz?')) {
-      setGoals(deleteGoal(id));
+      await deleteGoal(id);
+      refreshGoals();
     }
   };
 
