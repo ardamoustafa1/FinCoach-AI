@@ -10,7 +10,7 @@ import jsPDF from 'jspdf';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import { getBudgetLimits, getGoals, getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
-import { apiUrl } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 /* ─── Palette ─── */
 const P = {
@@ -125,8 +125,8 @@ export default function ReportsPage() {
   const handleAnalyze = async () => {
     setAiLoading(true); setAiError('');
     try {
-      const res = await fetch(apiUrl('/api/analyze'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await authFetch('/api/analyze', {
+        method: 'POST',
         body: JSON.stringify({
           aylikVeri: {
             ay: monthLabel(selectedMonth),

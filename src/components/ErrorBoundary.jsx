@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { trackEvent } from '../utils/analytics';
 
 const colors = {
   bg: '#050714',
@@ -21,6 +22,10 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('Uygulama hata sınırı:', error, info);
+    trackEvent('frontend_error', {
+      message: error?.message || 'unknown',
+      componentStack: info?.componentStack?.slice(0, 800),
+    });
   }
 
   render() {

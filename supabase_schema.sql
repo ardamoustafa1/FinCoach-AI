@@ -43,11 +43,24 @@ create table budget_limits (
   unique(user_id, category)
 );
 
+-- 5. ÜRÜN ANALİTİĞİ / HATA İZLEME
+create table app_events (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade,
+  name text not null,
+  properties jsonb default '{}'::jsonb,
+  path text,
+  session_id text,
+  occurred_at timestamp with time zone default timezone('utc'::text, now()),
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
 -- RLS (Row Level Security) - Güvenlik kuralları
 alter table profiles enable row level security;
 alter table transactions enable row level security;
 alter table goals enable row level security;
 alter table budget_limits enable row level security;
+alter table app_events enable row level security;
 
 -- Sadece kendi verilerini görme/düzenleme izinleri
 create policy "Kullanıcılar sadece kendi profilini görebilir" on profiles for select using (auth.uid() = id);
@@ -57,3 +70,4 @@ create policy "Kullanıcılar kendi profilini güncelleyebilir" on profiles for 
 create policy "Kullanıcılar kendi işlemlerini yönetebilir" on transactions for all using (auth.uid() = user_id);
 create policy "Kullanıcılar kendi hedeflerini yönetebilir" on goals for all using (auth.uid() = user_id);
 create policy "Kullanıcılar kendi limitlerini yönetebilir" on budget_limits for all using (auth.uid() = user_id);
+create policy "Kullanıcılar kendi eventlerini görebilir" on app_events for select using (auth.uid() = user_id);

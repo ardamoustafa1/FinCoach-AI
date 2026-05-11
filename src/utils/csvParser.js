@@ -48,6 +48,55 @@ const BANKA_FORMATLARI = [
     }),
   },
   {
+    ad: 'Akbank',
+    gerekliSutunlar: ['işlem tarihi', 'açıklama', 'tutar'],
+    alternativSutunlar: ['islem tarihi', 'aciklama', 'tutar'],
+    parse: (row) => {
+      const tutar = temizTutar(row['Tutar'] || row['tutar'] || row['İşlem Tutarı'] || row['islem tutarı']);
+      const description = row['Açıklama'] || row['aciklama'] || row['İşlem Açıklaması'] || row['islem açıklaması'] || '';
+      return {
+        tarih: normalTarih(row['İşlem Tarihi'] || row['işlem tarihi'] || row['Islem Tarihi'] || row['islem tarihi']),
+        aciklama: description.trim(),
+        magaza: magazaCikar(description),
+        tutar: Math.abs(tutar),
+        tur: tutar < 0 ? 'gider' : 'gelir',
+      };
+    },
+  },
+  {
+    ad: 'Enpara',
+    gerekliSutunlar: ['tarih', 'açıklama', 'işlem tutarı'],
+    alternativSutunlar: ['tarih', 'aciklama', 'islem tutarı'],
+    parse: (row) => {
+      const tutar = temizTutar(row['İşlem Tutarı'] || row['islem tutarı'] || row['Tutar'] || row['tutar']);
+      const description = row['Açıklama'] || row['aciklama'] || row['İşlem Açıklaması'] || '';
+      return {
+        tarih: normalTarih(row['Tarih'] || row['tarih']),
+        aciklama: description.trim(),
+        magaza: magazaCikar(description),
+        tutar: Math.abs(tutar),
+        tur: tutar < 0 ? 'gider' : 'gelir',
+      };
+    },
+  },
+  {
+    ad: 'Ziraat Bankası',
+    gerekliSutunlar: ['tarih', 'açıklama', 'borç', 'alacak'],
+    alternativSutunlar: ['tarih', 'aciklama', 'borc', 'alacak'],
+    parse: (row) => {
+      const borc = temizTutar(row['Borç'] || row['borç'] || row['Borc'] || row['borc'] || '0');
+      const alacak = temizTutar(row['Alacak'] || row['alacak'] || '0');
+      const description = row['Açıklama'] || row['aciklama'] || row['İşlem Açıklaması'] || '';
+      return {
+        tarih: normalTarih(row['Tarih'] || row['tarih'] || row['İşlem Tarihi'] || row['islem tarihi']),
+        aciklama: description.trim(),
+        magaza: magazaCikar(description),
+        tutar: Math.abs(borc > 0 ? borc : alacak),
+        tur: borc > 0 ? 'gider' : 'gelir',
+      };
+    },
+  },
+  {
     ad: 'Genel CSV',
     gerekliSutunlar: [],
     // Daha esnek eşleşme
@@ -143,6 +192,25 @@ function magazaCikar(aciklama) {
     .trim();
   // İlk 30 karakter yeterli
   return temiz.slice(0, 30).trim() || aciklama.slice(0, 30).trim();
+}
+
+function duplicateKey(tx) {
+  return [
+    tx.tarih,
+    Math.round(Number(tx.tutar || 0) * 100),
+    String(tx.magaza || tx.aciklama || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim().slice(0, 48),
+    tx.tur || 'gider',
+  ].join('|');
+}
+
+function confidenceScore(tx) {
+  let score = 0;
+  if (tx.tarih) score += 30;
+  if (tx.tutar > 0) score += 30;
+  if (tx.aciklama) score += 20;
+  if (tx.magaza) score += 10;
+  if (tx.tur) score += 10;
+  return score;
 }
 
 // ─── Format Algılama ─────────────────────────────────────────
@@ -255,6 +323,8 @@ export function parseCSV(file) {
                   id: crypto.randomUUID(),
                   ...parsed,
                   kategori: suggestCategory(parsed.magaza) || 'Diğer',
+                  duplicateKey: duplicateKey(parsed),
+                  confidence: confidenceScore(parsed),
                   createdAt: new Date().toISOString(),
                   kaynak: 'csv-import',
                 };
@@ -269,10 +339,13 @@ export function parseCSV(file) {
             return;
           }
 
+          const uniqueCount = new Set(islemler.map(item => item.duplicateKey)).size;
+
           resolve({
             format: format.ad,
             toplamSatir: results.data.length,
             basarili: islemler.length,
+            olasiTekrar: islemler.length - uniqueCount,
             islemler,
             onizleme: results.data.slice(0, 5), // İlk 5 satır ham önizleme
             headers,

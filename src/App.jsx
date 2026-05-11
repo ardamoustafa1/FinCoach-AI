@@ -149,7 +149,10 @@ export default function App() {
   if (!authUser) {
     return (
       <ToastProvider>
-        <AuthPage onAuth={(user) => setAuthUser(user)} />
+        <AuthPage onAuth={(user) => {
+          setLoading(true);
+          checkUserStatus({ id: user.id, email: user.email });
+        }} />
       </ToastProvider>
     );
   }

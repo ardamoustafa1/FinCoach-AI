@@ -9,7 +9,7 @@ import {
 import { getTransactions, getGoals, getBudgetLimits } from '../utils/storage';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
-import { API_URL, apiUrl } from '../utils/api';
+import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 
 /* ─── Palette ─── */
@@ -127,9 +127,8 @@ export default function ChatPage() {
     setIsLoading(true);
     try {
       const userContext = getUserContext();
-      const response = await fetch(apiUrl('/api/chat'), {
+      const response = await authFetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages, userContext }),
       });
       

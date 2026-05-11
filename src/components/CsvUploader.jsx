@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertTriangle, Loader2, Eye, ChevronDown, Download, Sparkles } from 'lucide-react';
 import { fmt } from '../utils/categories';
 import { parseCSV } from '../utils/csvParser';
-import { apiUrl } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 // ─── Durum sabitleri ─────────────────────────────────────────
 const DURUM = {
@@ -99,9 +99,8 @@ export default function CsvUploader({ onImport, onKapat }) {
       const requestData = batch.map(t => ({ id: t.id, aciklama: t.aciklama, magaza: t.magaza }));
 
       try {
-        const res = await fetch(apiUrl('/api/categorize'), {
+        const res = await authFetch('/api/categorize', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transactions: requestData })
         });
 
@@ -161,7 +160,7 @@ export default function CsvUploader({ onImport, onKapat }) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-surface-900 dark:text-white">CSV / Banka Ekstresi Yükle</h3>
-            <p className="text-[11px] text-surface-700 dark:text-surface-200">Garanti, İş Bankası, Yapı Kredi ve genel CSV desteklenir</p>
+            <p className="text-[11px] text-surface-700 dark:text-surface-200">Garanti, İş Bankası, Yapı Kredi, Akbank, Enpara, Ziraat ve genel CSV desteklenir</p>
           </div>
         </div>
         <button
@@ -300,10 +299,10 @@ export default function CsvUploader({ onImport, onKapat }) {
                 renk="accent"
               />
               <OzetKart
-                label="Başarılı"
+                label={sonuc.olasiTekrar > 0 ? 'Tekrar Uyarısı' : 'Başarılı'}
                 deger={sonuc.basarili}
                 ikon={<CheckCircle className="w-4 h-4" />}
-                renk="accent"
+                renk={sonuc.olasiTekrar > 0 ? 'warning' : 'accent'}
               />
               <OzetKart
                 label="Dosya"
@@ -312,6 +311,12 @@ export default function CsvUploader({ onImport, onKapat }) {
                 renk="purple"
               />
             </div>
+
+            {sonuc.olasiTekrar > 0 && (
+              <div className="rounded-xl border border-warning-500/25 bg-warning-500/10 px-4 py-3 text-xs text-warning-300">
+                {sonuc.olasiTekrar} satır dosya içinde olası tekrar gibi görünüyor. İçe aktarırken mevcut kayıtlarla da karşılaştırılıp kopyalar atlanacak.
+              </div>
+            )}
 
             {/* Önizleme Tablosu */}
             <div>
@@ -482,6 +487,7 @@ function OzetKart({ label, deger, ikon, renk }) {
     accent: 'bg-accent-500/10 text-accent-500',
     purple: 'bg-purple-500/10 text-purple-500',
     danger: 'bg-danger-500/10 text-danger-500',
+    warning: 'bg-warning-500/10 text-warning-500',
   };
 
   return (

@@ -34,6 +34,18 @@ SUPABASE_SERVICE_ROLE_KEY=sadece_serverda_kullanilacak_service_role_key
 \`\`\`
 WhatsApp fiş/metin kayıtlarının veritabanına yazılabilmesi için `SUPABASE_SERVICE_ROLE_KEY` gereklidir. Numara eşleştirme varsayılan olarak `profiles.phone_text` alanına göre yapılır; tek kullanıcı/demo kurulumunda tüm WhatsApp kayıtlarını belirli bir kullanıcıya yazmak için `WHATSAPP_DEFAULT_USER_ID` ayarlanabilir.
 
+Demo hesabını canlı Supabase projesinde oluşturmak ve satış/demo verileriyle doldurmak için:
+\`\`\`bash
+npm run seed:demo
+\`\`\`
+Varsayılan demo girişi: `demo@butceai.app` / `Demo2026!`. Normal kayıt olan kullanıcıların işlem, hedef ve limit verileri boş başlar.
+
+### Üretim Notları
+*   API endpointleri Supabase oturum tokenı ister; client istekleri otomatik `Authorization: Bearer ...` ile gider.
+*   WhatsApp operasyon durumu Ayarlar ekranından izlenebilir.
+*   CSV import Garanti, İş Bankası, Yapı Kredi, Akbank, Enpara, Ziraat ve genel CSV formatlarını algılar; tekrar görünen işlemler içe aktarımda atlanır.
+*   Ürün analitiği ve frontend hata olayları `/api/events` üzerinden toplanır. Kalıcı saklama için `supabase_schema.sql` içindeki `app_events` tablosunu canlı Supabase projesine uygulayın.
+
 Sunucuyu başlatın:
 \`\`\`bash
 npm start

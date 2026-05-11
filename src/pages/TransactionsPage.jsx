@@ -13,7 +13,7 @@ import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
 import { detectUnusualSpending, saveUnusualSpendingDecision } from '../utils/notifications';
 import { useToast } from '../hooks/useToast';
-import { apiUrl } from '../utils/api';
+import { authFetch } from '../utils/api';
 
 /* ─── Palette ─── */
 const P = {
@@ -445,8 +445,8 @@ function FisTaraModal({ onSonuc, onApiError, onKapat }) {
     if (!compressed) return;
     setLoading(true); setError('');
     try {
-      const res = await fetch(apiUrl('/api/ocr'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await authFetch('/api/ocr', {
+        method: 'POST',
         body: JSON.stringify({ image: compressed.base64, mimeType: compressed.mimeType }),
       });
       if (res.status === 422) { setError('Görüntü net değil, tekrar dene'); return; }
@@ -572,7 +572,7 @@ export default function TransactionsPage() {
       setIsListening(false);
       toast.info('Sesiniz analiz ediliyor...', { duration: 10000 });
       try {
-        const res = await fetch(apiUrl('/api/voice'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: transcript }) });
+        const res = await authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text: transcript }) });
         if (!res.ok) throw new Error();
         const data = await res.json();
         const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
@@ -611,10 +611,29 @@ export default function TransactionsPage() {
   const handleSil = async () => { if (!silinecek) return; await removeTransaction(silinecek.id); refreshLocal(); setSilinecek(null); };
   const handleDuzenle = (tx) => { setDuzenlenen(tx); setModalAcik(true); };
   const handleCsvImport = async (islemler) => { 
+    const keyFor = (tx) => tx.duplicateKey || [
+      tx.tarih,
+      Math.round(Number(tx.tutar || 0) * 100),
+      String(tx.magaza || tx.aciklama || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim().slice(0, 48),
+      tx.tur || 'gider',
+    ].join('|');
+    const existingKeys = new Set(getTransactions().map(keyFor));
+    let imported = 0;
+    let skipped = 0;
+
     for (const tx of islemler) {
+      const key = keyFor(tx);
+      if (existingKeys.has(key)) {
+        skipped += 1;
+        continue;
+      }
       await saveTransaction({ ...tx });
+      existingKeys.add(key);
+      imported += 1;
     }
-    refreshLocal(); setCsvAcik(false); 
+    refreshLocal(); setCsvAcik(false);
+    if (imported > 0) toast.success(`${imported} işlem içe aktarıldı${skipped ? `, ${skipped} tekrar atlandı` : ''}.`);
+    else toast.info('Yeni işlem bulunamadı; tekrar kayıtlar atlandı.');
   };
 
   /* ─ Filtreleme ─ */
@@ -832,10 +851,13 @@ export default function TransactionsPage() {
                       {sayfadakiler.length === 0 ? (
                         <tr>
                           <td colSpan={5} style={{ padding: '56px 20px', textAlign: 'center', color: P.text3 }}>
-                            <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
-                            <p style={{ fontWeight: 700, color: P.text2, marginBottom: 6 }}>Eşleşen işlem bulunamadı</p>
-                            <button onClick={tumunuTemizle} style={{ marginTop: 10, padding: '7px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                              <RefreshCw size={12} /> Filtreleri Temizle
+                            <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
+                            <p style={{ fontWeight: 800, color: P.text2, marginBottom: 6 }}>{ham.length === 0 ? 'İlk işlemini ekleyelim' : 'Eşleşen işlem bulunamadı'}</p>
+                            <p style={{ fontSize: 13, margin: '0 auto 14px', maxWidth: 460 }}>
+                              {ham.length === 0 ? 'CSV ekstre yükle, fiş tara, sesle söyle veya manuel ekle. Yeni hesaplar demo veriyle kirlenmeden tertemiz başlar.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}
+                            </p>
+                            <button onClick={ham.length === 0 ? () => setCsvAcik(true) : tumunuTemizle} style={{ marginTop: 10, padding: '8px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                              {ham.length === 0 ? <><Upload size={12} /> CSV Yükle</> : <><RefreshCw size={12} /> Filtreleri Temizle</>}
                             </button>
                           </td>
                         </tr>
@@ -864,9 +886,10 @@ export default function TransactionsPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
                 {sayfadakiler.length === 0
                   ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '56px 20px', color: P.text3 }}>
-                    <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
-                    <p style={{ fontWeight: 700, color: P.text2, marginBottom: 10 }}>Eşleşen işlem bulunamadı</p>
-                    <button onClick={tumunuTemizle} style={{ padding: '7px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Filtreleri Temizle</button>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
+                    <p style={{ fontWeight: 800, color: P.text2, marginBottom: 8 }}>{ham.length === 0 ? 'Veri bekleyen temiz hesap' : 'Eşleşen işlem bulunamadı'}</p>
+                    <p style={{ fontSize: 13, maxWidth: 440, margin: '0 auto 16px' }}>{ham.length === 0 ? 'İlk verini CSV, fiş tarama, ses veya manuel kayıtla ekleyebilirsin.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}</p>
+                    <button onClick={ham.length === 0 ? () => setCsvAcik(true) : tumunuTemizle} style={{ padding: '8px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>{ham.length === 0 ? 'CSV Yükle' : 'Filtreleri Temizle'}</button>
                   </div>
                   : sayfadakiler.map((tx, i) => <TxKartRow key={tx.id} tx={tx} index={i} onDuzenle={handleDuzenle} onSil={setSilinecek} />)}
               </div>

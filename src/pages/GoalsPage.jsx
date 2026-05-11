@@ -26,6 +26,12 @@ const KESINTI_KATEGORILERI = [
   { id: 'eglence', ad: 'Eğlence', icon: '🎭', aylik: 920, varsayilan: 15 },
 ];
 
+const HAZIR_HEDEFLER = [
+  { name: 'Acil Durum Fonu', targetAmount: 100000, currentAmount: 0, deadline: '2026-12-31', icon: '🛡️', color: '#6366f1' },
+  { name: 'Tatil Birikimi', targetAmount: 60000, currentAmount: 0, deadline: '2026-08-15', icon: '✈️', color: '#10b981' },
+  { name: 'Borç Kapatma', targetAmount: 40000, currentAmount: 0, deadline: '2026-07-01', icon: '✅', color: '#ef4444' },
+];
+
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444',
   bg2: '#141728', bg3: '#1C2038',
@@ -111,6 +117,11 @@ export default function GoalsPage() {
     }
   };
 
+  const handleTemplate = async (template) => {
+    await addGoal(template);
+    refreshGoals();
+  };
+
   const triggerConfetti = () => {
     const end = Date.now() + 3000;
     const frame = () => {
@@ -170,6 +181,17 @@ export default function GoalsPage() {
           </div>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Aktif hedefin yok</h3>
           <p style={{ fontSize: 14, color: P.text3, margin: 0 }}>Hemen yeni bir hedef ekleyerek birikim yapmaya başla.</p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 22 }}>
+            {HAZIR_HEDEFLER.map((template) => (
+              <button
+                key={template.name}
+                onClick={() => handleTemplate(template)}
+                style={{ padding: '9px 13px', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg3, color: P.text1, fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+              >
+                {template.icon} {template.name}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

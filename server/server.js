@@ -28,6 +28,24 @@ Object.assign(process.env, runtimeEnv);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+const supabaseAdmin = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+  : null;
+const analyticsEvents = [];
+const whatsappStatus = {
+  enabled: process.env.WHATSAPP_ENABLED !== 'false',
+  ready: false,
+  authenticated: false,
+  lastEventAt: null,
+  lastMessageAt: null,
+  lastSavedAt: null,
+  lastError: null,
+  state: process.env.WHATSAPP_ENABLED === 'false' ? 'disabled' : 'starting',
+};
 
 // Google Gemini İstemcisi
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -48,6 +66,66 @@ const chatLimiter = rateLimit({
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+async function requireAuth(req, res, next) {
+  if (!supabaseAdmin) {
+    return res.status(503).json({ error: 'Supabase admin yapılandırması eksik.' });
+  }
+
+  const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+  if (!token) return res.status(401).json({ error: 'Oturum doğrulaması gerekli.' });
+
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !data?.user) return res.status(401).json({ error: 'Oturum geçersiz veya süresi dolmuş.' });
+
+  req.user = data.user;
+  next();
+}
+
+app.use('/api', requireAuth);
+
+app.post('/api/events', (req, res) => {
+  const rawEvents = Array.isArray(req.body?.events) ? req.body.events : [];
+  const cleanEvents = rawEvents.slice(-20).map((event) => ({
+    id: String(event.id || ''),
+    name: String(event.name || 'unknown').slice(0, 80),
+    properties: event.properties && typeof event.properties === 'object' ? event.properties : {},
+    path: String(event.path || '').slice(0, 160),
+    sessionId: String(event.sessionId || '').slice(0, 80),
+    userId: req.user.id,
+    at: event.at || new Date().toISOString(),
+    receivedAt: new Date().toISOString(),
+  }));
+
+  analyticsEvents.push(...cleanEvents);
+  if (analyticsEvents.length > 500) analyticsEvents.splice(0, analyticsEvents.length - 500);
+  if (cleanEvents.length) {
+    supabaseAdmin
+      .from('app_events')
+      .insert(cleanEvents.map((event) => ({
+        user_id: event.userId,
+        name: event.name,
+        properties: event.properties,
+        path: event.path,
+        session_id: event.sessionId,
+        occurred_at: event.at,
+      })))
+      .then(({ error }) => {
+        if (error && !String(error.message || '').includes('app_events')) {
+          console.warn('[Analytics] Event insert skipped:', error.message);
+        }
+      });
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/whatsapp/status', (req, res) => {
+  res.json({
+    ...whatsappStatus,
+    hasSupabaseStore: Boolean(supabaseAdmin),
+    defaultUserMode: Boolean(process.env.WHATSAPP_DEFAULT_USER_ID),
+  });
 });
 
 // Chat Endpoint
@@ -216,16 +294,9 @@ Cümle: "${text}"`;
 if (process.env.WHATSAPP_ENABLED === 'false') {
   console.log('[BütçeAI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
 } else {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  const supabaseAdmin = supabaseUrl && supabaseServiceKey
-    ? createClient(supabaseUrl, supabaseServiceKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      })
-    : null;
-
   if (!supabaseAdmin) {
     console.warn('[BütçeAI WhatsApp] Supabase admin anahtarı yok. Fişler okunur ama transactions tablosuna kaydedilemez.');
+    whatsappStatus.lastError = 'Supabase admin anahtarı yok.';
   }
 
   const whatsappReplyTracker = createBotReplyTracker();
@@ -259,24 +330,53 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
   });
 
   whatsappClient.on('ready', () => {
+    whatsappStatus.ready = true;
+    whatsappStatus.state = 'ready';
+    whatsappStatus.lastEventAt = new Date().toISOString();
+    whatsappStatus.lastError = null;
     console.log('[BütçeAI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
   });
 
   whatsappClient.on('authenticated', () => {
+    whatsappStatus.authenticated = true;
+    whatsappStatus.state = 'authenticated';
+    whatsappStatus.lastEventAt = new Date().toISOString();
     console.log('[BütçeAI WhatsApp] Oturum doğrulandı.');
   });
 
   whatsappClient.on('auth_failure', (message) => {
+    whatsappStatus.authenticated = false;
+    whatsappStatus.ready = false;
+    whatsappStatus.state = 'auth_failure';
+    whatsappStatus.lastEventAt = new Date().toISOString();
+    whatsappStatus.lastError = String(message || 'Oturum doğrulanamadı.');
     console.error('[BütçeAI WhatsApp] Oturum doğrulanamadı:', message);
   });
 
   whatsappClient.on('disconnected', (reason) => {
+    whatsappStatus.ready = false;
+    whatsappStatus.state = 'disconnected';
+    whatsappStatus.lastEventAt = new Date().toISOString();
+    whatsappStatus.lastError = String(reason || 'Bağlantı koptu.');
     console.warn('[BütçeAI WhatsApp] Bağlantı koptu:', reason);
   });
 
-  whatsappClient.on('message', handleWhatsAppMessage);
+  const trackWhatsAppMessage = async (msg) => {
+    whatsappStatus.lastMessageAt = new Date().toISOString();
+    const result = await handleWhatsAppMessage(msg);
+    if (result?.status === 'saved') {
+      whatsappStatus.lastSavedAt = new Date().toISOString();
+      whatsappStatus.lastError = null;
+    }
+    if (result?.status === 'store_error' || result?.status === 'error') {
+      whatsappStatus.lastError = result.error?.message || 'Mesaj işlenemedi.';
+    }
+    return result;
+  };
+
+  whatsappClient.on('message', trackWhatsAppMessage);
   whatsappClient.on('message_create', async (msg) => {
-    if (msg.fromMe) await handleWhatsAppMessage(msg);
+    if (msg.fromMe) await trackWhatsAppMessage(msg);
   });
 
   whatsappClient.initialize();

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Moon, Sun, Globe, Bell, Database, RotateCcw, Save,
   Wallet, QrCode, Shield, Sparkles, Flame, LogOut,
@@ -9,6 +9,7 @@ import { initMockData } from '../data/mockData';
 import { getBudgetLimits, saveBudgetLimits } from '../utils/storage';
 import { TUM_KATEGORILER } from '../utils/categories';
 import { supabase } from '../utils/supabase';
+import { authFetch } from '../utils/api';
 
 /* ─── Palette ─── */
 const P = {
@@ -83,6 +84,8 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('butceai_roast_mode') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [whatsappStatus, setWhatsappStatus] = useState(null);
+  const [whatsappError, setWhatsappError] = useState('');
 
   // Profile state
   const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('butceai_auth_user') || '{}'); } catch { return {}; } };
@@ -110,6 +113,26 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   // Email verification
   const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('butceai_email_verified') === 'true');
   const [verificationSent, setVerificationSent] = useState(false);
+
+  const loadWhatsAppStatus = useCallback(async () => {
+    try {
+      setWhatsappError('');
+      const response = await authFetch('/api/whatsapp/status');
+      if (!response.ok) throw new Error('WhatsApp durumu alınamadı.');
+      setWhatsappStatus(await response.json());
+    } catch (err) {
+      setWhatsappError(err.message || 'WhatsApp durumu alınamadı.');
+    }
+  }, []);
+
+  useEffect(() => {
+    const initial = setTimeout(loadWhatsAppStatus, 0);
+    const interval = setInterval(loadWhatsAppStatus, 30000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
+  }, [loadWhatsAppStatus]);
 
   const startEdit = (field) => { setEditField(field); setEditValue(profile[field]); };
   const cancelEdit = () => { setEditField(null); setEditValue(''); };
@@ -604,6 +627,57 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                 />
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ── WHATSAPP OPERATIONS ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>WhatsApp Operasyon Paneli</span>
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(16,185,129,0.3), transparent)' }} />
+          </div>
+
+          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 18, padding: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: 14,
+                  background: whatsappStatus?.ready ? 'rgba(16,185,129,0.14)' : 'rgba(245,158,11,0.14)',
+                  border: `1px solid ${whatsappStatus?.ready ? 'rgba(16,185,129,0.28)' : 'rgba(245,158,11,0.28)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Phone size={20} color={whatsappStatus?.ready ? P.green : P.amber} />
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 5px', fontSize: 15, fontWeight: 900, color: P.text1 }}>
+                    {whatsappStatus?.ready ? 'WhatsApp bot canlı' : whatsappStatus?.enabled === false ? 'WhatsApp devre dışı' : 'WhatsApp bağlantısı bekleniyor'}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 12, color: P.text3, lineHeight: 1.5 }}>
+                    Durum: {whatsappStatus?.state || 'bilinmiyor'} · Kayıt modu: {whatsappStatus?.defaultUserMode ? 'tek kullanıcı' : 'telefon eşleşmesi'}
+                  </p>
+                </div>
+              </div>
+              <ActionButton onClick={loadWhatsAppStatus} label="Yenile" color={P.green} variant="soft" />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 18 }}>
+              {[
+                ['Son mesaj', whatsappStatus?.lastMessageAt ? new Date(whatsappStatus.lastMessageAt).toLocaleString('tr-TR') : 'Henüz yok'],
+                ['Son kayıt', whatsappStatus?.lastSavedAt ? new Date(whatsappStatus.lastSavedAt).toLocaleString('tr-TR') : 'Henüz yok'],
+                ['Supabase kayıt', whatsappStatus?.hasSupabaseStore ? 'Aktif' : 'Eksik'],
+              ].map(([label, value]) => (
+                <div key={label} style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14, padding: 14 }}>
+                  <p style={{ margin: '0 0 5px', fontSize: 10, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: P.text3 }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: P.text1 }}>{value}</p>
+                </div>
+              ))}
+            </div>
+
+            {(whatsappError || whatsappStatus?.lastError) && (
+              <p style={{ margin: '14px 0 0', fontSize: 12, color: '#fca5a5', lineHeight: 1.5 }}>
+                {whatsappError || whatsappStatus.lastError}
+              </p>
+            )}
           </div>
         </div>
 

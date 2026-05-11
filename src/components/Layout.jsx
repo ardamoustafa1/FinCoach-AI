@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sparkles, QrCode } from 'lucide-react';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
@@ -14,6 +14,7 @@ import {
   upcomingSubscriptionReminders,
   weeklySummary,
 } from '../utils/notifications';
+import { trackPageView } from '../utils/analytics';
 
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -27,7 +28,12 @@ export default function Layout({ theme, onToggleTheme }) {
   const [showWeeklySummary, setShowWeeklySummary] = useState(() => shouldShowWeeklySummary());
   const [showQrModal, setShowQrModal] = useState(false);
   const toast = useToast();
+  const location = useLocation();
   const haftalik = useMemo(() => weeklySummary(getBudgetLimits()), []);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
     upcomingSubscriptionReminders().forEach((abonelik) => {

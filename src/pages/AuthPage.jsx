@@ -2,6 +2,23 @@ import { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles, Phone } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { DEMO_EMAIL, DEMO_PASSWORD } from '../config/demoAccount';
+
+const USER_SCOPED_KEYS = [
+  'butceai_transactions',
+  'butceai_goals',
+  'butceai_budget_limits',
+  'butceai_gelir',
+  'butceai_category_rules',
+  'butceai_mock_initialized',
+  'butceai_profile',
+  'butceai_income',
+  'butceai_bank',
+];
+
+function clearUserScopedCache() {
+  USER_SCOPED_KEYS.forEach((key) => localStorage.removeItem(key));
+}
 
 /* ─── Şifre Güç Ölçer ─── */
 function PasswordStrength({ password }) {
@@ -148,14 +165,17 @@ export default function AuthPage({ onAuth }) {
     </button>
   );
 
-  const handleLogin = async () => {
+  const handleLogin = async (credentials = {}) => {
+    const loginEmail = credentials.email ?? email;
+    const loginPassword = credentials.password ?? password;
+
     setError('');
-    if (!email || !password) { setError('Lütfen tüm alanları doldurun.'); return; }
+    if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.'); return; }
     
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase(),
-      password,
+      email: loginEmail.toLowerCase(),
+      password: loginPassword,
     });
 
     if (authError) {
@@ -165,6 +185,7 @@ export default function AuthPage({ onAuth }) {
     }
 
     if (data.user) {
+      clearUserScopedCache();
       // Profil bilgisini çek (opsiyonel, isterseniz app.jsx'de de yapabilirsiniz)
       const { data: existingProfile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
       let profile = existingProfile;
@@ -178,11 +199,13 @@ export default function AuthPage({ onAuth }) {
         profile = createdProfile;
       }
       
-      const authData = { 
+	    const authData = { 
         name: profile?.full_name || data.user.email.split('@')[0], 
         email: data.user.email,
         id: data.user.id,
-        phone: profile?.phone_text || ''
+        phone: profile?.phone_text || '',
+        onboardingCompleted: Boolean(profile?.onboarding_completed),
+        isDemo: data.user.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()
       };
       
       localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
@@ -191,6 +214,13 @@ export default function AuthPage({ onAuth }) {
       onAuth(authData);
     }
     setLoading(false);
+  };
+
+  const handleDemoLogin = () => {
+    setMode('login');
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    handleLogin({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
   };
 
   const handleRegister = async () => {
@@ -244,7 +274,8 @@ export default function AuthPage({ onAuth }) {
       }
 
       if (data.session) {
-        const authData = { name: name, email: data.user.email, id: data.user.id, phone };
+        clearUserScopedCache();
+        const authData = { name: name, email: data.user.email, id: data.user.id, phone, onboardingCompleted: false, isDemo: false };
         localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
         localStorage.setItem('butceai_user_name', name);
         localStorage.setItem('butceai_phone', phone);
@@ -307,6 +338,48 @@ export default function AuthPage({ onAuth }) {
             ))}
           </div>
 
+          {mode === 'login' && (
+            <div style={{
+              display: 'grid',
+              gap: 10,
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.22)',
+              borderRadius: 16,
+              padding: 14,
+              marginBottom: 22,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <p style={{ margin: '0 0 3px', fontSize: 12, fontWeight: 900, color: '#6ee7b7', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Canlı Demo</p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.52)', lineHeight: 1.45 }}>Dolu veri seti, hedefler, raporlar ve WhatsApp kayıt akışı hazır.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={loading}
+                  style={{
+                    flexShrink: 0,
+                    border: 'none',
+                    borderRadius: 11,
+                    background: '#10B981',
+                    color: '#04130d',
+                    padding: '10px 13px',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.65 : 1,
+                  }}
+                >
+                  Demo Gir
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+                <span>E-posta: <strong style={{ color: '#D1FAE5' }}>{DEMO_EMAIL}</strong></span>
+                <span>Şifre: <strong style={{ color: '#D1FAE5' }}>{DEMO_PASSWORD}</strong></span>
+              </div>
+            </div>
+          )}
+
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>{mode === 'login' ? 'Tekrar hoş geldin 👋' : 'Hesap oluştur ✨'}</h2>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Hemen katıl ve akıllı finansal koçunla tanış'}</p>
 
@@ -339,6 +412,42 @@ export default function AuthPage({ onAuth }) {
           </button>
 
         </div>
+
+        <section style={{ marginTop: 22, display: 'grid', gap: 12 }}>
+          <div style={{
+            borderRadius: 20,
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.035)',
+            padding: 18,
+          }}>
+            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a78bfa' }}>Satışa Hazır Finans Koçu</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+              {[
+                ['WhatsApp fiş', 'Fotoğrafı at, işlem yazılsın'],
+                ['AI rapor', 'Gelir, gider, hedef analizi'],
+                ['CSV import', 'Banka ekstresini temiz aktar'],
+              ].map(([title, text]) => (
+                <div key={title} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 12 }}>
+                  <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 900, color: '#F8FAFC' }}>{title}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.42)', lineHeight: 1.45 }}>{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[
+              ['Free', '₺0', 'Manuel takip, CSV ve temel raporlar'],
+              ['Pro', '₺149/ay', 'WhatsApp, OCR, AI koç ve gelişmiş analiz'],
+            ].map(([plan, price, desc]) => (
+              <div key={plan} style={{ borderRadius: 16, border: plan === 'Pro' ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(255,255,255,0.08)', background: plan === 'Pro' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.035)', padding: 14 }}>
+                <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 900, color: plan === 'Pro' ? '#6ee7b7' : '#F8FAFC' }}>{plan}</p>
+                <p style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 900, color: '#fff' }}>{price}</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.44)', lineHeight: 1.45 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
