@@ -202,20 +202,33 @@ export default function ChatPage() {
             let simulationData = null;
             let wrappedData = null;
             if (msg.role === 'bot' && typeof text === 'string') {
-              const chartMatch = text.match(/CHART_DATA:(\{.*?\})/s);
+              // Regex: Find tag and capture everything until the LAST closing brace
+              const chartMatch = text.match(/CHART_DATA:(\{[\s\S]*\})/);
               if (chartMatch) {
-                try { chartData = JSON.parse(chartMatch[1]); text = text.replace(chartMatch[0], '').trim(); }
-                catch (e) {}
+                try {
+                  // Greedily finding the JSON block
+                  const jsonBlock = chartMatch[1];
+                  chartData = JSON.parse(jsonBlock);
+                  text = text.replace(/CHART_DATA:\{[\s\S]*\}/, '').trim();
+                } catch (e) {
+                  console.error("Chart parse error:", e);
+                }
               }
-              const simMatch = text.match(/SIMULATION:(\{.*?\})/s);
+
+              const simMatch = text.match(/SIMULATION:(\{[\s\S]*\})/);
               if (simMatch) {
-                try { simulationData = JSON.parse(simMatch[1]); text = text.replace(simMatch[0], '').trim(); }
-                catch (e) {}
+                try {
+                  simulationData = JSON.parse(simMatch[1]);
+                  text = text.replace(/SIMULATION:\{[\s\S]*\}/, '').trim();
+                } catch (e) {}
               }
-              const wrappedMatch = text.match(/WRAPPED_CARD:(\{.*?\})/s);
+
+              const wrappedMatch = text.match(/WRAPPED_CARD:(\{[\s\S]*\})/);
               if (wrappedMatch) {
-                try { wrappedData = JSON.parse(wrappedMatch[1]); text = text.replace(wrappedMatch[0], '').trim(); }
-                catch (e) {}
+                try {
+                  wrappedData = JSON.parse(wrappedMatch[1]);
+                  text = text.replace(/WRAPPED_CARD:\{[\s\S]*\}/, '').trim();
+                } catch (e) {}
               }
             }
             const isBot = msg.role === 'bot';

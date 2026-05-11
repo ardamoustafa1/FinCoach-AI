@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001;
 
 // Google Gemini İstemcisi
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
 // Middleware
 app.use(cors());
@@ -120,8 +120,12 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
     const response = await result.response;
     res.json({ response: response.text() });
   } catch (error) {
-    console.error('[Chat API Error]:', error);
-    res.status(500).json({ error: 'Hata oluştu. API anahtarınızı kontrol edin.' });
+    console.error('[Chat API Error] Message:', error?.message);
+    let userMessage = 'Hata oluştu. API anahtarınızı kontrol edin.';
+    if (error?.message?.includes('429') || error?.message?.includes('Quota')) {
+      userMessage = '⚠️ Günlük/Dakikalık limit aşıldı. Lütfen 1 dakika sonra tekrar dene veya farklı bir API key kullan.';
+    }
+    res.status(500).json({ error: userMessage });
   }
 });
 
