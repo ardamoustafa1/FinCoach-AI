@@ -122,14 +122,20 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages, userContext }),
       });
-      if (!response.ok) throw new Error('API yanıt vermedi.');
+      
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Sunucu hatası oluştu.');
+      }
+      
       setMessages(prev => [...prev, { role: 'bot', content: data.response }]);
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'bot',
-        content: `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?`
+        content: error.message.includes('Hata:') || error.message.includes('⚠️') 
+          ? error.message 
+          : `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?\n\nDetay: ${error.message}`
       }]);
     } finally { setIsLoading(false); }
   };
