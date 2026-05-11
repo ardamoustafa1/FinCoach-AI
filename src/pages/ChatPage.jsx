@@ -64,14 +64,30 @@ function getUserContext() {
       if (isGider) { acc[tx.kategori] = (acc[tx.kategori] || 0) + Math.abs(Number(tx.tutar)); }
       return acc;
     }, {});
+
+    // Onboarding profili — hedef, gelir, banka
+    let kullaniciBilgisi = {};
+    try {
+      const profil = JSON.parse(localStorage.getItem('butceai_profile') || '{}');
+      const goalLabels = { tasarruf: 'Tasarruf artırmak', takip: 'Harcamaları takip etmek', birikim: 'Birikim hedefi koymak' };
+      kullaniciBilgisi = {
+        hedefTipi: goalLabels[profil.goal] || profil.goal || 'Belirtilmedi',
+        aylikGelir: profil.income ? `₺${Number(profil.income).toLocaleString('tr-TR')}` : 'Belirtilmedi',
+        banka: profil.bank || 'Belirtilmedi',
+        kullaniciAdi: localStorage.getItem('butceai_user_name') || 'Kullanıcı',
+      };
+    } catch {}
+
     return {
       aylikOzet, limitler: limits,
       hedefler: goals.map(g => ({ ad: g.name, hedef: g.targetAmount, mevcut: g.currentAmount })),
       skor: totalScore, kisilik: personalityTitle,
-      roastMode: localStorage.getItem('butceai_roast_mode') === 'true'
+      roastMode: localStorage.getItem('butceai_roast_mode') === 'true',
+      kullaniciBilgisi,
     };
   } catch (e) { return {}; }
 }
+
 
 export default function ChatPage() {
   const location = useLocation();
