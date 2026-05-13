@@ -31,3 +31,4 @@ dist-ssr
 server/.env
 server/node_modules
 server/dist
+.wwebjs_cache/
