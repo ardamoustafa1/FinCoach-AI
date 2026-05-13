@@ -1,30 +1,42 @@
-import { useState } from 'react';
-import { ShoppingBag, ShieldAlert, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShoppingBag, ShieldAlert, Shield, Bot, ShieldCheck, Zap, Scale } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const P = {
-  purple: '#7C3AED', red: '#EF4444', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)', bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', border: 'var(--border-color)'
+  purple: '#7C3AED', red: '#EF4444', green: '#10B981', amber: '#F59E0B', 
+  text1: '#f8fafc', text2: '#94a3b8', text3: '#64748b', 
+  bg0: '#020617', bg1: '#0f172a', bg2: '#1e293b', border: 'rgba(255,255,255,0.1)'
 };
 
 export default function ShopSimulationPage() {
   const [buying, setBuying] = useState(false);
-  const [blocked, setBlocked] = useState(false);
+  const [swarmStep, setSwarmStep] = useState(0); // 0: none, 1: Risk, 2: Opp, 3: Orch, 4: Final
   const navigate = useNavigate();
 
   const handleBuy = () => {
     setBuying(true);
-    setTimeout(() => {
-      setBlocked(true);
-      if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
-    }, 1200);
+    setSwarmStep(1); // Start swarm simulation
   };
 
+  useEffect(() => {
+    if (swarmStep === 1) {
+      const t = setTimeout(() => setSwarmStep(2), 2500);
+      return () => clearTimeout(t);
+    } else if (swarmStep === 2) {
+      const t = setTimeout(() => setSwarmStep(3), 2500);
+      return () => clearTimeout(t);
+    } else if (swarmStep === 3) {
+      const t = setTimeout(() => setSwarmStep(4), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [swarmStep]);
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#fff', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', overflowY: 'auto' }} className={blocked ? 'shake-animation' : ''}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#fff', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', overflowY: 'auto' }}>
       <style>{`
-        @keyframes shake { 0%, 100% {transform: translateX(0);} 10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);} 20%, 40%, 60%, 80% {transform: translateX(10px);} }
-        .shake-animation { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-enter { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes pulseBorder { 0%, 100% { border-color: rgba(124,58,237,0.3); } 50% { border-color: rgba(124,58,237,0.8); } }
       `}</style>
       
       {/* Mock Apple Store Header */}
@@ -57,51 +69,98 @@ export default function ShopSimulationPage() {
 
           <button 
             onClick={handleBuy}
-            disabled={buying || blocked}
+            disabled={buying}
             style={{
               background: '#0071e3', color: '#fff', border: 'none', padding: '18px 32px', borderRadius: 999,
-              fontSize: 17, fontWeight: 600, cursor: (buying || blocked) ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-              opacity: (buying && !blocked) ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
+              fontSize: 17, fontWeight: 600, cursor: buying ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
             }}
           >
-            {buying && !blocked ? <div style={{width: 20, height: 20, border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite'}} /> : null}
-            {!buying && !blocked ? 'Sepete Ekle' : blocked ? 'İşlem Engellendi' : 'Güvenli Ödeme Bekleniyor...'}
+            {'Tek Tıkla Satın Al (Apple Pay)'}
           </button>
         </div>
       </div>
 
-      {/* AI Block Modal */}
-      {blocked && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ width: '100%', maxWidth: 440, background: P.bg1, border: `1px solid ${P.red}`, borderRadius: 32, padding: 40, boxShadow: `0 32px 120px rgba(239, 68, 68, 0.4)`, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: P.red }} />
+      {/* MULTI-AGENT SWARM MODAL */}
+      {swarmStep > 0 && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(20px)', animation: 'fadeIn 0.3s ease' }}>
+          <div style={{ width: '100%', maxWidth: 540, background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 32, padding: '32px 40px', boxShadow: `0 40px 120px rgba(0,0,0,0.8)`, position: 'relative', overflow: 'hidden' }}>
             
-            <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(239, 68, 68, 0.1)', border: `2px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', animation: 'pulseGlow 2s infinite' }}>
-              <ShieldAlert size={40} color={P.red} />
-            </div>
-            
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 12 }}>FinCoach AI Otonom Engellemesi</h2>
-            <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, marginBottom: 24 }}>
-              <strong style={{ color: P.text1 }}>24.999 ₺</strong> tutarındaki bu harcama dürtüsel olarak sınıflandırıldı. Eğer bunu alırsan, <span style={{ color: P.red, fontWeight: 700 }}>bu ayki kredi kartı asgarisini ödeyemeyecek</span> ve hedefinden 2 ay sapacaksın.
-            </p>
-            
-            <div style={{ background: P.bg2, borderRadius: 16, padding: 20, marginBottom: 32, textAlign: 'left', border: `1px solid ${P.border}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: P.text3 }}>Kategori:</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: P.text1 }}>Teknoloji (Limit Aşımı: %340)</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: P.text3 }}>Gelecek Etkisi:</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: P.red }}>-₺36.500 (Bileşik Faiziyle)</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, borderBottom: `1px solid ${P.border}`, paddingBottom: 20 }}>
+              <div style={{ background: 'rgba(124,58,237,0.2)', padding: 10, borderRadius: 14 }}><Zap size={24} color={P.purple} /></div>
+              <div>
+                <h2 style={{ fontSize: 18, fontWeight: 900, color: P.text1, letterSpacing: '-0.01em', margin: 0 }}>Multi-Agent AI Swarm</h2>
+                <p style={{ fontSize: 13, color: P.text2, margin: 0 }}>Otonom Yapay Zeka Yönetim Kurulu Kararı</p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <button onClick={() => navigate(-1)} style={{ padding: '16px', borderRadius: 16, background: P.bg0, color: P.text1, fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: `1px solid ${P.border}` }}
-                onMouseEnter={e => e.currentTarget.style.background = P.bg2}>
-                <Shield size={18} /> Ajanı Dinle ve Geri Dön
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              
+              {/* Agent 1: CFO (Risk) */}
+              <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(239, 68, 68, 0.1)', border: `1px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ShieldAlert size={20} color={P.red} />
+                </div>
+                <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.border}`, flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: P.red, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Risk Ajanı (CFO)</div>
+                  <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
+                    "Bunu alırsak 12. günde nakit akışı eksiye düşüyor. Temel ihtiyaç değil lüks kategorisinde. Asgari ödeme krizine gireriz. <strong>RED!</strong>"
+                  </p>
+                </div>
+              </div>
+
+              {/* Agent 2: Opportunity */}
+              {swarmStep >= 2 && (
+                <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(16, 185, 129, 0.1)', border: `1px solid ${P.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Zap size={20} color={P.green} />
+                  </div>
+                  <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.border}`, flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: P.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fırsat Ajanı (Yatırımcı)</div>
+                    <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
+                      "İtiraz ediyorum! Tüketici elektroniği enflasyonu %40 seviyesinde. Parayı bankada tutmak reel kayıp yaratır. 2 ay sonra zam gelecek. <strong>ONAY!</strong>"
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Agent 3: Orchestrator */}
+              {swarmStep >= 3 && (
+                <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(124, 58, 237, 0.1)', border: `1px solid ${P.purple}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: swarmStep === 3 ? 'pulseBorder 1.5s infinite' : 'none' }}>
+                    <Scale size={20} color={P.purple} />
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.1), transparent)', borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.purple}`, flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: P.purple, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hakem Ajan (Orkestratör)</div>
+                    {swarmStep === 3 ? (
+                      <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5, fontStyle: 'italic', opacity: 0.8 }}>
+                        Argümanlar sentezleniyor...
+                      </p>
+                    ) : (
+                      <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
+                        "İki veriyi de birleştirdim. Peşin alım REDDEDİLDİ. Ancak, eğer <strong>6 taksit</strong> seçeneği ile alınırsa nakit akışı bozulmadan enflasyondan kar edilebilir."
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
+
+            {/* FINAL ACTION BUTTON */}
+            {swarmStep >= 4 && (
+              <div className="animate-enter" style={{ marginTop: 32, display: 'flex', gap: 12, animationDelay: '0.2s' }}>
+                <button onClick={() => navigate(-1)} style={{ flex: 1, padding: '16px', borderRadius: 16, background: P.bg2, color: P.text1, fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: `1px solid ${P.border}` }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#334155'} onMouseLeave={e => e.currentTarget.style.background = P.bg2}>
+                  Vazgeç
+                </button>
+                <button onClick={() => { alert('Apple Store Taksitli Ödeme API sine yönlendiriliyor...'); navigate(-1); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(124,58,237,0.4)' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                  <ShieldCheck size={18} /> Şartlı Onay (6 Taksit)
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       )}
