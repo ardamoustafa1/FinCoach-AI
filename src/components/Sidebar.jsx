@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
+  { to: '/wealth', label: 'Varlık Yönetimi', icon: Landmark },
+  { to: '/tax', label: 'Vergi Asistanı', icon: Calculator },
   { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
   { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },

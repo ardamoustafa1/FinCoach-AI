@@ -2,20 +2,19 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   ArrowLeftRight,
-  Target,
   Bot,
   BarChart4,
-  Clock,
-  ShieldAlert,
-  Globe
+  Globe,
+  Landmark,
+  Calculator
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
-  { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
-  { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
-  { to: '/stress-test', label: 'Stres Testi', icon: Globe },
-  { to: '/chat', label: 'AI Koç', icon: Bot },
+  { to: '/wealth', label: 'Varlık', icon: Landmark },
+  { to: '/tax', label: 'Vergi', icon: Calculator },
+  { to: '/cashflow', label: 'Nakit', icon: BarChart4 },
+  { to: '/stress-test', label: 'Stres', icon: Globe },
 ];
 
 export default function MobileNav() {
