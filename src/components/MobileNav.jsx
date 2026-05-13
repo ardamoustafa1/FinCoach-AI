@@ -6,13 +6,14 @@ import {
   BarChart4,
   Globe,
   Landmark,
-  Calculator
+  Calculator,
+  Home
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/wealth', label: 'Varlık', icon: Landmark },
-  { to: '/tax', label: 'Vergi', icon: Calculator },
+  { to: '/real-estate', label: 'Kredi AI', icon: Home },
   { to: '/cashflow', label: 'Nakit', icon: BarChart4 },
   { to: '/stress-test', label: 'Stres', icon: Globe },
 ];

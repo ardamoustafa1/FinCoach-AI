@@ -20,6 +20,7 @@ const CashFlowPage = lazy(() => import('./pages/CashFlowPage'));
 const StressTestPage = lazy(() => import('./pages/StressTestPage'));
 const WealthPage = lazy(() => import('./pages/WealthPage'));
 const TaxOptimizerPage = lazy(() => import('./pages/TaxOptimizerPage'));
+const RealEstatePage = lazy(() => import('./pages/RealEstatePage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
 
@@ -207,6 +208,7 @@ export default function App() {
               <Route path="/cashflow" element={<CashFlowPage />} />
               <Route path="/wealth" element={<WealthPage />} />
               <Route path="/tax" element={<TaxOptimizerPage />} />
+              <Route path="/real-estate" element={<RealEstatePage />} />
               <Route path="/shop-sim" element={<ShopSimulationPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/chat" element={<ChatPage />} />
