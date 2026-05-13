@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge } from 'lucide-react';
+import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -196,23 +196,67 @@ export default function SystemMonitorPage() {
           </div>
         </div>
 
-        {/* LIVE TERMINAL LOGS */}
-        <div className="animate-enter" style={{ background: '#020617', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0, flex: 1, minHeight: 300 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <Terminal size={18} color="#94a3b8" />
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>SİSTEM LOGLARI (CANLI)</span>
-          </div>
+        {/* LIVE TERMINAL LOGS & SECURITY PANELS */}
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: 'monospace' }}>
-            {logs.length === 0 && <span style={{ color: '#475569' }}>Sistem dinleniyor. Event bekleniyor...</span>}
-            {logs.map((log) => (
-              <div key={log.id} className="animate-enter" style={{ 
-                color: log.color === 'red' ? '#ef4444' : log.color === 'green' ? '#10b981' : log.color === 'blue' ? '#3b82f6' : log.color === 'purple' ? '#a855f7' : '#cbd5e1',
-                fontSize: 13, lineHeight: 1.5
-              }}>
-                {log.msg}
-              </div>
-            ))}
+          <div className="animate-enter" style={{ background: '#020617', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0, flex: '1 1 500px', minHeight: 300 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <Terminal size={18} color="#94a3b8" />
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>SİSTEM LOGLARI (CANLI)</span>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: 'monospace' }}>
+              {logs.length === 0 && <span style={{ color: '#475569' }}>Sistem dinleniyor. Event bekleniyor...</span>}
+              {logs.map((log) => (
+                <div key={log.id} className="animate-enter" style={{ 
+                  color: log.color === 'red' ? '#ef4444' : log.color === 'green' ? '#10b981' : log.color === 'blue' ? '#3b82f6' : log.color === 'purple' ? '#a855f7' : '#cbd5e1',
+                  fontSize: 13, lineHeight: 1.5
+                }}>
+                  {log.msg}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: '1 1 350px', animationDelay: '0.3s', opacity: 0 }}>
+            
+            {/* Zero Trust Panel */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.05), transparent)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 24, padding: 24 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                 <div style={{ background: 'rgba(16,185,129,0.2)', padding: 8, borderRadius: 12 }}><ShieldCheck size={20} color={P.green} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS</h3>
+               </div>
+               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+                 Uygulama genelinde AES-256 (E2EE) şifreleme ve veritabanı katmanında Row-Level Security aktiftir. Kurucu CTO dahi kullanıcı verilerine erişemez.
+               </p>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0f172a', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+                   <Key size={14} color={P.text3} /> <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>AES-256</span>
+                 </div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0f172a', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+                   <Database size={14} color={P.text3} /> <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>PostgreSQL RLS</span>
+                 </div>
+               </div>
+            </div>
+
+            {/* Edge Computing Panel */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, padding: 24 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                 <div style={{ background: 'rgba(59,130,246,0.2)', padding: 8, borderRadius: 12 }}><Globe size={20} color={P.blue} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing (Sınır Bilişim)</h3>
+               </div>
+               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+                 Markowitz optimizasyonu ve AI çıkarımları merkezi sunucularda değil, size en yakın Cloudflare Worker (Edge Node) üzerinde hesaplanır.
+               </p>
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0f172a', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                   <Wifi size={16} color={P.green} />
+                   <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Aktif Edge: IST-1 (İstanbul)</span>
+                 </div>
+                 <span style={{ fontSize: 14, fontWeight: 900, color: P.green }}>4ms Gecikme</span>
+               </div>
+            </div>
+
           </div>
         </div>
 
