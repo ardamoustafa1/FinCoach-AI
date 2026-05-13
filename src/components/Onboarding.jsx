@@ -42,12 +42,12 @@ export default function Onboarding({ onComplete }) {
   function finish() {
     const finalBank = bank === "Diğer" ? customBank : bank;
     // İsim kayıt sırasında e-postadan alındı, localStorage'dan oku
-    const name = localStorage.getItem("butceai_user_name") || "Kullanıcı";
+    const name = localStorage.getItem("fincoach_user_name") || "Kullanıcı";
     const profile = { name, income: Number(income), goal, bank: finalBank };
-    localStorage.setItem("butceai_onboarding_completed", "true");
-    localStorage.setItem("butceai_profile", JSON.stringify(profile));
-    localStorage.setItem("butceai_income", income);
-    localStorage.setItem("butceai_bank", finalBank);
+    localStorage.setItem("fincoach_onboarding_completed", "true");
+    localStorage.setItem("fincoach_profile", JSON.stringify(profile));
+    localStorage.setItem("fincoach_income", income);
+    localStorage.setItem("fincoach_bank", finalBank);
     setLeaving(true);
     setTimeout(() => onComplete(profile), 350);
   }

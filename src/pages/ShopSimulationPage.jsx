@@ -80,7 +80,7 @@ export default function ShopSimulationPage() {
               <ShieldAlert size={40} color={P.red} />
             </div>
             
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 12 }}>BütçeAI Otonom Engellemesi</h2>
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 12 }}>FinCoach AI Otonom Engellemesi</h2>
             <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, marginBottom: 24 }}>
               <strong style={{ color: P.text1 }}>24.999 ₺</strong> tutarındaki bu harcama dürtüsel olarak sınıflandırıldı. Eğer bunu alırsan, <span style={{ color: P.red, fontWeight: 700 }}>bu ayki kredi kartı asgarisini ödeyemeyecek</span> ve hedefinden 2 ay sapacaksın.
             </p>

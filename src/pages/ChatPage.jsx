@@ -34,10 +34,10 @@ const P = {
 const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#06B6D4'];
 
 const getInitialMessages = () => {
-  const userName = localStorage.getItem('butceai_user_name') || '';
+  const userName = localStorage.getItem('fincoach_user_name') || '';
   const greeting = userName ? `Merhaba ${userName}! 👋` : 'Merhaba! 👋';
   return [
-    { role: 'bot', content: `${greeting} Ben BütçeAI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
+    { role: 'bot', content: `${greeting} Ben FinCoach AI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
     { role: 'bot', content: 'İşte harcamalarının genel bir özeti:\n\nCHART_DATA:{"type":"pie","title":"Kategori Dağılımı","data":[{"label":"Market","value":4500},{"label":"Yemek","value":2100},{"label":"Ulaşım","value":1200}]}' }
   ];
 };
@@ -69,13 +69,13 @@ function getUserContext() {
     // Onboarding profili — hedef, gelir, banka
     let kullaniciBilgisi = {};
     try {
-      const profil = JSON.parse(localStorage.getItem('butceai_profile') || '{}');
+      const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
       const goalLabels = { tasarruf: 'Tasarruf artırmak', takip: 'Harcamaları takip etmek', birikim: 'Birikim hedefi koymak' };
       kullaniciBilgisi = {
         hedefTipi: goalLabels[profil.goal] || profil.goal || 'Belirtilmedi',
         aylikGelir: profil.income ? `₺${Number(profil.income).toLocaleString('tr-TR')}` : 'Belirtilmedi',
         banka: profil.bank || 'Belirtilmedi',
-        kullaniciAdi: localStorage.getItem('butceai_user_name') || 'Kullanıcı',
+        kullaniciAdi: localStorage.getItem('fincoach_user_name') || 'Kullanıcı',
       };
     } catch {
       kullaniciBilgisi = {};
@@ -85,7 +85,7 @@ function getUserContext() {
       aylikOzet, limitler: limits,
       hedefler: goals.map(g => ({ ad: g.name, hedef: g.targetAmount, mevcut: g.currentAmount })),
       skor: totalScore, kisilik: personalityTitle,
-      roastMode: localStorage.getItem('butceai_roast_mode') === 'true',
+      roastMode: localStorage.getItem('fincoach_roast_mode') === 'true',
       kullaniciBilgisi,
     };
   } catch { return {}; }
@@ -104,10 +104,10 @@ export default function ChatPage() {
   const initialMsgHandled = useRef(false);
 
   const shareWrappedCard = async (wrappedData) => {
-    const text = `Ben bir ${wrappedData.title}! En büyük günahım: ${wrappedData.worst_habit}. ${wrappedData.roast_text} #BütçeAI`;
+    const text = `Ben bir ${wrappedData.title}! En büyük günahım: ${wrappedData.worst_habit}. ${wrappedData.roast_text} #FinCoach AI`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'BütçeAI Sarmalım', text });
+        await navigator.share({ title: 'FinCoach AI Sarmalım', text });
         toast.success('Paylaşım hazırlandı.');
         return;
       }
@@ -339,7 +339,7 @@ export default function ChatPage() {
                             {/* Texture & Glow */}
                             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 60%)' }} />
                             <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 6, lineHeight: 1.2, zIndex: 1 }}>{wrappedData.title}</h2>
-                            <p style={{ fontSize: 12, color: P.purpleLight, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, zIndex: 1 }}>BütçeAI 2026</p>
+                            <p style={{ fontSize: 12, color: P.purpleLight, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, zIndex: 1 }}>FinCoach AI 2026</p>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%', zIndex: 1 }}>
                               <div style={{ background: P.bg2, padding: '16px', borderRadius: 16, border: `1px solid ${P.border}` }}>

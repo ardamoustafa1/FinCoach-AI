@@ -5,15 +5,15 @@ import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { DEMO_EMAIL, DEMO_PASSWORD } from '../config/demoAccount';
 
 const USER_SCOPED_KEYS = [
-  'butceai_transactions',
-  'butceai_goals',
-  'butceai_budget_limits',
-  'butceai_gelir',
-  'butceai_category_rules',
-  'butceai_mock_initialized',
-  'butceai_profile',
-  'butceai_income',
-  'butceai_bank',
+  'fincoach_transactions',
+  'fincoach_goals',
+  'fincoach_budget_limits',
+  'fincoach_gelir',
+  'fincoach_category_rules',
+  'fincoach_mock_initialized',
+  'fincoach_profile',
+  'fincoach_income',
+  'fincoach_bank',
 ];
 
 function clearUserScopedCache() {
@@ -208,9 +208,9 @@ export default function AuthPage({ onAuth }) {
         isDemo: data.user.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()
       };
       
-      localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
-      localStorage.setItem('butceai_user_name', authData.name);
-      if (authData.phone) localStorage.setItem('butceai_phone', authData.phone);
+      localStorage.setItem('fincoach_auth_user', JSON.stringify(authData));
+      localStorage.setItem('fincoach_user_name', authData.name);
+      if (authData.phone) localStorage.setItem('fincoach_phone', authData.phone);
       onAuth(authData);
     }
     setLoading(false);
@@ -276,9 +276,9 @@ export default function AuthPage({ onAuth }) {
       if (data.session) {
         clearUserScopedCache();
         const authData = { name: name, email: data.user.email, id: data.user.id, phone, onboardingCompleted: false, isDemo: false };
-        localStorage.setItem('butceai_auth_user', JSON.stringify(authData));
-        localStorage.setItem('butceai_user_name', name);
-        localStorage.setItem('butceai_phone', phone);
+        localStorage.setItem('fincoach_auth_user', JSON.stringify(authData));
+        localStorage.setItem('fincoach_user_name', name);
+        localStorage.setItem('fincoach_phone', phone);
         onAuth(authData);
         return;
       }
@@ -320,7 +320,7 @@ export default function AuthPage({ onAuth }) {
             <Sparkles size={26} color="#fff" />
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 900, color: '#F1F5F9', letterSpacing: '-0.03em', margin: 0 }}>
-            Bütçe<span style={{ background: 'linear-gradient(135deg,#a78bfa,#6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI</span>
+            FinCoach<span style={{ background: 'linear-gradient(135deg,#a78bfa,#6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI</span>
           </h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>Gerçek zamanlı bulut senkronizasyonu aktif ☁️</p>
         </div>

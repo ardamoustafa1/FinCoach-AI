@@ -32,7 +32,7 @@ function normalizeTransactions() {
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
   }));
   try {
-    const gelirler = JSON.parse(localStorage.getItem('butceai_gelir') || '[]').map((tx) => ({
+    const gelirler = JSON.parse(localStorage.getItem('fincoach_gelir') || '[]').map((tx) => ({
       id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || 'Gelir',
       kategori: tx.kategori || 'Gelir', tutar: Number(tx.tutar ?? tx.amount ?? 0),
       not: tx.not || '', tur: 'gelir',
@@ -157,7 +157,7 @@ export default function ReportsPage() {
       pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
       remainingHeight -= pageHeight;
       while (remainingHeight > 0) { y -= pageHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight); remainingHeight -= pageHeight; }
-      pdf.save(`BütçeAI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
+      pdf.save(`FinCoach AI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
     } finally { setPdfLoading(false); }
   };
 
@@ -167,7 +167,7 @@ export default function ReportsPage() {
     const blob = new Blob([`\uFEFF${[headers.join(','), ...lines].join('\n')}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url; link.download = `BütçeAI_${monthLabel(selectedMonth).replace(' ', '_')}_İşlemleri.csv`;
+    link.href = url; link.download = `FinCoach AI_${monthLabel(selectedMonth).replace(' ', '_')}_İşlemleri.csv`;
     link.click(); URL.revokeObjectURL(url);
   };
 

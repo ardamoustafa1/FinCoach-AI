@@ -47,16 +47,16 @@ export default function DemoQRCodeModal({ onClose }) {
 
         {/* QR */}
         <div style={{ display: 'inline-block', padding: 20, background: '#fff', borderRadius: 20, boxShadow: '0 8px 40px rgba(124,58,237,0.3)' }}>
-          <QRCodeSVG value="https://butceai.vercel.app" size={240} level="H" />
+          <QRCodeSVG value="https://fincoach.vercel.app" size={240} level="H" />
         </div>
 
         {/* URL */}
         <a
-          href="https://butceai.vercel.app"
+          href="https://fincoach.vercel.app"
           target="_blank" rel="noreferrer"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 24, fontSize: 13, fontWeight: 700, color: '#A78BFA', textDecoration: 'none' }}
         >
-          butceai.vercel.app <ExternalLink size={14} />
+          fincoach.vercel.app <ExternalLink size={14} />
         </a>
       </div>
     </div>

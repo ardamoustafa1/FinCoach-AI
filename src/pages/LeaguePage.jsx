@@ -11,7 +11,7 @@ const P = {
 };
 
 const MOCK_LEADERBOARD = [
-  { id: 1, name: 'Sen (BütçeAI)', savingsRate: 32, score: 950, isMe: true, avatar: '😎' },
+  { id: 1, name: 'Sen (FinCoach AI)', savingsRate: 32, score: 950, isMe: true, avatar: '😎' },
   { id: 2, name: 'Ahmet Yılmaz', savingsRate: 28, score: 820, isMe: false, avatar: '🤠' },
   { id: 3, name: 'Zeynep K.', savingsRate: 25, score: 780, isMe: false, avatar: '👩‍💻' },
   { id: 4, name: 'Caner D.', savingsRate: 15, score: 540, isMe: false, avatar: '🎸' },
@@ -19,7 +19,7 @@ const MOCK_LEADERBOARD = [
 ];
 
 const MOCK_BADGES = [
-  { id: 1, title: 'Bütçe Muhafızı', desc: 'Bütçeyi aşmadan 1 ay geçirdin.', icon: ShieldCheck, color: '#10B981', unlocked: true },
+  { id: 1, title: 'FinCoach Muhafızı', desc: 'Bütçeyi aşmadan 1 ay geçirdin.', icon: ShieldCheck, color: '#10B981', unlocked: true },
   { id: 2, title: 'Hız Tutkunu', desc: 'Aylık hedefine 10 gün erken ulaştın.', icon: Zap, color: '#F59E0B', unlocked: true },
   { id: 3, title: 'Tasarruf Ustası', desc: '%30 tasarruf oranını geçtin.', icon: Crown, color: '#7C3AED', unlocked: false },
   { id: 4, title: 'İlk Düello', desc: 'İlk finansal düellonu kazandın.', icon: Medal, color: '#EC4899', unlocked: false },
@@ -36,12 +36,12 @@ export default function LeaguePage() {
       try {
         if (navigator.share) {
           navigator.share({
-            title: 'BütçeAI Tasarruf Ligi',
+            title: 'FinCoach AI Tasarruf Ligi',
             text: 'Seni Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰',
             url: window.location.origin
           });
         } else {
-          navigator.clipboard.writeText('Seni BütçeAI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin);
+          navigator.clipboard.writeText('Seni FinCoach AI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin);
           toast.success('Davet bağlantısı kopyalandı! Arkadaşlarına gönderebilirsin.');
         }
       } catch {
@@ -154,9 +154,9 @@ export default function LeaguePage() {
             </h3>
             <ul style={{ paddingLeft: 20, margin: 0, color: P.text2, fontSize: 14, lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <li><strong>Puanlama Sistemi:</strong> Gelirine oranla yaptığın her %1'lik tasarruf sana 10 puan kazandırır.</li>
-              <li><strong>Eksi Puan:</strong> Bütçe limitlerini aşarsan ceza puanı alırsın! BütçeAI seni yakından takip ediyor.</li>
+              <li><strong>Eksi Puan:</strong> Bütçe limitlerini aşarsan ceza puanı alırsın! FinCoach AI seni yakından takip ediyor.</li>
               <li><strong>Aylık Sıfırlanma:</strong> Her ayın 1'inde lig sıfırlanır, yeni düello başlar.</li>
-              <li>Abonelikleri iptal ederek veya hedeflerine ulaşarak ekstra "BütçeAI Bonus Puanı" kazanabilirsin.</li>
+              <li>Abonelikleri iptal ederek veya hedeflerine ulaşarak ekstra "FinCoach AI Bonus Puanı" kazanabilirsin.</li>
             </ul>
           </div>
           

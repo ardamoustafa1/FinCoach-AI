@@ -61,7 +61,7 @@ function ArcProgress({ skor, renk }) {
         style={{ transform: `rotate(160deg)`, transformOrigin: `${CX}px ${CY}px`, transition: 'stroke 0.5s ease', filter: `drop-shadow(0 0 12px ${renk}99)` }}
       />
       <text x={CX} y={CY - 12} textAnchor="middle" fontSize={36} fontWeight={900} fill={renk}>{Math.round(animSkor)}</text>
-      <text x={CX} y={CY + 12} textAnchor="middle" fontSize={11} fill="#64748B" fontWeight={700} letterSpacing="0.05em">/ 1900 BÜTÇEAİ SKORU</text>
+      <text x={CX} y={CY + 12} textAnchor="middle" fontSize={11} fill="#64748B" fontWeight={700} letterSpacing="0.05em">/ 1900 FİNCOACH SKORU</text>
       <text x={CX} y={CY + 36} textAnchor="middle" fontSize={12} fill={renk} fontWeight={800}>{skorEtiket(animSkor)}</text>
     </svg>
   );
@@ -127,8 +127,8 @@ export default function HealthScore({ islemler, gelirler }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em', marginBottom: 3 }}>BütçeAI Güven Skoru (v2.0)</h2>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>"Findeks geçmişi cezalandırır, BütçeAI geleceğini inşa eder."</p>
+          <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em', marginBottom: 3 }}>FinCoach AI Güven Skoru (v2.0)</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>"Findeks geçmişi cezalandırır, FinCoach AI geleceğini inşa eder."</p>
         </div>
         <span style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: `${renk}18`, color: renk, border: `1px solid ${renk}33` }}>
           {skorEtiket(skor)}

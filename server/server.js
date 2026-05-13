@@ -140,7 +140,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     const isRoastMode = userContext?.roastMode === true;
     const basePersona = isRoastMode 
       ? `Sen 'Acımasız Koç'sun. Kullanıcının kötü harcama alışkanlıklarını mizahi, alaycı ve çok sert bir dille eleştiren bir finansal zekasın. Kesinlikle kibar olma, acımasız gerçekleri yüzüne vur. Örnek: "Maaşının %20'sini kahveye yatırmışsın, tebrikler yakında kafein bağımlılığından emekli olursun."`
-      : `Sen BütçeAI'sın. Uzman, samimi ve finansal koçluk yapan bir yapay zekasın.`;
+      : `Sen FinCoach AI'sın. Uzman, samimi ve finansal koçluk yapan bir yapay zekasın.`;
 
     const systemInstruction = `${basePersona} 
 Kullanıcının güncel finansal durumu:
@@ -165,7 +165,7 @@ ABONELİK İPTAL KOÇU VE AJANI (SUBSCRIPTION SNIPER & CANCEL AGENT):
 Eğer kullanıcı aboneliklerini sorarsa dijital aboneliklere (Netflix, Spotify vb.) odaklan. Mantıksız olanı bul ve iptal etmesini söyle.
 Eğer kullanıcı doğrudan "İptal et", "Netflix'i iptal et", "Spotify'ı kapat" gibi OTONOM BİR İŞLEM yapmanı emrederse, bunu yapabileceğini simüle etmek için yanıtının EN SONUNA şu formatta JSON ekle:
 AGENT_ACTION:{"action":"cancel_subscription","provider":"(Abonelik Adı, Örn: Netflix)"}
-Ayrıca kullanıcıya "Harika, [Provider] için iptal işlemlerini arka planda başlatıyorum. BütçeAI otonom ajanı devrede!" gibi havalı bir metin döndür.
+Ayrıca kullanıcıya "Harika, [Provider] için iptal işlemlerini arka planda başlatıyorum. FinCoach AI otonom ajanı devrede!" gibi havalı bir metin döndür.
 
 PAYLAŞILABİLİR SARMAL KARTI (WRAPPED / ROAST KARTI):
 Kullanıcı "Sarmal", "Özet Kartı", "Beni Özetle", "Roast Kartı", "Instagram" gibi bir talepte bulunursa, Instagram Story formatında paylaşabileceği vurucu bir özet üret. Yanıtının EN SONUNA şu formatta JSON ekle:
@@ -292,10 +292,10 @@ Cümle: "${text}"`;
 
 // ─── WHATSAPP BOT ────────────────────────────────────────────────
 if (process.env.WHATSAPP_ENABLED === 'false') {
-  console.log('[BütçeAI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
+  console.log('[FinCoach AI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
 } else {
   if (!supabaseAdmin) {
-    console.warn('[BütçeAI WhatsApp] Supabase admin anahtarı yok. Fişler okunur ama transactions tablosuna kaydedilemez.');
+    console.warn('[FinCoach AI WhatsApp] Supabase admin anahtarı yok. Fişler okunur ama transactions tablosuna kaydedilemez.');
     whatsappStatus.lastError = 'Supabase admin anahtarı yok.';
   }
 
@@ -334,14 +334,14 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
     whatsappStatus.state = 'ready';
     whatsappStatus.lastEventAt = new Date().toISOString();
     whatsappStatus.lastError = null;
-    console.log('[BütçeAI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
+    console.log('[FinCoach AI WhatsApp] Bot başarıyla bağlandı ve dinliyor! 📱✅');
   });
 
   whatsappClient.on('authenticated', () => {
     whatsappStatus.authenticated = true;
     whatsappStatus.state = 'authenticated';
     whatsappStatus.lastEventAt = new Date().toISOString();
-    console.log('[BütçeAI WhatsApp] Oturum doğrulandı.');
+    console.log('[FinCoach AI WhatsApp] Oturum doğrulandı.');
   });
 
   whatsappClient.on('auth_failure', (message) => {
@@ -350,7 +350,7 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
     whatsappStatus.state = 'auth_failure';
     whatsappStatus.lastEventAt = new Date().toISOString();
     whatsappStatus.lastError = String(message || 'Oturum doğrulanamadı.');
-    console.error('[BütçeAI WhatsApp] Oturum doğrulanamadı:', message);
+    console.error('[FinCoach AI WhatsApp] Oturum doğrulanamadı:', message);
   });
 
   whatsappClient.on('disconnected', (reason) => {
@@ -358,7 +358,7 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
     whatsappStatus.state = 'disconnected';
     whatsappStatus.lastEventAt = new Date().toISOString();
     whatsappStatus.lastError = String(reason || 'Bağlantı koptu.');
-    console.warn('[BütçeAI WhatsApp] Bağlantı koptu:', reason);
+    console.warn('[FinCoach AI WhatsApp] Bağlantı koptu:', reason);
   });
 
   const trackWhatsAppMessage = async (msg) => {
@@ -383,5 +383,5 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
 }
 
 app.listen(PORT, HOST || undefined, () => {
-  console.log(`[BütçeAI Backend] Gemini API Server running on ${HOST || '0.0.0.0'}:${PORT}`);
+  console.log(`[FinCoach AI Backend] Gemini API Server running on ${HOST || '0.0.0.0'}:${PORT}`);
 });

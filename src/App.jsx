@@ -18,7 +18,7 @@ const LeaguePage = lazy(() => import('./pages/LeaguePage'));
 const TimeMachinePage = lazy(() => import('./pages/TimeMachinePage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 
-function LoadingScreen({ label = 'BütçeAI Başlatılıyor...' }) {
+function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
   return (
     <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: 20 }}>
       <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', animation: 'spin 1s linear infinite' }} />
@@ -29,7 +29,7 @@ function LoadingScreen({ label = 'BütçeAI Başlatılıyor...' }) {
 }
 
 export default function App() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('butceai_theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('fincoach_theme') || 'dark');
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
@@ -85,7 +85,7 @@ export default function App() {
           tur: t.tur,
           createdAt: t.created_at
         }));
-        localStorage.setItem('butceai_transactions', JSON.stringify(formattedTx));
+        localStorage.setItem('fincoach_transactions', JSON.stringify(formattedTx));
       }
 
       if (gl.data) {
@@ -99,13 +99,13 @@ export default function App() {
           color: g.renk,
           createdAt: g.created_at
         }));
-        localStorage.setItem('butceai_goals', JSON.stringify(formattedGl));
+        localStorage.setItem('fincoach_goals', JSON.stringify(formattedGl));
       }
 
       if (lm.data) {
         const limits = {};
         lm.data.forEach(l => { limits[l.category] = Number(l.limit_amount); });
-        localStorage.setItem('butceai_budget_limits', JSON.stringify(limits));
+        localStorage.setItem('fincoach_budget_limits', JSON.stringify(limits));
       }
 
     } catch (err) {

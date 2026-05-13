@@ -1,5 +1,5 @@
 /**
- * BütçeAI - Mock Banka İşlem Verileri
+ * FinCoach AI - Mock Banka İşlem Verileri
  * Son 3 aya ait 120 adet Türkiye'ye özel gerçekçi banka işlemi
  */
 
@@ -197,9 +197,9 @@ export const mockTransactions = tumIslemleriUret();
 
 // ─── localStorage'a yükle ────────────────────────────────────
 export function initMockData() {
-  const KEY_TX = 'butceai_transactions';
-  const KEY_GELIR = 'butceai_gelir';
-  const KEY_INIT = 'butceai_mock_initialized';
+  const KEY_TX = 'fincoach_transactions';
+  const KEY_GELIR = 'fincoach_gelir';
+  const KEY_INIT = 'fincoach_mock_initialized';
 
   // Sadece ilk açılışta yükle
   if (localStorage.getItem(KEY_INIT)) return;
@@ -208,5 +208,5 @@ export function initMockData() {
   localStorage.setItem(KEY_GELIR, JSON.stringify(mockGelir));
   localStorage.setItem(KEY_INIT, 'true');
 
-  console.log('[BütçeAI] Mock veriler yüklendi: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
+  console.log('[FinCoach AI] Mock veriler yüklendi: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
 }

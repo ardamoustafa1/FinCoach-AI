@@ -53,7 +53,7 @@ const fmtShort = (v) => {
 };
 
 const WHATSAPP_BOT_NUMBER = (import.meta.env.VITE_WHATSAPP_BOT_NUMBER || '905070271251').replace(/\D/g, '');
-const WHATSAPP_TEST_TEXT = 'Merhaba BütçeAI, Migros harcamamı test için 125 TL olarak kaydet.';
+const WHATSAPP_TEST_TEXT = 'Merhaba FinCoach AI, Migros harcamamı test için 125 TL olarak kaydet.';
 const WHATSAPP_TEST_URL = `https://wa.me/${WHATSAPP_BOT_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEST_TEXT)}`;
 
 /* ─── Micro-components ─── */
@@ -297,10 +297,10 @@ export default function HomePage() {
   };
 
   const shareLeagueInvite = async () => {
-    const text = "Seni Bütçe Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim #BütçeAI";
+    const text = "Seni FinCoach Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim #FinCoach AI";
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'BütçeAI', text });
+        await navigator.share({ title: 'FinCoach AI', text });
         toast.success('Davet hazırlandı.');
         return;
       }
@@ -357,7 +357,7 @@ export default function HomePage() {
     return areaData;
   })();
 
-  const userName = localStorage.getItem('butceai_user_name') || 'Kullanıcı';
+  const userName = localStorage.getItem('fincoach_user_name') || 'Kullanıcı';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
 
@@ -847,7 +847,7 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
               <div>
                 <h2 style={{ fontSize: 20, fontWeight: 900, color: P.text1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Trophy size={22} color={P.amber} /> Bütçe Ligi (Mahalle Rekabeti)
+                  <Trophy size={22} color={P.amber} /> FinCoach Ligi (Mahalle Rekabeti)
                 </h2>
                 <p style={{ fontSize: 13, color: P.text3, marginTop: 4 }}>Arkadaşlarını davet et, tasarruf yarışını başlat.</p>
               </div>

@@ -192,7 +192,7 @@ Mesaj: "${String(text || '').slice(0, 700)}"`;
 }
 
 export async function generateChatReply({ model, text }) {
-  const prompt = `Sen BütçeAI'ın WhatsApp asistanısın. Kullanıcıyla Türkçe, kısa, samimi ve net konuş. Finansal kayıt yapman gerekmiyorsa sadece yanıt ver. Maksimum 2 cümle.
+  const prompt = `Sen FinCoach AI'ın WhatsApp asistanısın. Kullanıcıyla Türkçe, kısa, samimi ve net konuş. Finansal kayıt yapman gerekmiyorsa sadece yanıt ver. Maksimum 2 cümle.
 Mesaj: "${String(text || '').slice(0, 700)}"`;
   const result = await model.generateContent(prompt);
   return asCleanString(result.response.text(), 'Merhaba, buradayım. Fiş fotoğrafı veya harcama mesajı gönderebilirsin.', 700);

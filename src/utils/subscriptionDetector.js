@@ -1,5 +1,5 @@
 /**
- * BütçeAI - Abonelik / Tekrarlayan Ödeme Tespit Algoritması
+ * FinCoach AI - Abonelik / Tekrarlayan Ödeme Tespit Algoritması
  *
  * localStorage'daki tüm işlemleri tarar:
  * - Aynı mağazadan gelen işlemlere bakar

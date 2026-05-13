@@ -1,5 +1,5 @@
 /**
- * BütçeAI - CSV / Banka Ekstresi Parser
+ * FinCoach AI - CSV / Banka Ekstresi Parser
  * Desteklenen formatlar: Garanti, İş Bankası, Yapı Kredi, Genel CSV
  */
 import Papa from 'papaparse';

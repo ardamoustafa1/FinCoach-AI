@@ -1,8 +1,8 @@
-export const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@butceai.app';
+export const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@fincoach.app';
 export const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'Demo2026!';
 
 export const demoProfile = {
-  full_name: 'BütçeAI Demo',
+  full_name: 'FinCoach AI Demo',
   phone_text: '0 (555) 000 00 00',
   email: DEMO_EMAIL,
   onboarding_completed: true,

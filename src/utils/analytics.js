@@ -1,7 +1,7 @@
 import { authFetch } from './api';
 
-const QUEUE_KEY = 'butceai_analytics_queue';
-const SESSION_KEY = 'butceai_analytics_session';
+const QUEUE_KEY = 'fincoach_analytics_queue';
+const SESSION_KEY = 'fincoach_analytics_session';
 
 function getSessionId() {
   let id = localStorage.getItem(SESSION_KEY);

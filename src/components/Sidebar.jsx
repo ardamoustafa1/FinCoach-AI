@@ -25,8 +25,8 @@ const P = {
 };
 
 export default function Sidebar({ collapsed, onToggle }) {
-  const userName = localStorage.getItem('butceai_user_name') || 'Kullanıcı';
-  const userBank = localStorage.getItem('butceai_bank') || 'Finansal Koç';
+  const userName = localStorage.getItem('fincoach_user_name') || 'Kullanıcı';
+  const userBank = localStorage.getItem('fincoach_bank') || 'Finansal Koç';
   const initial = userName.charAt(0).toUpperCase() || 'K';
 
   return (
@@ -53,7 +53,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         </div>
         {!collapsed && (
           <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
-            <span style={{ fontSize: 18, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em' }}>BütçeAI</span>
+            <span style={{ fontSize: 18, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em' }}>FinCoach AI</span>
             <p style={{ fontSize: 10, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.22em', margin: 0 }}>Finance Cockpit</p>
           </div>
         )}

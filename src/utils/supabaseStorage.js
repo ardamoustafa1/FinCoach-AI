@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 /**
- * BütçeAI - Supabase Veri Yönetimi
+ * FinCoach AI - Supabase Veri Yönetimi
  * Bulut tabanlı veri işlemleri için CRUD fonksiyonları
  */
 

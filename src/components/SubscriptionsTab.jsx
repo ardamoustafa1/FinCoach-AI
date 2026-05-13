@@ -7,7 +7,7 @@ import { fmt } from '../utils/categories';
 import { abonelikleriTespit, yaklasanYenilemeler } from '../utils/subscriptionDetector';
 
 // ─── Dismiss edilmiş abonelikleri localStorage'dan oku/yaz ───
-const DISMISS_KEY = 'butceai_dismissed_subs';
+const DISMISS_KEY = 'fincoach_dismissed_subs';
 function getDismissed() {
   try { return JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]'); }
   catch { return []; }

@@ -81,18 +81,18 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 export default function SettingsPage({ theme, onToggleTheme }) {
   const [limits, setLimits] = useState(() => getBudgetLimits());
   const [isSaved, setIsSaved] = useState(false);
-  const [roastMode, setRoastMode] = useState(() => localStorage.getItem('butceai_roast_mode') === 'true');
+  const [roastMode, setRoastMode] = useState(() => localStorage.getItem('fincoach_roast_mode') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [whatsappStatus, setWhatsappStatus] = useState(null);
   const [whatsappError, setWhatsappError] = useState('');
 
   // Profile state
-  const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('butceai_auth_user') || '{}'); } catch { return {}; } };
+  const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('fincoach_auth_user') || '{}'); } catch { return {}; } };
   const [profile, setProfile] = useState(() => ({
-    name: localStorage.getItem('butceai_user_name') || getAuthUser().name || '',
+    name: localStorage.getItem('fincoach_user_name') || getAuthUser().name || '',
     email: getAuthUser().email || '',
-    phone: localStorage.getItem('butceai_phone') || '',
+    phone: localStorage.getItem('fincoach_phone') || '',
   }));
   const [editField, setEditField] = useState(null); // 'name' | 'email' | 'phone'
   const [editValue, setEditValue] = useState('');
@@ -111,7 +111,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [passSaved, setPassSaved] = useState(false);
 
   // Email verification
-  const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('butceai_email_verified') === 'true');
+  const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('fincoach_email_verified') === 'true');
   const [verificationSent, setVerificationSent] = useState(false);
 
   const loadWhatsAppStatus = useCallback(async () => {
@@ -167,12 +167,12 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
     const updated = { ...profile, [field]: value };
     setProfile(updated);
-    if (field === 'name') { localStorage.setItem('butceai_user_name', value); }
-    if (field === 'phone') { localStorage.setItem('butceai_phone', value); }
+    if (field === 'name') { localStorage.setItem('fincoach_user_name', value); }
+    if (field === 'phone') { localStorage.setItem('fincoach_phone', value); }
     if (field === 'email') {
       const auth = getAuthUser();
-      localStorage.setItem('butceai_auth_user', JSON.stringify({ ...auth, email: value }));
-      setEmailVerified(false); localStorage.removeItem('butceai_email_verified');
+      localStorage.setItem('fincoach_auth_user', JSON.stringify({ ...auth, email: value }));
+      setEmailVerified(false); localStorage.removeItem('fincoach_email_verified');
     }
 
     setEditField(null); setEditValue('');
@@ -221,7 +221,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const toggleRoastMode = () => {
     const newVal = !roastMode;
     setRoastMode(newVal);
-    localStorage.setItem('butceai_roast_mode', newVal);
+    localStorage.setItem('fincoach_roast_mode', newVal);
   };
 
   const handleLimitChange = (kat, value) => { setLimits(prev => ({ ...prev, [kat]: Number(value) })); setIsSaved(false); };
@@ -232,7 +232,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   };
 
   const clearLocalAppData = () => {
-    const keepKeys = ['butceai_auth_user', 'butceai_user_name', 'butceai_phone', 'butceai_roast_mode', 'butceai_email_verified'];
+    const keepKeys = ['fincoach_auth_user', 'fincoach_user_name', 'fincoach_phone', 'fincoach_roast_mode', 'fincoach_email_verified'];
     const preserved = Object.fromEntries(
       keepKeys
         .map(key => [key, localStorage.getItem(key)])
@@ -240,7 +240,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     );
 
     Object.keys(localStorage)
-      .filter(key => key.startsWith('butceai_'))
+      .filter(key => key.startsWith('fincoach_'))
       .forEach(key => localStorage.removeItem(key));
 
     Object.entries(preserved).forEach(([key, value]) => localStorage.setItem(key, value));
@@ -266,8 +266,8 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
   const confirmLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem('butceai_onboarding_completed');
-    localStorage.removeItem('butceai_auth_user');
+    localStorage.removeItem('fincoach_onboarding_completed');
+    localStorage.removeItem('fincoach_auth_user');
     window.location.replace('/');
   };
 
@@ -299,7 +299,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             </h3>
             <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
               {confirmAction === 'clear'
-                ? 'Bu işlem cihazdaki BütçeAI işlem, hedef ve tercih verilerini temizler. Supabase oturumunuz korunur.'
+                ? 'Bu işlem cihazdaki FinCoach AI işlem, hedef ve tercih verilerini temizler. Supabase oturumunuz korunur.'
                 : 'Mevcut yerel işlem ve hedef verileri demo veri setiyle değiştirilecek. Supabase oturumunuz korunur.'}
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
@@ -734,7 +734,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
           <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(40px)', pointerEvents: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 28, flexWrap: 'wrap' }}>
             <div style={{ padding: 16, borderRadius: 18, background: '#fff', boxShadow: '0 8px 30px rgba(124,58,237,0.25)', flexShrink: 0 }}>
-              <QRCodeSVG value="https://butceai.vercel.app" size={160} />
+              <QRCodeSVG value="https://fincoach.vercel.app" size={160} />
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 99, padding: '4px 14px', fontSize: 11, fontWeight: 700, color: P.purpleLight, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
@@ -746,7 +746,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                 Cihazınızla okutarak uygulamaya anında erişin.
               </p>
               <p style={{ fontSize: 13, color: P.text3, wordBreak: 'break-all', background: P.bg3, padding: '10px 14px', borderRadius: 10, border: `1px solid ${P.border}`, fontFamily: 'monospace' }}>
-                https://butceai.vercel.app
+                https://fincoach.vercel.app
               </p>
             </div>
           </div>

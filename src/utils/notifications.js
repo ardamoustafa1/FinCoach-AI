@@ -1,11 +1,11 @@
 import { abonelikleriTespit, yaklasanYenilemeler } from './subscriptionDetector';
 
-export const WEEKLY_SUMMARY_SEEN_KEY = 'butceai_weekly_summary_seen_at';
-export const UNUSUAL_SPENDING_KEY = 'butceai_unusual_spending_reviews';
+export const WEEKLY_SUMMARY_SEEN_KEY = 'fincoach_weekly_summary_seen_at';
+export const UNUSUAL_SPENDING_KEY = 'fincoach_unusual_spending_reviews';
 
 export function readExpenses() {
   try {
-    return JSON.parse(localStorage.getItem('butceai_transactions') || '[]')
+    return JSON.parse(localStorage.getItem('fincoach_transactions') || '[]')
       .map(tx => ({
         ...tx,
         tarih: tx.tarih || tx.date,
@@ -45,7 +45,7 @@ export function budgetStatus(expenses, limits, monthKey = latestMonthKey(expense
 
 export function upcomingSubscriptionReminders() {
   const dismissed = (() => {
-    try { return JSON.parse(localStorage.getItem('butceai_dismissed_subs') || '[]'); }
+    try { return JSON.parse(localStorage.getItem('fincoach_dismissed_subs') || '[]'); }
     catch { return []; }
   })();
   return yaklasanYenilemeler(abonelikleriTespit(readExpenses(), dismissed));

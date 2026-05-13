@@ -93,13 +93,13 @@ export default function DashboardPage() {
     setBankingSyncing(true);
     toast.info('Bankanızla güvenli PSD2 bağlantısı kuruluyor...');
     setTimeout(() => {
-      toast.success('Son 30 günlük Akbank ve Garanti hesap hareketleriniz BütçeAI ile otonom olarak senkronize edildi! 🎉');
+      toast.success('Son 30 günlük Akbank ve Garanti hesap hareketleriniz FinCoach AI ile otonom olarak senkronize edildi! 🎉');
       setBankingSyncing(false);
     }, 3500);
   };
 
   const handleAddToWallet = () => {
-    toast.success('BütçeAI Kartı Apple Wallet\'a eklendi! (Simülasyon)');
+    toast.success('FinCoach AI Kartı Apple Wallet\'a eklendi! (Simülasyon)');
   };
 
   const stats = useMemo(() => {

@@ -1,5 +1,5 @@
 /**
- * BütçeAI - Finansal Sağlık Skoru Hesaplayıcı
+ * FinCoach AI - Finansal Sağlık Skoru Hesaplayıcı
  * Toplam 100 puan, 4 alt metrik
  */
 import { getBudgetLimits } from './storage';

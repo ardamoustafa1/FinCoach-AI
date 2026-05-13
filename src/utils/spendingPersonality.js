@@ -1,5 +1,5 @@
 /**
- * BütçeAI - Harcama Kişilik Tipi Tespit Motoru
+ * FinCoach AI - Harcama Kişilik Tipi Tespit Motoru
  */
 
 // ─── Tip Tanımları ────────────────────────────────────────────

@@ -1,5 +1,5 @@
 /**
- * BütçeAI - Örnek (Seed) Veriler
+ * FinCoach AI - Örnek (Seed) Veriler
  * Uygulamayı ilk açışta doldurmak için kullanılır.
  */
 
@@ -112,8 +112,8 @@ export const sampleGoals = [
 ];
 
 export function seedDataIfEmpty() {
-  const txKey = 'butceai_transactions';
-  const goalKey = 'butceai_goals';
+  const txKey = 'fincoach_transactions';
+  const goalKey = 'fincoach_goals';
 
   if (!localStorage.getItem(txKey)) {
     localStorage.setItem(txKey, JSON.stringify(sampleTransactions));

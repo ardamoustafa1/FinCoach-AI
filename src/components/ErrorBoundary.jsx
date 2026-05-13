@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component {
           boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         }}>
           <p style={{ margin: '0 0 8px', color: '#C4B5FD', fontSize: 12, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-            BütçeAI
+            FinCoach AI
           </p>
           <h1 style={{ margin: '0 0 12px', fontSize: 28, lineHeight: 1.15, fontWeight: 900 }}>
             Ekran güvenli moda alındı.

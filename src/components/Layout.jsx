@@ -66,7 +66,7 @@ export default function Layout({ theme, onToggleTheme }) {
           borderBottom: `1px solid ${P.border}`
         }}>
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#a78bfa', margin: 0 }}>BütçeAI</p>
+            <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#a78bfa', margin: 0 }}>FinCoach AI</p>
             <p className="hidden sm:block" style={{ fontSize: 13, color: P.text2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Akıllı bütçe, hedef ve harcama koçu</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>

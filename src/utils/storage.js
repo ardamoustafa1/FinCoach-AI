@@ -1,15 +1,15 @@
 /**
- * BütçeAI - localStorage & Supabase Senkronizasyon Katmanı
+ * FinCoach AI - localStorage & Supabase Senkronizasyon Katmanı
  */
 import { supabase } from './supabase';
 
 const KEYS = {
-  TRANSACTIONS: 'butceai_transactions',
-  GOALS: 'butceai_goals',
-  SETTINGS: 'butceai_settings',
-  THEME: 'butceai_theme',
-  BUDGET_LIMITS: 'butceai_budget_limits',
-  CATEGORY_RULES: 'butceai_category_rules',
+  TRANSACTIONS: 'fincoach_transactions',
+  GOALS: 'fincoach_goals',
+  SETTINGS: 'fincoach_settings',
+  THEME: 'fincoach_theme',
+  BUDGET_LIMITS: 'fincoach_budget_limits',
+  CATEGORY_RULES: 'fincoach_category_rules',
 };
 
 export const DEFAULT_LIMITS = {

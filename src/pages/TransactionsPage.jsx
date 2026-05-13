@@ -463,7 +463,7 @@ function FisTaraModal({ onSonuc, onApiError, onKapat }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${P.border}`, background: P.bg3 }}>
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Fiş Tara</h2>
-            <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Fotoğrafı seç, BütçeAI tutar ve tarihi çıkarsın.</p>
+            <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Fotoğrafı seç, FinCoach AI tutar ve tarihi çıkarsın.</p>
           </div>
           <button onClick={onKapat} disabled={loading} style={{ width: 34, height: 34, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={15} />
