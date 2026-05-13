@@ -300,57 +300,70 @@ export default function ReportsPage() {
           </div>
 
           {/* ── AI ANALYSIS ── */}
-          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
-            {/* Gradient top accent */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.5), transparent)', pointerEvents: 'none' }} />
+          <div style={{ 
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)', 
+            border: `1px solid rgba(255,255,255,0.08)`, 
+            borderRadius: 24, padding: '32px 36px', 
+            position: 'relative', overflow: 'hidden',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.2)',
+            backdropFilter: 'blur(20px)'
+          }}>
+            {/* Ambient glows */}
+            <div style={{ position: 'absolute', top: -50, right: -50, width: 250, height: 250, background: 'rgba(124,58,237,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, background: 'rgba(59,130,246,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.5), transparent)' }} />
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 24, position: 'relative', zIndex: 1 }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <Sparkles size={14} color={P.purpleLight} />
-                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: P.purpleLight }}>AI Yorumu</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Sparkles size={16} color="#c4b5fd" />
+                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#c4b5fd' }}>AI Yorumu</span>
                 </div>
-                <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em' }}>{monthLabel(selectedMonth)} finans yorumu</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{monthLabel(selectedMonth)} Finans Yorumu</h2>
               </div>
               <button onClick={handleAnalyze} disabled={aiLoading} className="ai-btn" style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '11px 22px', borderRadius: 12,
-                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
-                border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '14px 24px', borderRadius: 14,
+                background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 800,
                 cursor: aiLoading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s', opacity: aiLoading ? 0.6 : 1,
-                boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', opacity: aiLoading ? 0.7 : 1,
+                boxShadow: '0 8px 32px rgba(124,58,237,0.4)',
               }}>
-                {aiLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
-                Rapor Oluştur
+                {aiLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={18} />}
+                {aiLoading ? 'Rapor Hazırlanıyor...' : 'Rapor Oluştur'}
               </button>
             </div>
 
-            {aiError && (
-              <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: P.red, fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
-                {aiError}
-              </div>
-            )}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {aiError && (
+                <div style={{ padding: '16px 20px', borderRadius: 14, background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 14, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 4px 12px rgba(239,68,68,0.1)' }}>
+                  <span style={{ fontSize: 18 }}>⚠️</span> {aiError}
+                </div>
+              )}
 
-            {aiYorumu ? (
-              <div style={{ color: P.text2, fontSize: 14, lineHeight: 1.75 }}>
-                <ReactMarkdown components={{
-                  h2: ({ children }) => <h2 style={{ fontSize: 15, fontWeight: 800, color: P.text1, marginTop: 20, marginBottom: 8 }}>{children}</h2>,
-                  p: ({ children }) => <p style={{ marginBottom: 12, color: P.text2 }}>{children}</p>,
-                  ul: ({ children }) => <ul style={{ paddingLeft: 20, marginBottom: 12 }}>{children}</ul>,
-                  li: ({ children }) => <li style={{ marginBottom: 6, color: P.text2 }}>{children}</li>,
-                  strong: ({ children }) => <strong style={{ color: P.text1, fontWeight: 700 }}>{children}</strong>,
-                }}>{aiYorumu}</ReactMarkdown>
-              </div>
-            ) : (
-              <div style={{ padding: '28px 20px', borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}`, textAlign: 'center' }}>
-                <Sparkles size={28} color={P.text3} style={{ marginBottom: 10 }} />
-                <p style={{ fontSize: 13, color: P.text3, lineHeight: 1.7 }}>
-                  <strong style={{ color: P.text2, display: 'block', marginBottom: 4 }}>AI analizi bekleniyor</strong>
-                  Rapor Oluştur butonuna basınca bu ayın kısa özeti, iyi yapılanlar, risk alanları ve gelecek ay önerileri burada görünür.
-                </p>
-              </div>
-            )}
+              {aiYorumu ? (
+                <div style={{ padding: '24px 28px', borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 15, lineHeight: 1.8, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+                  <ReactMarkdown components={{
+                    h2: ({ children }) => <h2 style={{ fontSize: 17, fontWeight: 800, color: '#fff', marginTop: 24, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 4, height: 16, borderRadius: 2, background: '#a78bfa' }} />{children}</h2>,
+                    p: ({ children }) => <p style={{ marginBottom: 16, color: '#cbd5e1' }}>{children}</p>,
+                    ul: ({ children }) => <ul style={{ paddingLeft: 24, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</ul>,
+                    li: ({ children }) => <li style={{ color: '#cbd5e1' }}>{children}</li>,
+                    strong: ({ children }) => <strong style={{ color: '#fff', fontWeight: 800 }}>{children}</strong>,
+                  }}>{aiYorumu}</ReactMarkdown>
+                </div>
+              ) : (
+                <div style={{ padding: '40px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: `1px dashed rgba(255,255,255,0.15)`, textAlign: 'center' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '1px solid rgba(124,58,237,0.2)' }}>
+                    <Sparkles size={24} color="#a78bfa" />
+                  </div>
+                  <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
+                    <strong style={{ color: '#e2e8f0', display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 800 }}>Rapor Bekleniyor</strong>
+                    Rapor Oluştur butonuna basarak bu ayın kısa özetini, iyi yapılanları ve gelecek ay önerilerini görebilirsiniz.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
