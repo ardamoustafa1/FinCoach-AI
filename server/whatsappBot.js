@@ -345,12 +345,15 @@ export function createWhatsAppMessageHandler({
   allowGroups = false,
   processOwnMessages = false,
   replyTracker = createBotReplyTracker(),
+  allowedPhones = [],
   now = () => new Date(),
 } = {}) {
   const sendReply = async (msg, text) => {
     replyTracker.mark(text);
     return msg.reply(text);
   };
+
+  const normalizedAllowedPhones = (allowedPhones || []).map(p => normalizePhone(p)).filter(Boolean);
 
   const persistAndReply = async ({ msg, contactId, transaction, receipt }) => {
     try {
@@ -383,7 +386,6 @@ export function createWhatsAppMessageHandler({
   };
 
   return async function handleWhatsAppMessage(msg) {
-    console.log('[WhatsApp Message Received]:', msg?.body?.slice(0, 50), 'fromMe:', msg?.fromMe);
     if (!msg || msg.from === 'status@broadcast') return { status: 'skipped', reason: 'status' };
     if (!allowGroups && (msg.from?.endsWith('@g.us') || msg.to?.endsWith('@g.us'))) {
       return { status: 'skipped', reason: 'group' };
@@ -394,14 +396,24 @@ export function createWhatsAppMessageHandler({
     }
 
     const contactId = getMessageContactId(msg);
+    const contactPhone = normalizePhone(contactId);
+
+    if (normalizedAllowedPhones.length > 0 && !normalizedAllowedPhones.includes(contactPhone)) {
+      return { status: 'skipped', reason: 'phone_not_allowed', phone: contactPhone };
+    }
 
     try {
       if (msg.hasMedia) {
         const media = await msg.downloadMedia();
         const transaction = await parseReceiptFromMedia({ model, media, now: now() });
         if (!transaction) {
-          await sendReply(msg, 'Fişte toplam tutarı net okuyamadım. Daha aydınlık ve düz çekilmiş bir fotoğraf gönderebilir misin?');
-          return { status: 'receipt_unreadable' };
+          // Sadece bota özel hitap varsa veya doğrudan bota gönderilmişse fiş hatası dön
+          const bodyText = normalizeText(msg.body || msg.caption || '');
+          if (bodyText.includes('fincoach')) {
+            await sendReply(msg, 'Fişte toplam tutarı net okuyamadım. Daha aydınlık ve düz çekilmiş bir fotoğraf gönderebilir misin?');
+            return { status: 'receipt_unreadable' };
+          }
+          return { status: 'skipped', reason: 'not_a_clear_receipt' };
         }
         return persistAndReply({ msg, contactId, transaction, receipt: true });
       }
@@ -414,12 +426,21 @@ export function createWhatsAppMessageHandler({
         return persistAndReply({ msg, contactId, transaction, receipt: false });
       }
 
-      const reply = await generateChatReply({ model, text: body });
-      await sendReply(msg, reply);
-      return { status: 'chat_replied' };
+      // Sadece 'FinCoach' ifadesi geçiyorsa sohbete cevap ver
+      const normalizedBody = normalizeText(body);
+      if (normalizedBody.includes('fincoach')) {
+        const reply = await generateChatReply({ model, text: body });
+        await sendReply(msg, reply);
+        return { status: 'chat_replied' };
+      }
+
+      return { status: 'skipped', reason: 'not_a_transaction_or_command' };
     } catch (error) {
       logger.error?.('[WhatsApp Error]', error);
-      await sendReply(msg, 'Üzgünüm, bu mesajı işlerken bir sorun yaşadım. Bir daha dener misin?');
+      // Hata durumunda sadece bota hitap varsa cevap ver
+      if (normalizeText(msg.body || '').includes('fincoach')) {
+        await sendReply(msg, 'Üzgünüm, bu mesajı işlerken bir sorun yaşadım. Bir daha dener misin?');
+      }
       return { status: 'error', error };
     }
   };

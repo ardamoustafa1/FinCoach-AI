@@ -317,6 +317,7 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
     allowGroups: process.env.WHATSAPP_ALLOW_GROUPS === 'true',
     processOwnMessages: process.env.WHATSAPP_PROCESS_OWN_MESSAGES !== 'false',
     replyTracker: whatsappReplyTracker,
+    allowedPhones: process.env.WHATSAPP_ALLOWED_PHONES ? process.env.WHATSAPP_ALLOWED_PHONES.split(',') : [],
   });
 
   const whatsappClient = new Client({
