@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2, Loader2, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2, Loader2, CheckCircle2, Database, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -98,6 +98,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState(getInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [ragStep, setRagStep] = useState(0);
   const [modalChart, setModalChart] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -125,6 +126,7 @@ export default function ChatPage() {
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
+    setRagStep(0);
     try {
       const userContext = getUserContext();
       const response = await authFetch('/api/chat', {
@@ -146,8 +148,18 @@ export default function ChatPage() {
           ? error.message 
           : `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?\n\nDetay: ${error.message}`
       }]);
-    } finally { setIsLoading(false); }
+    } finally { setIsLoading(false); setRagStep(0); }
   }, [input, isLoading, messages]);
+
+  useEffect(() => {
+    let t1, t2, t3;
+    if (isLoading) {
+      t1 = setTimeout(() => setRagStep(1), 600);
+      t2 = setTimeout(() => setRagStep(2), 1500);
+      t3 = setTimeout(() => setRagStep(3), 2500);
+    }
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [isLoading]);
 
   useEffect(() => {
     if (location.state?.message && !initialMsgHandled.current) {
@@ -413,25 +425,38 @@ export default function ChatPage() {
           {isLoading && (
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 12,
+                width: 40, height: 40, borderRadius: 14,
                 background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.2))',
                 border: '1px solid rgba(124,58,237,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
-                <Bot size={18} color={P.purpleLight} />
+                <Bot size={20} color={P.purpleLight} />
               </div>
               <div style={{
-                padding: '14px 18px', borderRadius: '4px 18px 18px 18px',
-                background: P.bg2, border: `1px solid ${P.border}`,
-                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '16px 20px', borderRadius: '8px 24px 24px 24px',
+                background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(124,58,237,0.2)`,
+                minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
               }}>
-                {[0, 150, 300].map((delay, di) => (
-                  <div key={di} style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    background: P.purpleLight,
-                    animation: `bounce-dot 1.2s ease-in-out ${delay}ms infinite`,
-                  }} />
-                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                   <Database size={14} color={P.purple} />
+                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Engine Devrede</span>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {ragStep >= 1 ? <CheckCircle2 size={14} color={P.green} /> : <Loader2 size={14} color={P.text3} style={{ animation: 'spin 1s linear infinite' }} />}
+                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Soru vektörel uzaya (Embedding) dönüştürülüyor...</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 1 ? 1 : 0.4 }}>
+                    {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
+                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Pinecone DB: Son 5 yılın işlemleri taranıyor...</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 2 ? 1 : 0.4 }}>
+                    {ragStep >= 3 ? <Loader2 size={14} color={P.amber} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
+                    <span style={{ fontSize: 13, color: ragStep >= 3 ? P.amber : P.text3, fontWeight: ragStep >= 3 ? 600 : 400 }}>Bağlam (Context) eklendi. LLM yanıtı üretiliyor...</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
