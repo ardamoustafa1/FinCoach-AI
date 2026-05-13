@@ -16,6 +16,7 @@ const navItems = [
   { to: '/anomaly', label: 'Anomali & Fraud AI', icon: Lock },
   { to: '/system-monitor', label: 'Sistem Mimarisi', icon: Server },
   { to: '/federated', label: 'Federated AI', icon: ShieldCheck },
+  { to: '/escrow', label: 'Web3 Escrow (Kilit)', icon: Lock },
   { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
   { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
