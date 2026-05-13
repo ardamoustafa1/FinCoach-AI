@@ -260,32 +260,67 @@ function KesintiSimulator({ goals }) {
   const enBuyuk = KESINTI_KATEGORILERI.map(k => ({ ...k, tasarruf: Math.round(k.aylik * ((oranlar[k.id] || 0) / 100)) })).sort((a, b) => b.tasarruf - a.tasarruf)[0];
 
   return (
-    <div style={{ borderRadius: 28, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.22)', background: P.bg2, marginBottom: 48, boxShadow: '0 24px 60px rgba(0,0,0,0.1)' }}>
-      <div style={{ padding: '14px 24px', background: 'linear-gradient(90deg, rgba(124,58,237,0.15) 0%, rgba(6,182,212,0.05) 100%)', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Scissors size={15} color="#c4b5fd" />
-        <span style={{ fontSize: 12, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.16em' }}>Ne Kessem Ne Birikirim?</span>
+    <div style={{ marginTop: 48, borderRadius: 32, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.3)', background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-main) 100%)', marginBottom: 48, boxShadow: '0 32px 80px rgba(0,0,0,0.4)', position: 'relative' }}>
+      {/* Glow effects */}
+      <div style={{ position: 'absolute', top: 0, left: '20%', width: 400, height: 400, background: 'rgba(124,58,237,0.1)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 300, height: 300, background: 'rgba(16,185,129,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+
+      <div style={{ padding: '16px 28px', background: 'rgba(124,58,237,0.1)', borderBottom: `1px solid rgba(124,58,237,0.2)`, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Scissors size={18} color="#c4b5fd" />
+        <span style={{ fontSize: 13, fontWeight: 900, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Ne Kessem Ne Birikirim?</span>
       </div>
-      <div className="flex flex-col lg:flex-row">
+      
+      <div className="flex flex-col lg:flex-row position-relative z-10">
         {/* LEFT */}
-        <div style={{ flex: 1.2, padding: '36px 40px', borderRight: `1px solid ${P.border}` }}>
-          <p style={{ fontSize: 20, fontWeight: 800, color: P.text1, marginBottom: 32, lineHeight: 1.35 }}>Küçük kesintilerin hedef tarihini nasıl değiştirdiğini gör.</p>
-          <div className="space-y-6">
+        <div style={{ flex: 1.3, padding: '40px 48px', borderRight: `1px solid rgba(255,255,255,0.06)` }}>
+          <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 8, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+            Ufak kesintiler, <span style={{ color: '#a78bfa' }}>büyük hedefler.</span>
+          </p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 36 }}>Aylık harcamalarından küçük yüzdeler kısarak hedefine ne kadar erken ulaşacağını gör.</p>
+          
+          <div className="space-y-4">
             {KESINTI_KATEGORILERI.map(k => {
               const oran = oranlar[k.id] || 0;
               const tasarruf = Math.round(k.aylik * (oran / 100));
               return (
-                <div key={k.id}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: P.text1 }}>{k.icon} {k.ad}</p>
-                      <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Aylık harcama: {liraFmt(k.aylik)}</p>
+                <div key={k.id} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '20px 24px', transition: 'transform 0.2s', ':hover': { transform: 'scale(1.01)' } }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid rgba(255,255,255,0.05)' }}>
+                        {k.icon}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '0.01em', margin: 0 }}>{k.ad}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, margin: 0 }}>Aylık: {liraFmt(k.aylik)}</p>
+                      </div>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: P.green, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', padding: '4px 10px', borderRadius: 8, whiteSpace: 'nowrap' }}>+{liraFmt(tasarruf)}</span>
+                    {tasarruf > 0 && (
+                      <span style={{ fontSize: 14, fontWeight: 800, color: '#10b981', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', padding: '6px 12px', borderRadius: 10, boxShadow: '0 0 12px rgba(16,185,129,0.2)' }}>
+                        +{liraFmt(tasarruf)}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 40px', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: P.text3 }}>%0</span>
-                    <input type="range" min="0" max="100" step="5" value={oran} onChange={e => setOranlar(p => ({ ...p, [k.id]: Number(e.target.value) }))} style={{ width: '100%', height: 4, borderRadius: 99, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', accentColor: '#7c3aed' }} />
-                    <span style={{ fontSize: 12, fontWeight: 800, color: '#c4b5fd', textAlign: 'right' }}>%{oran}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, width: 30 }}>%0</span>
+                    <input 
+                      type="range" min="0" max="100" step="5" value={oran} 
+                      onChange={e => setOranlar(p => ({ ...p, [k.id]: Number(e.target.value) }))} 
+                      style={{ 
+                        flex: 1, height: 6, borderRadius: 99, cursor: 'pointer', appearance: 'none',
+                        background: `linear-gradient(90deg, #7c3aed ${oran}%, rgba(255,255,255,0.1) ${oran}%)`,
+                        outline: 'none'
+                      }} 
+                      className="slider-thumb-premium"
+                    />
+                    <style>{`
+                      .slider-thumb-premium::-webkit-slider-thumb {
+                        appearance: none; width: 20px; height: 20px; border-radius: 50%;
+                        background: #fff; border: 4px solid #7c3aed; box-shadow: 0 0 10px rgba(124,58,237,0.6);
+                        cursor: pointer; transition: transform 0.1s;
+                      }
+                      .slider-thumb-premium::-webkit-slider-thumb:hover { transform: scale(1.2); }
+                    `}</style>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: '#c4b5fd', width: 40, textAlign: 'right' }}>%{oran}</span>
                   </div>
                 </div>
               );
@@ -294,55 +329,63 @@ function KesintiSimulator({ goals }) {
         </div>
 
         {/* RIGHT */}
-        <div style={{ flex: 0.8, padding: '36px 32px', background: P.bg3 }}>
-          <label style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, display: 'block' }}>Hedef seç</label>
-          <select value={etkinId} onChange={e => setSeciliHedefId(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text1, fontSize: 14, fontWeight: 600, outline: 'none', cursor: 'pointer' }}>
-            {goals.map(g => <option key={g.id} value={g.id} style={{ background: P.bg3 }}>{g.icon} {g.name}</option>)}
-          </select>
-
-          <div style={{ marginTop: 32 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Aylık Ek Tasarruf</p>
-            <div style={{ fontSize: 42, fontWeight: 900, color: P.green, lineHeight: 1, letterSpacing: '-0.02em' }}>+{liraFmt(ekTasarruf)}</div>
+        <div style={{ flex: 1, padding: '40px 48px', background: 'rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column' }}>
+          <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10, display: 'block' }}>Hedef Seç</label>
+          <div style={{ position: 'relative' }}>
+            <select value={etkinId} onChange={e => setSeciliHedefId(e.target.value)} style={{ width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,0.1)`, color: '#fff', fontSize: 15, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
+              {goals.map(g => <option key={g.id} value={g.id} style={{ background: '#1e1b4b' }}>{g.icon} {g.name}</option>)}
+            </select>
+            <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#a78bfa' }}>▼</div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 32 }}>
-            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: `1px solid ${P.border}` }}>
-              <p style={{ fontSize: 11, color: P.text3, marginBottom: 5 }}>Mevcut tarih</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{tarihFmt(eskiTarih)}</p>
-            </div>
-            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-              <p style={{ fontSize: 11, color: 'rgba(52,211,153,0.7)', marginBottom: 5 }}>Yeni tarih</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: P.green }}>{tarihFmt(yeniTarih)}</p>
+          <div style={{ marginTop: 40, background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1))', border: '1px solid rgba(16,185,129,0.2)', padding: '24px', borderRadius: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Aylık Ek Tasarruf</p>
+            <div style={{ fontSize: 48, fontWeight: 900, color: '#10b981', lineHeight: 1, letterSpacing: '-0.03em', textShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
+              +{liraFmt(ekTasarruf)}
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 24, fontSize: 16, fontWeight: 800, color: P.green }}>
-            <TrendingUp size={20} />
-            {erkenAy > 0 ? `${erkenAy} ay daha erken ulaşırsın!` : 'Hedef aynı hızda ilerliyor.'}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 24 }}>
+            <div style={{ padding: 20, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)` }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600 }}>Eski Tarih</p>
+              <p style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{tarihFmt(eskiTarih)}</p>
+            </div>
+            <div style={{ padding: 20, borderRadius: 16, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', boxShadow: '0 8px 24px rgba(16,185,129,0.15)' }}>
+              <p style={{ fontSize: 12, color: '#6ee7b7', marginBottom: 6, fontWeight: 600 }}>Yeni Tarih</p>
+              <p style={{ fontSize: 16, fontWeight: 900, color: '#10b981' }}>{tarihFmt(yeniTarih)}</p>
+            </div>
           </div>
 
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 28, fontSize: 17, fontWeight: 800, color: erkenAy > 0 ? '#10b981' : '#a78bfa' }}>
+            <TrendingUp size={24} />
+            {erkenAy > 0 ? `Tam ${erkenAy} ay daha erken ulaşıyorsun! 🚀` : 'Sihri görmek için kesinti yap.'}
+          </div>
+
+          <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 20 }}>
             {[
-              { label: 'Eski plan', ay: mevcutAy, bar: 100, fill: 'rgba(255,255,255,0.18)', track: 'rgba(255,255,255,0.05)', tc: P.text3 },
-              { label: 'Yeni plan', ay: yeniAy, bar: yeniBar, fill: '#7c3aed', track: 'rgba(124,58,237,0.12)', tc: '#c4b5fd' },
+              { label: 'Eski plan', ay: mevcutAy, bar: 100, fill: 'rgba(255,255,255,0.2)', track: 'rgba(255,255,255,0.05)', tc: 'var(--text-muted)' },
+              { label: 'Yeni plan', ay: yeniAy, bar: yeniBar, fill: 'linear-gradient(90deg, #7c3aed, #a78bfa)', track: 'rgba(124,58,237,0.1)', tc: '#c4b5fd' },
             ].map(item => (
               <div key={item.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 8, color: item.tc }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 800, marginBottom: 10, color: item.tc }}>
                   <span>{item.label}</span><span>{item.ay} ay</span>
                 </div>
-                <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', background: item.track }}>
-                  <div style={{ height: '100%', borderRadius: 99, transition: 'width 0.5s ease', width: `${item.bar}%`, background: item.fill }} />
+                <div style={{ height: 12, borderRadius: 99, overflow: 'hidden', background: item.track, border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ height: '100%', borderRadius: 99, transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)', width: `${item.bar}%`, background: item.fill, boxShadow: '0 0 10px rgba(124,58,237,0.5)' }} />
                 </div>
               </div>
             ))}
           </div>
-
-          <div style={{ marginTop: 24, padding: '16px 18px', borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.22)' }}>
-            <p style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-              {enBuyuk.ad} harcamasını %{oranlar[enBuyuk.id] || 0} azaltırsan, {hedef?.name || 'hedefine'}&nbsp;
-              <strong style={{ color: P.green, fontWeight: 800 }}>{erkenAy} ay daha erken</strong> ulaşırsın.
-            </p>
-          </div>
+          
+          <div style={{ flex: 1 }} />
+          
+          {erkenAy > 0 && (
+            <div style={{ marginTop: 32, padding: '18px 24px', borderRadius: 16, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: '#e2e8f0', margin: 0 }}>
+                💡 En çok <strong style={{ color: '#fff' }}>{enBuyuk.ad}</strong> kategorisinden kesinti yaptın. Bu sayede {hedef?.name || 'hedefine'} <strong style={{ color: '#10b981', fontWeight: 900 }}>{erkenAy} ay</strong> daha erken kavuşacaksın.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -454,8 +497,8 @@ function HedefModal({ mevcut, onKaydet, onKapat }) {
   const labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)', animation: 'fadeSlideUp 0.2s ease' }} onClick={e => e.target === e.currentTarget && onKapat()}>
-      <div style={{ width: '100%', maxWidth: 500, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.32)', borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, padding: '20px', overflowY: 'auto', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)', animation: 'fadeSlideUp 0.2s ease' }} onClick={e => e.target === e.currentTarget && onKapat()}>
+      <div style={{ margin: '20px auto', width: '100%', maxWidth: 500, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.32)', borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 26px', borderBottom: `1px solid ${P.border}`, background: 'rgba(124,58,237,0.08)' }}>
           <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1, margin: 0 }}>{mevcut ? 'Hedefi Düzenle' : 'Yeni Hedef Oluştur'}</h3>
           <button onClick={onKapat} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,63,94,0.15)'; e.currentTarget.style.color = '#f87171'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = P.text2; }}>

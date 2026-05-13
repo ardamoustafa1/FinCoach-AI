@@ -296,18 +296,17 @@ export default function HomePage() {
     setSeciliIslem(null);
   };
 
-  const shareLeagueInvite = async () => {
-    const text = "Seni FinCoach Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim #FinCoach AI";
+  const shareLeagueInvite = () => {
+    const text = "Seni FinCoach Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim 🏆 #FinCoachAI";
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    // Ayrıca kopyalayalım
     try {
-      if (navigator.share) {
-        await navigator.share({ title: 'FinCoach AI', text });
-        toast.success('Davet hazırlandı.');
-        return;
-      }
-      await navigator.clipboard.writeText(text);
-      toast.success('Davet metni kopyalandı.');
-    } catch (error) {
-      if (error?.name !== 'AbortError') toast.error('Davet hazırlanamadı.');
+      navigator.clipboard.writeText(text);
+      toast.success('Davet bağlantısı kopyalandı ve WhatsApp açılıyor.');
+    } catch (e) {
+      // ignore clipboard error
     }
   };
 
