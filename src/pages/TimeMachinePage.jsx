@@ -95,42 +95,79 @@ export default function TimeMachinePage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
         
         {/* Controls */}
-        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Calculator size={18} color={P.purpleLight} /> Simülasyon Parametreleri
+        <div style={{ background: 'linear-gradient(180deg, var(--bg-surface) 0%, rgba(255,255,255,0.02) 100%)', border: `1px solid rgba(255,255,255,0.08)`, borderRadius: 24, padding: 32, boxShadow: '0 24px 60px rgba(0,0,0,0.2)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.3), transparent)' }} />
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Calculator size={20} color={P.purpleLight} /> Simülasyon Parametreleri
           </h3>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 16, padding: '20px 24px' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 16 }}>
                 Zaman Çizelgesi (Yıl)
-                <span style={{ color: P.purpleLight }}>{years} Yıl İleri</span>
+                <span style={{ color: '#c4b5fd', background: 'rgba(124,58,237,0.15)', padding: '4px 12px', borderRadius: 10, border: '1px solid rgba(124,58,237,0.3)' }}>{years} Yıl İleri</span>
               </label>
-              <input type="range" min="1" max="40" value={years} onChange={e => setYears(Number(e.target.value))} style={{ width: '100%', accentColor: P.purple }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: P.text3, marginTop: 4 }}>
-                <span>1 Yıl</span><span>40 Yıl</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, width: 30 }}>1 Yıl</span>
+                <input 
+                  type="range" min="1" max="40" value={years} 
+                  onChange={e => setYears(Number(e.target.value))} 
+                  style={{ 
+                    flex: 1, height: 6, borderRadius: 99, cursor: 'pointer', appearance: 'none',
+                    background: `linear-gradient(90deg, #7c3aed ${((years - 1) / 39) * 100}%, rgba(255,255,255,0.1) ${((years - 1) / 39) * 100}%)`,
+                    outline: 'none'
+                  }} 
+                  className="slider-thumb-time"
+                />
+                <style>{`
+                  .slider-thumb-time::-webkit-slider-thumb {
+                    appearance: none; width: 22px; height: 22px; border-radius: 50%;
+                    background: #fff; border: 5px solid #7c3aed; box-shadow: 0 0 12px rgba(124,58,237,0.6);
+                    cursor: pointer; transition: transform 0.1s;
+                  }
+                  .slider-thumb-time::-webkit-slider-thumb:hover { transform: scale(1.15); }
+                `}</style>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, width: 40, textAlign: 'right' }}>40 Yıl</span>
               </div>
             </div>
 
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
+            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 16, padding: '20px 24px' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 800, color: '#e2e8f0', marginBottom: 16 }}>
                 Yıllık Yatırım Getirisi (%)
-                <span style={{ color: P.green }}>%{returnRate}</span>
+                <span style={{ color: '#10b981', background: 'rgba(16,185,129,0.15)', padding: '4px 12px', borderRadius: 10, border: '1px solid rgba(16,185,129,0.3)' }}>%{returnRate}</span>
               </label>
-              <input type="range" min="0" max="50" value={returnRate} onChange={e => setReturnRate(Number(e.target.value))} style={{ width: '100%', accentColor: P.green }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, width: 30 }}>%0</span>
+                <input 
+                  type="range" min="0" max="50" value={returnRate} 
+                  onChange={e => setReturnRate(Number(e.target.value))} 
+                  style={{ 
+                    flex: 1, height: 6, borderRadius: 99, cursor: 'pointer', appearance: 'none',
+                    background: `linear-gradient(90deg, #10b981 ${(returnRate / 50) * 100}%, rgba(255,255,255,0.1) ${(returnRate / 50) * 100}%)`,
+                    outline: 'none'
+                  }} 
+                  className="slider-thumb-return"
+                />
+                <style>{`
+                  .slider-thumb-return::-webkit-slider-thumb {
+                    appearance: none; width: 22px; height: 22px; border-radius: 50%;
+                    background: #fff; border: 5px solid #10b981; box-shadow: 0 0 12px rgba(16,185,129,0.6);
+                    cursor: pointer; transition: transform 0.1s;
+                  }
+                  .slider-thumb-return::-webkit-slider-thumb:hover { transform: scale(1.15); }
+                `}</style>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, width: 40, textAlign: 'right' }}>%50</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: P.bg3, borderRadius: 14, border: `1px solid ${P.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', background: 'rgba(255,255,255,0.03)', borderRadius: 16, border: `1px solid rgba(255,255,255,0.06)`, cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => setInvestSavings(!investSavings)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: P.text1 }}>Tasarrufu Bileşik Faize Koy</div>
-                <div style={{ fontSize: 11, color: P.text3, marginTop: 2 }}>Enflasyon ve fon etkisini simüle eder</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Tasarrufu Bileşik Faize Koy</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Enflasyon ve fon etkisini simüle eder</div>
               </div>
-              <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24 }}>
-                <input type="checkbox" checked={investSavings} onChange={e => setInvestSavings(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: investSavings ? P.green : P.bg4, transition: '.4s', borderRadius: 34 }}>
-                  <span style={{ position: 'absolute', content: '""', height: 16, width: 16, left: investSavings ? 24 : 4, bottom: 4, backgroundColor: 'white', transition: '.4s', borderRadius: '50%' }} />
-                </span>
-              </label>
+              <div style={{ position: 'relative', display: 'inline-block', width: 52, height: 28, borderRadius: 34, background: investSavings ? '#10b981' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease', boxShadow: investSavings ? 'inset 0 2px 4px rgba(0,0,0,0.2)' : 'inset 0 2px 4px rgba(0,0,0,0.5)' }}>
+                <span style={{ position: 'absolute', content: '""', height: 20, width: 20, left: investSavings ? 28 : 4, bottom: 4, backgroundColor: '#fff', transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderRadius: '50%', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }} />
+              </div>
             </div>
           </div>
         </div>
