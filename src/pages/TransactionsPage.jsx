@@ -566,24 +566,31 @@ export default function TransactionsPage() {
     if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
     const recognition = new SR();
     recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
-    recognition.onstart = () => { setIsListening(true); toast.info('Sizi dinliyorum...', { duration: 5000 }); };
+    recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum... Konuşun.', { duration: 5000, icon: '🎤' }); };
     recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript;
       setIsListening(false);
-      toast.info('Sesiniz analiz ediliyor...', { duration: 10000 });
+      if (!transcript || transcript.trim() === '') {
+        toast.error('Ses algılanamadı, lütfen tekrar deneyin.');
+        return;
+      }
+      toast.info(`Anlaşılan: "${transcript}". Analiz ediliyor...`, { duration: 10000, icon: '🧠' });
       try {
         const res = await authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text: transcript }) });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+            const errBody = await res.json().catch(()=>({}));
+            throw new Error(errBody.error || 'API Hatası');
+        }
         const data = await res.json();
         const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
-        if (!yeniIslem.tutar) { toast.warning('Tutar anlaşılamadı, formu doldurun.'); setTaslakIslem(yeniIslem); setModalAcik(true); return; }
+        if (!yeniIslem.tutar) { toast.warning('Tutar tam anlaşılamadı, formu doldurun.'); setTaslakIslem(yeniIslem); setModalAcik(true); return; }
         await saveTransaction(yeniIslem);
         refreshLocal();
         toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
-      } catch { toast.error('Ses analiz edilemedi.'); }
+      } catch(err) { toast.error(`Analiz hatası: ${err.message}`); }
     };
     recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => { setIsListening(false); };
     recognition.start();
   };
 
@@ -799,7 +806,7 @@ export default function TransactionsPage() {
           {aktifTab === 'islemler' && (<>
 
             {/* ── FİLTRE PANELİ ── */}
-            <div style={{ background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 18, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12, animation: 'fadeUp 0.4s ease 0.15s both' }}>
+            <div style={{ position: 'relative', zIndex: 10, background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 18, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12, animation: 'fadeUp 0.4s ease 0.15s both' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                   <Search size={15} color={P.text3} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />

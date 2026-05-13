@@ -281,7 +281,8 @@ app.post('/api/voice', async (req, res) => {
   try {
     const { text } = req.body;
     const prompt = `Şu cümleden harcama detaylarını çıkar ve SADECE JSON döndür: {"tutar": number, "magaza": string, "kategori": string, "tur": "gelir"|"gider"}
-Cümle: "${text}"`;
+Cümle: "${text}"
+ÖNEMLİ: Sadece ve sadece JSON formatında yanıt ver, markdown kullanma, ekstra metin ekleme.`;
 
     const result = await model.generateContent(prompt);
     res.json(extractJsonObject(result.response.text()));
