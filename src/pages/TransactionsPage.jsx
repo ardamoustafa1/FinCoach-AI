@@ -4,13 +4,14 @@ import {
   ChevronUp, ChevronDown, ChevronsUpDown, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
   RefreshCw, Receipt, Camera, ImagePlus, Loader2, Mic,
-  ArrowUpRight, ArrowDownRight, Calendar,
+  ArrowUpRight, ArrowDownRight, Calendar, Landmark
 } from 'lucide-react';
 import { TUM_KATEGORILER, fmt } from '../utils/categories';
 import { getTransactions, saveTransaction, removeTransaction } from '../utils/storage';
 import TransactionModal from '../components/TransactionModal';
 import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
+import OpenBankingModal from '../components/OpenBankingModal';
 import { detectUnusualSpending, saveUnusualSpendingDecision } from '../utils/notifications';
 import { useToast } from '../hooks/useToast';
 import { authFetch } from '../utils/api';
@@ -536,6 +537,7 @@ export default function TransactionsPage() {
   const [silinecek, setSilinecek] = useState(null);
   const [alisilmadik, setAlisilmadik] = useState(null);
   const [csvAcik, setCsvAcik] = useState(false);
+  const [openBankingAcik, setOpenBankingAcik] = useState(false);
   const [fisModalAcik, setFisModalAcik] = useState(false);
   const [aktifTab, setAktifTab] = useState('islemler');
 
@@ -751,6 +753,11 @@ export default function TransactionsPage() {
                 <button onClick={() => setCsvAcik(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid ${P.border}`, background: csvAcik ? P.bg4 : P.bg3, color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
                   <Upload size={15} /> Ekstre Yükle
                 </button>
+                <button onClick={() => setOpenBankingAcik(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid rgba(59,130,246,0.4)`, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
+                  <Landmark size={15} /> Banka Bağla
+                </button>
                 <button onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${P.purple},#4F46E5)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'opacity 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
@@ -786,6 +793,18 @@ export default function TransactionsPage() {
           {/* CSV Uploader */}
           {csvAcik && (
             <CsvUploader onImport={handleCsvImport} onKapat={() => setCsvAcik(false)} />
+          )}
+
+          {/* Open Banking Modal */}
+          {openBankingAcik && (
+            <OpenBankingModal 
+              onClose={() => setOpenBankingAcik(false)} 
+              onComplete={(islemler) => {
+                handleCsvImport(islemler);
+                setOpenBankingAcik(false);
+                toast.success('Açık Bankacılık verileri yapay zeka ile kategorize edilip başarıyla eklendi! 🎉');
+              }} 
+            />
           )}
 
           {/* ── TABS ── */}
