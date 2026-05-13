@@ -6,16 +6,16 @@ import {
   Bot,
   BarChart3,
   Clock,
+  ShieldAlert
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
-  { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Lig', icon: Target },
   { to: '/time-machine', label: 'Gelecek', icon: Clock },
+  { to: '/subscriptions', label: 'Abonelik', icon: ShieldAlert },
   { to: '/chat', label: 'AI Koç', icon: Bot },
-  { to: '/reports', label: 'Raporlar', icon: BarChart3 },
 ];
 
 export default function MobileNav() {

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert
 } from 'lucide-react';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
   { to: '/time-machine', label: 'Zaman Makinesi', icon: Clock },
+  { to: '/subscriptions', label: 'Abonelikler', icon: ShieldAlert },
   { to: '/chat', label: 'AI Koç', icon: Bot },
   { to: '/reports', label: 'Raporlar', icon: BarChart3 },
   { to: '/settings', label: 'Ayarlar', icon: Settings },
