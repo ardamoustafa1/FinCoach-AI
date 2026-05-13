@@ -6,14 +6,15 @@ import {
   Bot,
   BarChart4,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  Globe
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
   { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
-  { to: '/subscriptions', label: 'Abonelik', icon: ShieldAlert },
+  { to: '/stress-test', label: 'Stres Testi', icon: Globe },
   { to: '/chat', label: 'AI Koç', icon: Bot },
 ];
 

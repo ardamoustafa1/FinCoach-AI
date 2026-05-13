@@ -17,6 +17,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const LeaguePage = lazy(() => import('./pages/LeaguePage'));
 const TimeMachinePage = lazy(() => import('./pages/TimeMachinePage'));
 const CashFlowPage = lazy(() => import('./pages/CashFlowPage'));
+const StressTestPage = lazy(() => import('./pages/StressTestPage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
 
@@ -200,6 +201,7 @@ export default function App() {
               <Route path="/goals" element={<GoalsPage />} />
               <Route path="/league" element={<LeaguePage />} />
               <Route path="/time-machine" element={<TimeMachinePage />} />
+              <Route path="/stress-test" element={<StressTestPage />} />
               <Route path="/cashflow" element={<CashFlowPage />} />
               <Route path="/shop-sim" element={<ShopSimulationPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
