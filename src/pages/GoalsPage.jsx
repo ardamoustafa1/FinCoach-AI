@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Plus, Target, Calendar, Edit2, Trash2, X,
-  CheckCircle, Sparkles, Scissors, TrendingUp, Flame, Wallet, CheckSquare
+  CheckCircle, Sparkles, Scissors, TrendingUp, Flame, Wallet, CheckSquare, BrainCircuit, Brain
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getGoals, addGoal, updateGoal, deleteGoal } from '../utils/storage';
@@ -163,6 +163,37 @@ export default function GoalsPage() {
           <StatCard label="Toplam Birikim" value={totalCurrent} icon={Wallet} color="#f59e0b" isCurrency />
         </div>
       )}
+
+      {/* BEHAVIORAL ECONOMICS (HYPERBOLIC DISCOUNTING) PANEL */}
+      <div className="animate-enter" style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.05), rgba(124,58,237,0.05))', border: `1px solid rgba(244,63,94,0.2)`, borderRadius: 24, padding: 32, marginBottom: 40, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, pointerEvents: 'none' }}>
+          <Brain size={200} color={P.red} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative', zIndex: 1 }}>
+          <div style={{ background: 'rgba(244,63,94,0.15)', padding: 10, borderRadius: 14 }}>
+            <BrainCircuit size={24} color={P.red} />
+          </div>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.red }}>Davranışsal Ekonomi AI</span>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: P.text1, margin: 0, letterSpacing: '-0.01em' }}>Hyperbolic Discounting (İrade Skoru)</h2>
+          </div>
+        </div>
+        
+        <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, maxWidth: 800, margin: '0 0 24px', position: 'relative', zIndex: 1 }}>
+          İnsan psikolojisi bugünkü ufak zevkleri, gelecekteki büyük ödüllere tercih eder (Hiperbolik İndirgeme). FinCoach sizin finansal irade zaafınızı <strong>%72 (Yüksek)</strong> olarak hesapladı. Bu zaafı kırmak için aylık büyük birikim hedefleri yerine, <strong>Nudge Theory (Dürtme Teorisi)</strong> kullanılarak günlük hissettirmeyen otomatik 45₺'lik mikro-kesintiler uygulanıyor.
+        </p>
+
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <div style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 16, padding: '16px 20px', flex: '1 1 250px' }}>
+             <div style={{ fontSize: 11, color: P.text3, textTransform: 'uppercase', fontWeight: 800, marginBottom: 6 }}>İnsan Hatası (Human Error)</div>
+             <div style={{ fontSize: 15, color: P.text1, fontWeight: 600 }}>Aylık tek seferde <span style={{ color: P.red }}>1.350₺</span> ayırma stresi ve başarısızlık ihtimali.</div>
+          </div>
+          <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 16, padding: '16px 20px', flex: '1 1 250px' }}>
+             <div style={{ fontSize: 11, color: P.green, textTransform: 'uppercase', fontWeight: 800, marginBottom: 6 }}>Nudge (Dürtme) Çözümü</div>
+             <div style={{ fontSize: 15, color: P.text1, fontWeight: 600 }}>Zihne acı vermeyen, hissettirmeden her gün <span style={{ color: P.green }}>45₺</span> otomatik mikro-aktarım.</div>
+          </div>
+        </div>
+      </div>
 
       {/* AKTİF HEDEFLER */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
