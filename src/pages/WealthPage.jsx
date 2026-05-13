@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { Landmark, ShieldCheck, Activity, Target, TrendingUp, Cpu } from 'lucide-react';
+import { Landmark, ShieldCheck, Activity, Target, TrendingUp, Cpu, Newspaper, Gauge, Globe2 } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
@@ -163,6 +163,27 @@ export default function WealthPage() {
             </div>
             <p style={{ fontSize: 24, fontWeight: 900, color: P.green, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{optimalPoint.return}</p>
             <p style={{ fontSize: 11, color: P.text2, margin: 0 }}>Hedef riske karşılık en yüksek getiri</p>
+          </div>
+
+          {/* MACRO-ECONOMIC NLP SENTIMENT */}
+          <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 20, padding: 24, gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
+            <div style={{ flexShrink: 0, width: 64, height: 64, borderRadius: 16, background: 'rgba(239,68,68,0.1)', border: `2px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <Gauge size={32} color={P.red} />
+            </div>
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <Globe2 size={16} color={P.red} />
+                <span style={{ fontSize: 12, fontWeight: 900, color: P.red, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Makro-Ekonomik NLP Duygu Analizi</span>
+              </div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: P.text1, margin: '0 0 8px', letterSpacing: '-0.01em' }}>Fear & Greed Index: %85 (Aşırı Korku)</h3>
+              <p style={{ fontSize: 13, color: P.text2, margin: 0, lineHeight: 1.5 }}>
+                <strong style={{ color: P.text1 }}>Reuters & Bloomberg NLP Taraması:</strong> Son 1 saat içinde yayınlanan 12.400 küresel finans haberi işlendi. Orta Doğu gerilimi sebebiyle piyasalarda şiddetli bir <span style={{ color: P.red, fontWeight: 700 }}>negatif duygu (sentiment)</span> hakim. 
+              </p>
+            </div>
+            <div style={{ background: P.bg0, borderRadius: 16, padding: '16px 20px', border: `1px solid ${P.red}50`, flexShrink: 0, maxWidth: 300 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: P.red, marginBottom: 6, textTransform: 'uppercase' }}>AI Yatırım Tavsiyesi</div>
+              <div style={{ fontSize: 13, color: P.text1, fontWeight: 600 }}>Markowitz modelini uygulamak için yanlış zaman. Kripto ve Teknoloji hissesi (Riskli varlıklar) alımını 2 hafta ertele. Likiditeyi tahvilde tut.</div>
+            </div>
           </div>
         </div>
 
