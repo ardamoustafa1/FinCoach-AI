@@ -180,40 +180,45 @@ export default function ChatPage() {
 
         {/* ── HEADER ── */}
         <div style={{
-          background: P.bg2,
-          border: `1px solid ${P.border}`,
-          borderRadius: 20,
-          padding: '20px 28px',
-          marginBottom: 16,
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)',
+          border: `1px solid rgba(255,255,255,0.08)`,
+          borderRadius: 24,
+          padding: '24px 32px',
+          marginBottom: 20,
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(20px)'
         }}>
-          {/* Top gradient line */}
-          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* Top glowing line & Background glows */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.5), rgba(16,185,129,0.5), transparent)' }} />
+          <div style={{ position: 'absolute', top: -50, right: 0, width: 200, height: 200, background: 'rgba(124,58,237,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -50, left: 0, width: 200, height: 200, background: 'rgba(59,130,246,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18, position: 'relative', zIndex: 1 }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 16,
-              background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+              width: 56, height: 56, borderRadius: 18,
+              background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 24px rgba(124,58,237,0.4)',
-              flexShrink: 0,
+              boxShadow: '0 0 32px rgba(124,58,237,0.5)',
+              flexShrink: 0, border: '1px solid rgba(255,255,255,0.2)'
             }}>
-              <Bot size={22} color="#fff" />
+              <Bot size={28} color="#fff" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>AI Cockpit</span>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'ping 1.5s ease-out infinite', opacity: 0.8 }} />
+                <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c4b5fd' }}>AI Cockpit</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'ping 1.5s ease-out infinite', opacity: 0.8, boxShadow: '0 0 10px #10b981' }} />
               </div>
-              <h1 style={{ fontSize: 20, fontWeight: 900, color: P.text1, display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '-0.02em', margin: 0 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '-0.02em', margin: '0 0 2px' }}>
                 AI Finansal Koçun
-                <Sparkles size={18} color={P.amber} />
+                <Sparkles size={20} color={P.amber} />
               </h1>
-              <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Kişiselleştirilmiş içgörüler ve tavsiyeler</p>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Sana özel analizler ve otonom görevler</p>
             </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 10, padding: '8px 14px' }}>
-              <Zap size={14} color={P.purpleLight} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: P.purpleLight }}>Gemini 1.5 Flash</span>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
+              <Zap size={16} color="#c4b5fd" />
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 1.5 Pro</span>
             </div>
           </div>
         </div>
@@ -275,25 +280,28 @@ export default function ChatPage() {
               <div key={i} style={{ display: 'flex', gap: 12, flexDirection: isBot ? 'row' : 'row-reverse' }}>
                 {/* Avatar */}
                 <div style={{
-                  width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-                  background: isBot ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.2))' : 'rgba(255,255,255,0.08)',
-                  border: `1px solid ${isBot ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  width: 40, height: 40, borderRadius: 14, flexShrink: 0,
+                  background: isBot ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(236,72,153,0.15))' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${isBot ? 'rgba(124,58,237,0.4)' : 'rgba(255,255,255,0.1)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: isBot ? '0 0 20px rgba(124,58,237,0.2)' : 'none',
+                  marginTop: 4
                 }}>
-                  {isBot ? <Bot size={18} color={P.purpleLight} /> : <User size={18} color={P.text2} />}
+                  {isBot ? <Bot size={20} color="#c4b5fd" /> : <User size={20} color="var(--text-secondary)" />}
                 </div>
 
                 {/* Bubble */}
                 <div style={{
                   maxWidth: '78%',
-                  padding: '12px 16px',
-                  borderRadius: isBot ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
-                  background: isBot ? P.bg2 : 'linear-gradient(135deg, #7c3aed, #6366f1)',
-                  border: isBot ? `1px solid ${P.border}` : 'none',
-                  color: P.text1,
-                  fontSize: 14,
-                  lineHeight: 1.65,
-                  boxShadow: isBot ? '0 4px 16px rgba(0,0,0,0.3)' : '0 4px 20px rgba(124,58,237,0.3)',
+                  padding: '16px 20px',
+                  borderRadius: isBot ? '8px 24px 24px 24px' : '24px 8px 24px 24px',
+                  background: isBot ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                  border: isBot ? `1px solid rgba(255,255,255,0.08)` : '1px solid rgba(255,255,255,0.15)',
+                  color: isBot ? '#e2e8f0' : '#ffffff',
+                  fontSize: 15,
+                  lineHeight: 1.6,
+                  backdropFilter: isBot ? 'blur(12px)' : 'none',
+                  boxShadow: isBot ? '0 8px 32px rgba(0,0,0,0.2)' : '0 12px 32px rgba(124,58,237,0.4)',
                 }}>
                   {isBot ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -375,19 +383,19 @@ export default function ChatPage() {
                       )}
 
                       {chartData && (
-                        <div style={{ borderRadius: 14, background: P.bg3, border: `1px solid ${P.border}`, padding: 16, marginTop: 4 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                            <h4 style={{ fontSize: 13, fontWeight: 700, color: P.text1 }}>{chartData.title || 'Grafik'}</h4>
+                        <div style={{ borderRadius: 20, background: 'rgba(0,0,0,0.25)', border: `1px solid rgba(255,255,255,0.06)`, padding: 20, marginTop: 8, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#fff', letterSpacing: '0.02em', margin: 0 }}>{chartData.title || 'Grafik Analizi'}</h4>
                             <button onClick={() => setModalChart(chartData)} style={{
-                              width: 28, height: 28, borderRadius: 8,
-                              background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)',
+                              width: 32, height: 32, borderRadius: 10,
+                              background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', color: P.purpleLight,
-                            }}>
-                              <Maximize2 size={13} />
+                              cursor: 'pointer', color: '#c4b5fd', transition: 'all 0.2s'
+                            }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                              <Maximize2 size={15} />
                             </button>
                           </div>
-                          <div style={{ height: 200 }}>
+                          <div style={{ height: 220 }}>
                             <ChatChart chartData={chartData} />
                           </div>
                         </div>
@@ -433,17 +441,18 @@ export default function ChatPage() {
         {/* ── CONTROLS ── */}
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {/* Quick Questions */}
-          <div style={{ display: 'flex', overflowX: 'auto', gap: 8, paddingBottom: 4 }}>
+          <div style={{ display: 'flex', overflowX: 'auto', gap: 10, paddingBottom: 8 }}>
             {QUICK_QUESTIONS.map((q, idx) => (
               <button key={idx} onClick={() => handleSend(q)} disabled={isLoading} className="quick-btn" style={{
                 flexShrink: 0,
-                padding: '7px 14px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.05)',
-                border: `1px solid ${P.border}`,
-                color: P.text2, fontSize: 12, fontWeight: 600,
+                padding: '10px 18px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.03)',
+                border: `1px solid rgba(255,255,255,0.08)`,
+                color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s', whiteSpace: 'nowrap',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', whiteSpace: 'nowrap',
                 opacity: isLoading ? 0.5 : 1,
+                backdropFilter: 'blur(10px)',
               }}>
                 {q}
               </button>
@@ -461,13 +470,16 @@ export default function ChatPage() {
               rows={2}
               className="chat-input"
               style={{
-                width: '100%', padding: '14px 52px 14px 18px',
-                borderRadius: 16,
-                background: P.bg2, border: `1px solid ${P.border}`,
-                color: P.text1, fontSize: 14,
+                width: '100%', padding: '18px 60px 18px 24px',
+                borderRadius: 24,
+                background: 'rgba(0,0,0,0.3)', border: `1px solid rgba(255,255,255,0.1)`,
+                color: '#fff', fontSize: 15,
                 resize: 'none', fontFamily: 'inherit',
-                transition: 'border-color 0.2s, background 0.2s',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 opacity: isLoading ? 0.6 : 1,
+                boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(20px)',
+                lineHeight: 1.5
               }}
             />
             <button
@@ -475,16 +487,16 @@ export default function ChatPage() {
               disabled={!input.trim() || isLoading}
               className="send-btn"
               style={{
-                position: 'absolute', right: 10, bottom: 10,
-                width: 36, height: 36, borderRadius: 12,
-                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                position: 'absolute', right: 12, bottom: 12,
+                width: 44, height: 44, borderRadius: 16,
+                background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
                 border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s',
-                boxShadow: '0 4px 12px rgba(124,58,237,0.4)',
+                boxShadow: '0 4px 16px rgba(124,58,237,0.5)',
               }}
             >
-              <Send size={15} color="#fff" />
+              <Send size={18} color="#fff" style={{ transform: 'translateX(-1px)' }} />
             </button>
           </div>
         </div>
