@@ -15,6 +15,9 @@ import {
   weeklySummary,
 } from '../utils/notifications';
 import { trackPageView } from '../utils/analytics';
+import { Mic } from 'lucide-react';
+import { authFetch } from '../utils/api';
+import { saveTransaction } from '../utils/storage';
 
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -25,6 +28,7 @@ const P = {
 
 export default function Layout({ theme, onToggleTheme }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [showWeeklySummary, setShowWeeklySummary] = useState(() => shouldShowWeeklySummary());
   const [showQrModal, setShowQrModal] = useState(false);
   const toast = useToast();
@@ -44,6 +48,42 @@ export default function Layout({ theme, onToggleTheme }) {
   const closeWeeklySummary = () => {
     markWeeklySummarySeen();
     setShowWeeklySummary(false);
+  };
+
+  const startListeningGlobal = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
+    const recognition = new SR();
+    recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+    recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum... Konuşun.', { duration: 5000, icon: '🎤' }); };
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      setIsListening(false);
+      if (!transcript || transcript.trim() === '') {
+        toast.error('Ses algılanamadı, lütfen tekrar deneyin.');
+        return;
+      }
+      toast.info(`Anlaşılan: "${transcript}". Analiz ediliyor...`, { duration: 10000, icon: '🧠' });
+      try {
+        const res = await authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text: transcript }) });
+        if (!res.ok) {
+            const errBody = await res.json().catch(()=>({}));
+            throw new Error(errBody.error || 'API Hatası');
+        }
+        const data = await res.json();
+        const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
+        if (!yeniIslem.tutar) { 
+           toast.warning(`Tutar tam anlaşılamadı. Lütfen manuel ekleyin.`); 
+           return; 
+        }
+        await saveTransaction(yeniIslem);
+        toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
+        window.dispatchEvent(new Event('transaction_added'));
+      } catch(err) { toast.error(`Analiz hatası: ${err.message}`); }
+    };
+    recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
+    recognition.onend = () => { setIsListening(false); };
+    recognition.start();
   };
 
   return (
@@ -70,6 +110,21 @@ export default function Layout({ theme, onToggleTheme }) {
             <p className="hidden sm:block" style={{ fontSize: 13, color: P.text2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Akıllı bütçe, hedef ve harcama koçu</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <button
+              onClick={startListeningGlobal}
+              disabled={isListening}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10,
+                border: `1px solid ${isListening ? P.red : 'rgba(124,58,237,0.2)'}`,
+                background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(124,58,237,0.1)',
+                color: isListening ? P.red : '#c4b5fd',
+                cursor: isListening ? 'wait' : 'pointer', transition: 'background 0.2s',
+                fontWeight: 700, fontSize: 12
+              }}
+            >
+              {isListening ? <Mic className="animate-pulse" size={16} /> : <Mic size={16} />}
+              <span className="hidden sm:inline">Sesle Ekle</span>
+            </button>
             <button
               onClick={() => setShowQrModal(true)}
               className="hidden md:flex"
