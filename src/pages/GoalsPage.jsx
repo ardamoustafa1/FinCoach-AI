@@ -34,7 +34,7 @@ const HAZIR_HEDEFLER = [
 
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444',
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
   border: 'var(--border-color)',
   text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
