@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key } from 'lucide-react';
+import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key, Filter } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -254,6 +254,27 @@ export default function SystemMonitorPage() {
                    <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Aktif Edge: IST-1 (İstanbul)</span>
                  </div>
                  <span style={{ fontSize: 14, fontWeight: 900, color: P.green }}>4ms Gecikme</span>
+               </div>
+            </div>
+
+            {/* Data Lake & ETL Panel */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.05), transparent)', border: `1px solid rgba(124,58,237,0.3)`, borderRadius: 24, padding: 24 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                 <div style={{ background: 'rgba(124,58,237,0.2)', padding: 8, borderRadius: 12 }}><Database size={20} color={P.purple} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline</h3>
+               </div>
+               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+                 Milyonlarca ham işlem verisi Snowflake Veri Gölü'ne dökülür ve <strong>dbt (data build tool)</strong> ile temizlenerek (ETL) yapay zeka modellerimizin eğitim setine (Training Set) dönüştürülür.
+               </p>
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0f172a', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                   <Filter size={16} color={P.purple} />
+                   <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Son ETL Senkronizasyonu:</span>
+                 </div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', boxShadow: '0 0 8px #10b981', animation: 'pulseActive 2s infinite' }} />
+                    <span style={{ fontSize: 12, fontWeight: 900, color: P.green }}>BAŞARILI (2sn önce)</span>
+                 </div>
                </div>
             </div>
 
