@@ -554,6 +554,12 @@ export default function TransactionsPage() {
     return () => clearTimeout(t);
   }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
 
+  useEffect(() => {
+    const handleTxAdded = () => refreshLocal();
+    window.addEventListener('transaction_added', handleTxAdded);
+    return () => window.removeEventListener('transaction_added', handleTxAdded);
+  }, []);
+
   const handleSort = useCallback((kolon) => {
     if (sortKolon === kolon) setSortYon(y => y === 'asc' ? 'desc' : 'asc');
     else { setSortKolon(kolon); setSortYon('desc'); }
