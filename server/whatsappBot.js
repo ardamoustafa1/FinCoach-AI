@@ -383,6 +383,7 @@ export function createWhatsAppMessageHandler({
   };
 
   return async function handleWhatsAppMessage(msg) {
+    console.log('[WhatsApp Message Received]:', msg?.body?.slice(0, 50), 'fromMe:', msg?.fromMe);
     if (!msg || msg.from === 'status@broadcast') return { status: 'skipped', reason: 'status' };
     if (!allowGroups && (msg.from?.endsWith('@g.us') || msg.to?.endsWith('@g.us'))) {
       return { status: 'skipped', reason: 'group' };
