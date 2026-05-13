@@ -4,7 +4,7 @@ import {
   ArrowLeftRight,
   Target,
   Bot,
-  BarChart3,
+  BarChart4,
   Clock,
   ShieldAlert
 } from 'lucide-react';
@@ -12,8 +12,7 @@ import {
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
-  { to: '/league', label: 'Lig', icon: Target },
-  { to: '/time-machine', label: 'Gelecek', icon: Clock },
+  { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
   { to: '/subscriptions', label: 'Abonelik', icon: ShieldAlert },
   { to: '/chat', label: 'AI Koç', icon: Bot },
 ];
