@@ -387,6 +387,12 @@ export function createWhatsAppMessageHandler({
 
   return async function handleWhatsAppMessage(msg) {
     if (!msg || msg.from === 'status@broadcast') return { status: 'skipped', reason: 'status' };
+
+    // Mesaj 2 dakikadan eskiyse (bot ilk açıldığında gelen geçmiş mesajlar) yoksay
+    const messageAgeSeconds = (Date.now() / 1000) - (msg.timestamp || 0);
+    if (msg.timestamp && messageAgeSeconds > 120) {
+      return { status: 'skipped', reason: 'message_too_old' };
+    }
     if (!allowGroups && (msg.from?.endsWith('@g.us') || msg.to?.endsWith('@g.us'))) {
       return { status: 'skipped', reason: 'group' };
     }
@@ -395,10 +401,17 @@ export function createWhatsAppMessageHandler({
       return { status: 'skipped', reason: 'bot_reply' };
     }
 
+    // KESİN KURAL: Mesajın veya fotoğraf açıklamasının içinde "fincoach" geçmiyorsa ASLA işlem yapma
+    const fullText = normalizeText((msg.body || '') + ' ' + (msg.caption || ''));
+    if (!fullText.includes('fincoach')) {
+      return { status: 'skipped', reason: 'no_fincoach_keyword' };
+    }
+
     const contactId = getMessageContactId(msg);
     const contactPhone = normalizePhone(contactId);
 
     if (normalizedAllowedPhones.length > 0 && !normalizedAllowedPhones.includes(contactPhone)) {
+      console.log(`[WhatsApp Debug] Mesaj reddedildi. İzin verilmeyen numara: ${contactPhone}`);
       return { status: 'skipped', reason: 'phone_not_allowed', phone: contactPhone };
     }
 
