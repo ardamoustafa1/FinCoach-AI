@@ -33,19 +33,15 @@ export default function LeaguePage() {
     setInviting(true);
     setTimeout(() => {
       setInviting(false);
+      const text = 'Seni FinCoach AI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin;
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank');
+      
       try {
-        if (navigator.share) {
-          navigator.share({
-            title: 'FinCoach AI Tasarruf Ligi',
-            text: 'Seni Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰',
-            url: window.location.origin
-          });
-        } else {
-          navigator.clipboard.writeText('Seni FinCoach AI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin);
-          toast.success('Davet bağlantısı kopyalandı! Arkadaşlarına gönderebilirsin.');
-        }
-      } catch {
-        toast.success('Davet bağlantısı kopyalandı! Arkadaşlarına gönderebilirsin.');
+        navigator.clipboard.writeText(text);
+        toast.success('Davet bağlantısı kopyalandı ve WhatsApp açılıyor.');
+      } catch (e) {
+        // ignore clipboard error
       }
     }, 600);
   };
