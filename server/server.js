@@ -286,8 +286,12 @@ Cümle: "${text}"
 
     const result = await model.generateContent(prompt);
     res.json(extractJsonObject(result.response.text()));
-  } catch {
-    res.status(500).json({ error: 'Ses anlaşılamadı.' });
+  } catch (error) {
+    console.error("Voice API Error:", error.message);
+    if (error.status === 429 || String(error.message).includes('429') || String(error.message).includes('exceeded')) {
+        return res.status(429).json({ error: 'Google Gemini API kotanız doldu (429 Too Many Requests).' });
+    }
+    res.status(500).json({ error: 'Ses anlaşılamadı: ' + error.message });
   }
 });
 
