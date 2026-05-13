@@ -24,6 +24,7 @@ const RealEstatePage = lazy(() => import('./pages/RealEstatePage'));
 const MicroInvestPage = lazy(() => import('./pages/MicroInvestPage'));
 const DebtSnowballPage = lazy(() => import('./pages/DebtSnowballPage'));
 const FreelancerPage = lazy(() => import('./pages/FreelancerPage'));
+const AnomalyPage = lazy(() => import('./pages/AnomalyPage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
 
@@ -215,6 +216,7 @@ export default function App() {
               <Route path="/micro-invest" element={<MicroInvestPage />} />
               <Route path="/debt-snowball" element={<DebtSnowballPage />} />
               <Route path="/freelancer-smoother" element={<FreelancerPage />} />
+              <Route path="/anomaly" element={<AnomalyPage />} />
               <Route path="/shop-sim" element={<ShopSimulationPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/chat" element={<ChatPage />} />
