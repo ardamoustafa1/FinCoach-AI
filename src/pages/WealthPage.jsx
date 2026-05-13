@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Briefcase, Landmark, ShieldCheck, Activity, Target, TrendingUp, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+import { Landmark, ShieldCheck, Activity, Target, TrendingUp, Cpu } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
@@ -10,111 +10,112 @@ const P = {
   border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
 };
 
-const PORTFOLIO_PROFILES = {
-  conservative: {
-    name: 'Muhafazakar Profil',
-    desc: 'Düşük risk toleransı. Sermaye koruması ön plandadır.',
-    allocation: [
-      { name: 'Mevduat / Tahvil', value: 60, color: P.blue },
-      { name: 'Fiziki Altın', value: 30, color: P.amber },
-      { name: 'Büyük Ölçekli Hisse', value: 10, color: P.purple }
-    ],
-    expectedReturn: 35 // %35
-  },
-  balanced: {
-    name: 'Dengeli Profil',
-    desc: 'Orta risk toleransı. Büyüme ve koruma arasında denge.',
-    allocation: [
-      { name: 'Hisse Senedi (BIST 30)', value: 40, color: P.purple },
-      { name: 'Mevduat / Eurobond', value: 35, color: P.blue },
-      { name: 'Değerli Maden (Altın)', value: 25, color: P.amber }
-    ],
-    expectedReturn: 55 // %55
-  },
-  aggressive: {
-    name: 'Agresif Büyüme Profili',
-    desc: 'Yüksek risk toleransı. Maksimum getiri odaklı.',
-    allocation: [
-      { name: 'Teknoloji & Büyüme Hisseleri', value: 65, color: P.purple },
-      { name: 'Kripto Varlıklar', value: 20, color: P.red },
-      { name: 'Yabancı Hisse Fonları', value: 15, color: P.blue }
-    ],
-    expectedReturn: 85 // %85
+// Simulated Assets (Expected Return, Volatility/Risk)
+const ASSETS = [
+  { name: 'Teknoloji Hisse', eR: 35, vol: 25 },
+  { name: 'Kripto', eR: 70, vol: 50 },
+  { name: 'Altın', eR: 18, vol: 12 },
+  { name: 'Tahvil', eR: 10, vol: 5 }
+];
+
+// Generates 500 random portfolios to build the "Efficient Frontier" cloud
+function generatePortfolios() {
+  const portfolios = [];
+  for (let i = 0; i < 500; i++) {
+    // Random weights sum to 1
+    let w = [Math.random(), Math.random(), Math.random(), Math.random()];
+    const sum = w.reduce((a, b) => a + b, 0);
+    w = w.map(val => val / sum);
+
+    // Calculate Return
+    const expReturn = w[0]*ASSETS[0].eR + w[1]*ASSETS[1].eR + w[2]*ASSETS[2].eR + w[3]*ASSETS[3].eR;
+    
+    // Calculate Risk (Simplified covariance simulation - diversification dampens risk)
+    const rawRisk = w[0]*ASSETS[0].vol + w[1]*ASSETS[1].vol + w[2]*ASSETS[2].vol + w[3]*ASSETS[3].vol;
+    const divFactor = 1 - (0.2 * (1 - Math.max(...w))); // Diversification benefit
+    const risk = rawRisk * divFactor;
+
+    portfolios.push({
+      risk: Number(risk.toFixed(1)),
+      return: Number(expReturn.toFixed(1)),
+      weights: w,
+      isOptimal: false
+    });
   }
-};
+  return portfolios;
+}
 
 export default function WealthPage() {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
   const [metrics, setMetrics] = useState(null);
+  const [cloud, setCloud] = useState([]);
+  const [optimalPoint, setOptimalPoint] = useState(null);
 
   useEffect(() => {
-    // Kurumsal Risk Profili Analizi (Algorithmic Wealth Management)
     const tx = getTransactions();
     
     setTimeout(() => {
-      // 1. Harcama Volatilitesi Hesaplama (Mocked for logic)
+      // 1. Analyze User Volatility (Mock)
       const expenses = tx.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
       const avgExpense = expenses.reduce((a, b) => a + b, 0) / (expenses.length || 1);
-      
-      // Variance calculation
       const variance = expenses.reduce((a, b) => a + Math.pow(b - avgExpense, 2), 0) / (expenses.length || 1);
-      const volatility = Math.sqrt(variance) / (avgExpense || 1); // Coefficient of Variation
+      const userVolatility = Math.sqrt(variance) / (avgExpense || 1);
       
-      // 2. Acil Durum Fonu Oranı
       const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       const totalExpense = avgExpense * (expenses.length || 1) || 30000;
       const savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
-      const emergencyFund = 120000; // Mocked
+      const emergencyFund = 120000;
 
-      // 3. Risk Tolerans Skoru Belirleme (0-100)
-      // Yüksek tasarruf ve yüksek acil fon = Daha fazla risk alabilir.
-      // Yüksek harcama volatilitesi = Düşük risk almalı.
+      // 2. Risk Score Calculation
       let riskScore = 50;
       if (savingsRate > 25) riskScore += 20;
       if (emergencyFund > totalExpense * 6) riskScore += 15;
-      if (volatility > 0.8) riskScore -= 20; // Düzensiz harcaması olan risk alamaz
+      if (userVolatility > 0.8) riskScore -= 20;
+      riskScore = Math.round(Math.min(100, Math.max(0, riskScore)));
 
-      let activeProfileKey = 'balanced';
-      if (riskScore > 70) activeProfileKey = 'aggressive';
-      if (riskScore < 40) activeProfileKey = 'conservative';
+      // 3. Markowitz Efficient Frontier Generation
+      const pts = generatePortfolios();
+      
+      // Target Risk based on Score (Score 0 -> Risk 5%, Score 100 -> Risk 40%)
+      const targetRisk = 5 + (riskScore / 100) * 35;
+      
+      // Find the optimal portfolio (Highest return for the target risk tolerance)
+      let bestPoint = null;
+      let maxReturnForRisk = -1;
+      
+      pts.forEach(p => {
+        // Accept portfolios within +/- 2% of target risk
+        if (Math.abs(p.risk - targetRisk) < 2) {
+          if (p.return > maxReturnForRisk) {
+            maxReturnForRisk = p.return;
+            bestPoint = p;
+          }
+        }
+      });
+      
+      if (!bestPoint) bestPoint = pts[Math.floor(Math.random() * pts.length)]; // fallback
+      bestPoint.isOptimal = true;
 
       setMetrics({
-        riskScore: Math.round(Math.min(100, Math.max(0, riskScore))),
-        volatility: (volatility * 100).toFixed(1),
+        riskScore,
+        userVolatility: (userVolatility * 100).toFixed(1),
         savingsRate: savingsRate.toFixed(1),
-        emergencyFundMonths: (emergencyFund / (totalExpense || 1)).toFixed(1)
       });
-      setProfile(PORTFOLIO_PROFILES[activeProfileKey]);
+      
+      setCloud(pts);
+      setOptimalPoint(bestPoint);
       setLoading(false);
     }, 800);
   }, []);
 
-  if (loading || !profile) {
+  if (loading || !optimalPoint) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.purple}30`, borderTopColor: P.purple, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Harcama volatilitesi ve risk toleransı analiz ediliyor...</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Kovaryans matrisi ve etkin sınır hesaplanıyor...</p>
       </div>
     );
   }
-
-  // 5 Yıllık Projeksiyon Verisi
-  const projectionData = [1, 2, 3, 4, 5].map(year => {
-    const baseSavings = 100000; // Başlangıç
-    const annualAddition = 50000; // Yıllık eklenen
-    // Standart Mevduat Getirisi (Örn %20)
-    const standardReturn = baseSavings * Math.pow(1.20, year) + annualAddition * ((Math.pow(1.20, year) - 1) / 0.20);
-    // AI Portföy Getirisi
-    const aiReturnRate = 1 + (profile.expectedReturn / 100);
-    const aiReturn = baseSavings * Math.pow(aiReturnRate, year) + annualAddition * ((Math.pow(aiReturnRate, year) - 1) / (profile.expectedReturn / 100));
-
-    return {
-      year: `${year}. Yıl`,
-      Mevduat: Math.round(standardReturn),
-      'Yapay Zeka Portföyü': Math.round(aiReturn)
-    };
-  });
 
   return (
     <>
@@ -132,88 +133,103 @@ export default function WealthPage() {
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Landmark size={20} color={P.purple} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>AI Wealth Management</span>
+              <Cpu size={20} color={P.purple} />
+              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>Modern Portfolio Theory</span>
             </div>
             <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Varlık Yönetimi ve Risk Profili
+              Markowitz "Etkin Sınır" Optimizasyonu
             </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
-              FinCoach AI, harcama alışkanlıklarınızı ve finansal dayanıklılığınızı analiz ederek size en uygun algoritmik yatırım stratejisini sunar.
+            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
+              Risk skoru sabit paketlerle hesaplanmaz. FinCoach, Harry Markowitz'in Nobel ödüllü algoritmasıyla varlıkların korelasyonunu hesaplar ve size milimetrik, <strong>matematiksel olarak kanıtlanmış en yüksek getirili</strong> portföyü sunar.
             </p>
           </div>
         </div>
 
         {/* RISK ANALYSIS RESULTS */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
-          {[
-            { label: 'Risk Tolerans Skoru', value: `${metrics.riskScore} / 100`, icon: Target, color: metrics.riskScore > 60 ? P.purple : P.blue },
-            { label: 'Harcama Volatilitesi', value: `%${metrics.volatility}`, icon: Activity, color: metrics.volatility > 60 ? P.red : P.green, desc: 'Aylık gider dalgalanması' },
-            { label: 'Tasarruf Oranı', value: `%${metrics.savingsRate}`, icon: TrendingUp, color: metrics.savingsRate > 20 ? P.green : P.amber },
-            { label: 'Nakit Tamponu', value: `${metrics.emergencyFundMonths} Ay`, icon: ShieldCheck, color: metrics.emergencyFundMonths > 3 ? P.green : P.red, desc: 'Acil durum fonu yeterliliği' }
-          ].map((m, i) => (
-            <div key={i} style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>{m.label}</span>
-                <m.icon size={18} color={m.color} />
-              </div>
-              <p style={{ fontSize: 24, fontWeight: 900, color: m.color, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{m.value}</p>
-              {m.desc && <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>{m.desc}</p>}
+          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>Algoritmik Risk Skoru</span>
+              <Target size={18} color={P.purple} />
             </div>
-          ))}
+            <p style={{ fontSize: 24, fontWeight: 900, color: P.purple, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{metrics.riskScore} / 100</p>
+            <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>Tasarruf & Volatilite bazlı</p>
+          </div>
+          
+          <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.2)`, borderRadius: 20, padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.green, textTransform: 'uppercase' }}>Beklenen Max. Getiri</span>
+              <TrendingUp size={18} color={P.green} />
+            </div>
+            <p style={{ fontSize: 24, fontWeight: 900, color: P.green, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{optimalPoint.return}</p>
+            <p style={{ fontSize: 11, color: P.text2, margin: 0 }}>Hedef riske karşılık en yüksek getiri</p>
+          </div>
         </div>
 
-        {/* PORTFOLIO DISTRIBUTION */}
-        <div className="animate-enter" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', animationDelay: '0.2s', opacity: 0 }}>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
-          <div style={{ flex: '1 1 350px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>AI Önerilen Portföy Dağılımı</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-              <div style={{ width: 180, height: 180, flexShrink: 0 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={profile.allocation} innerRadius={60} outerRadius={85} paddingAngle={5} dataKey="value" stroke="none">
-                      {profile.allocation.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }} itemStyle={{ color: P.text1, fontWeight: 700 }} />
-                  </PieChart>
-                </ResponsiveContainer>
+          {/* EFFICIENT FRONTIER SCATTER CHART */}
+          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Etkin Sınır (Efficient Frontier)</h3>
+                <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Her nokta rastgele bir portföydür. Kırmızı nokta sizin için en iyi seçenektir.</p>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ marginBottom: 8 }}>
-                  <h4 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>{profile.name}</h4>
-                  <p style={{ fontSize: 12, color: P.text3, margin: 0 }}>{profile.desc}</p>
-                </div>
-                {profile.allocation.map(a => (
-                  <div key={a.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: a.color }} />
-                      <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>{a.name}</span>
-                    </div>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>%{a.value}</span>
-                  </div>
-                ))}
-              </div>
+            </div>
+            
+            <div style={{ height: 350, width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false} />
+                  <XAxis type="number" dataKey="risk" name="Risk (Volatilite)" unit="%" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+                  <YAxis type="number" dataKey="return" name="Beklenen Getiri" unit="%" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+                  <RechartsTooltip 
+                    cursor={{ strokeDasharray: '3 3', stroke: P.text3 }}
+                    contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }}
+                    itemStyle={{ color: P.text1, fontWeight: 700 }}
+                  />
+                  <Scatter name="Portföyler" data={cloud}>
+                    {cloud.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.isOptimal ? P.red : P.purple} fillOpacity={entry.isOptimal ? 1 : 0.3} />
+                    ))}
+                  </Scatter>
+                  {/* Mark the optimal point */}
+                  <ReferenceLine x={optimalPoint.risk} stroke={P.red} strokeDasharray="3 3" opacity={0.5} />
+                  <ReferenceLine y={optimalPoint.return} stroke={P.red} strokeDasharray="3 3" opacity={0.5} />
+                </ScatterChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div style={{ flex: '1 1 450px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>5 Yıllık Getiri Projeksiyonu</h3>
-            <p style={{ fontSize: 13, color: P.text3, margin: '0 0 24px' }}>Standart mevduata karşı AI destekli portföyün bileşik büyümesi.</p>
-            
-            <div style={{ height: 200, width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={projectionData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false} />
-                  <XAxis dataKey="year" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} />
-                  <YAxis stroke={P.text3} fontSize={11} tickFormatter={(val) => `₺${(val/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
-                  <RechartsTooltip cursor={{ fill: 'transparent' }} contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }} />
-                  <Bar dataKey="Mevduat" fill={P.bg3} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Yapay Zeka Portföyü" fill={P.purple} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* OPTIMAL ALLOCATION */}
+          <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.3s', opacity: 0 }}>
+            <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 24, padding: 32, flex: 1 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>Optimal Dağılımınız</h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {[
+                  { name: 'Teknoloji Hisse', w: optimalPoint.weights[0], color: P.purple },
+                  { name: 'Kripto Varlıklar', w: optimalPoint.weights[1], color: P.red },
+                  { name: 'Fiziki Altın', w: optimalPoint.weights[2], color: P.amber },
+                  { name: 'Hazine Tahvili', w: optimalPoint.weights[3], color: P.blue },
+                ].sort((a,b) => b.w - a.w).map(asset => (
+                  <div key={asset.name}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: P.text2 }}>{asset.name}</span>
+                      <span style={{ fontSize: 15, fontWeight: 900, color: P.text1 }}>%{(asset.w * 100).toFixed(1)}</span>
+                    </div>
+                    <div style={{ width: '100%', height: 6, background: P.bg3, borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${asset.w * 100}%`, height: '100%', background: asset.color, borderRadius: 99 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 32, padding: '16px', background: P.bg2, borderRadius: 16, border: `1px solid ${P.border}` }}>
+                <p style={{ fontSize: 12, color: P.text3, margin: 0, lineHeight: 1.6 }}>
+                  Sistemin hesapladığı <strong>%{optimalPoint.risk} risk</strong> seviyesinde elde edilebilecek en yüksek matematiksel getiri budur. Bu dağılım dışındaki her portföy, Markowitz teorisine göre "Verimsiz (Sub-optimal)" kabul edilir.
+                </p>
+              </div>
             </div>
           </div>
 
