@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Plus, Tag } from 'lucide-react';
+import { X, Plus, Tag, Mic, Loader2, Fingerprint, ShieldAlert } from 'lucide-react';
 import { TUM_KATEGORILER } from '../utils/categories';
 import { suggestCategory } from '../utils/storage';
+import { authFetch } from '../utils/api';
+import { useToast } from '../hooks/useToast';
 
 const P = {
   purple: '#7C3AED', purpleLight: '#A78BFA', purpleDim: 'rgba(124,58,237,0.15)',
   green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038', bg4: '#222540',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.35)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', bg4: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 const BOS_FORM = {
@@ -47,9 +49,51 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
       }
   );
   const [hatalar, setHatalar] = useState({});
+  const toast = useToast();
   const [etiketInput, setEtiketInput] = useState('');
   const [kategoriOneri, setKategoriOneri] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [showImpulseBlock, setShowImpulseBlock] = useState(false);
+  const [webAuthnLoading, setWebAuthnLoading] = useState(false);
   const magazaDebRef = useRef(null);
+
+  const startVoiceRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Tarayıcınız sesli komut özelliğini desteklemiyor.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum...'); };
+    recognition.onend = () => { setIsListening(false); };
+    recognition.onerror = () => { setIsListening(false); toast.error('Ses algılanamadı.'); };
+    
+    recognition.onresult = async (event) => {
+      const text = event.results[0][0].transcript;
+      setIsProcessingVoice(true);
+      toast.info('Ses analiz ediliyor: ' + text);
+      try {
+        const res = await authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text }) });
+        const data = await res.json();
+        
+        if (data && data.tutar) {
+           setForm(f => ({ ...f, tutar: String(data.tutar), aciklama: data.magaza || data.aciklama || text, magaza: data.magaza || '', kategori: data.kategori || '' }));
+           toast.success('Harcama sesli komutla dolduruldu! 🎉');
+        } else {
+           toast.warning('Anlaşılamadı, lütfen manuel doldurun.');
+        }
+      } catch {
+        toast.error('Yapay zeka ses analizinde hata oluştu.');
+      } finally {
+        setIsProcessingVoice(false);
+      }
+    };
+    recognition.start();
+  };
 
   useEffect(() => {
     clearTimeout(magazaDebRef.current);
@@ -73,9 +117,36 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
     return Object.keys(h).length === 0;
   };
 
+  const executeSave = () => {
+    onKaydet({ ...form, tutar: Number(form.tutar) });
+  };
+
   const handleKaydet = () => {
     if (!validasyonKontrol()) return;
-    onKaydet({ ...form, tutar: Number(form.tutar) });
+
+    // Düzenleme değilse ve yeni işlemse Anti-Dürtü kontrolü yap
+    if (!islem) {
+      const currentHour = new Date().getHours();
+      const isNightTime = currentHour >= 0 && currentHour <= 6;
+      const isToxicCategory = ['Alışveriş', 'Dışarıda Yemek', 'Kozmetik', 'Teknoloji'].includes(form.kategori);
+
+      if (isNightTime || (isToxicCategory && Number(form.tutar) > 1000)) {
+        setShowImpulseBlock(true);
+        return;
+      }
+    }
+    executeSave();
+  };
+
+  const handleWebAuthn = () => {
+    setWebAuthnLoading(true);
+    // Simulating WebAuthn (TouchID/FaceID) prompt
+    setTimeout(() => {
+      setWebAuthnLoading(false);
+      setShowImpulseBlock(false);
+      toast.info('Biyometrik doğrulama başarılı. Sorumluluk sana ait!');
+      executeSave();
+    }, 1500);
   };
 
   const handleEtiketEkle = () => {
@@ -108,12 +179,22 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
           <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1 }}>
             {islem ? 'İşlemi Düzenle' : 'Yeni İşlem'}
           </h2>
-          <button onClick={onKapat} style={{
-            width: 32, height: 32, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`,
-            color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <X size={16} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={startVoiceRecording} disabled={isListening || isProcessingVoice} style={{
+              width: 32, height: 32, borderRadius: 10, background: isListening ? '#10B981' : isProcessingVoice ? '#F59E0B' : 'rgba(124,58,237,0.15)',
+              border: `1px solid ${isListening ? '#10B981' : isProcessingVoice ? '#F59E0B' : 'rgba(124,58,237,0.3)'}`, color: (isListening || isProcessingVoice) ? '#fff' : P.purpleLight, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', animation: isListening ? 'pulse 1.5s infinite' : 'none'
+            }}>
+              <style>{`@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
+              {isProcessingVoice ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Mic size={16} />}
+            </button>
+            <button onClick={onKapat} style={{
+              width: 32, height: 32, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`,
+              color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Form */}
@@ -214,12 +295,46 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
           </button>
           <button onClick={handleKaydet} style={{
             flex: 1, padding: '12px 0', borderRadius: 12, border: 'none', background: `linear-gradient(135deg, ${P.purple}, #4F46E5)`,
-            color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'all 0.2s',
+            color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleDim}`, transition: 'all 0.2s',
           }}>
             {islem ? 'Güncelle' : 'Kaydet'}
           </button>
         </div>
       </div>
+
+      {/* Anti-Impulse Blocker Overlay */}
+      {showImpulseBlock && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease' }}>
+          <div style={{ width: '100%', maxWidth: 360, background: P.bg1, border: `1px solid ${P.amber}50`, borderRadius: 28, padding: '32px 24px', boxShadow: `0 32px 100px ${P.amber}30`, textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, background: `${P.amber}15`, border: `2px solid ${P.amber}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', animation: 'pulse 2s infinite' }}>
+              <ShieldAlert size={32} color={P.amber} />
+            </div>
+            
+            <h3 style={{ fontSize: 20, fontWeight: 900, color: P.text1, marginBottom: 8 }}>Anti-Dürtü Kilidi</h3>
+            <p style={{ fontSize: 13, color: P.text2, lineHeight: 1.6, marginBottom: 24 }}>
+              Şu an gece yarısı veya limitini aşan riskli bir harcama giriyorsun. Gerçekten otonom kararın mı? İşlemi kaydetmek için <strong style={{ color: P.text1 }}>Touch ID / Face ID</strong> onayı gerekiyor.
+            </p>
+
+            <button 
+              onClick={handleWebAuthn}
+              disabled={webAuthnLoading}
+              style={{
+                width: '100%', padding: '16px', borderRadius: 16, border: 'none',
+                background: webAuthnLoading ? P.bg3 : '#fff', color: webAuthnLoading ? P.text3 : '#000',
+                fontSize: 15, fontWeight: 800, cursor: webAuthnLoading ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12,
+                transition: 'all 0.2s'
+              }}
+            >
+              {webAuthnLoading ? <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Fingerprint size={20} />}
+              {webAuthnLoading ? 'Biyometrik Doğrulanıyor...' : 'Parmak İzi ile Onayla'}
+            </button>
+            <button onClick={() => setShowImpulseBlock(false)} style={{ background: 'none', border: 'none', color: P.text3, fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: 8 }}>
+              Vazgeç (Doğru Karar)
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2, Loader2, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -20,15 +20,15 @@ const P = {
   green: '#10B981',
   red: '#EF4444',
   amber: '#F59E0B',
-  bg0: '#050714',
-  bg1: '#0D0F1E',
-  bg2: '#141728',
-  bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(124,58,237,0.4)',
-  text1: '#F1F5F9',
-  text2: '#94A3B8',
-  text3: '#64748B',
+  bg0: 'var(--bg-main)',
+  bg1: 'var(--bg-sidebar)',
+  bg2: 'var(--bg-surface)',
+  bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)',
+  borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)',
+  text2: 'var(--text-secondary)',
+  text3: 'var(--text-muted)',
 };
 
 const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#06B6D4'];
@@ -45,7 +45,7 @@ const getInitialMessages = () => {
 const QUICK_QUESTIONS = [
   "Beni özetle! (Finansal Sarmal Kartımı Çıkar 🃏)",
   "Finansal İkizim kim? Başkalarına göre nasılım? 👥",
-  "Hangi abonelikleri iptal etmeliyim? (Linkleri ver) ✂️",
+  "Netflix'i iptal et (Otonom Ajan) 🤖",
   "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
 ];
@@ -225,6 +225,7 @@ export default function ChatPage() {
             let chartData = null;
             let simulationData = null;
             let wrappedData = null;
+            let agentData = null;
             if (msg.role === 'bot' && typeof text === 'string') {
               // Regex: Find tag and capture everything until the LAST closing brace
               const chartMatch = text.match(/CHART_DATA:(\{[\s\S]*\})/);
@@ -256,6 +257,16 @@ export default function ChatPage() {
                   text = text.replace(/WRAPPED_CARD:\{[\s\S]*\}/, '').trim();
                 } catch (error) {
                   console.error("Wrapped card parse error:", error);
+                }
+              }
+
+              const agentMatch = text.match(/AGENT_ACTION:(\{[\s\S]*\})/);
+              if (agentMatch) {
+                try {
+                  agentData = JSON.parse(agentMatch[1]);
+                  text = text.replace(/AGENT_ACTION:\{[\s\S]*\}/, '').trim();
+                } catch (error) {
+                  console.error("Agent action parse error:", error);
                 }
               }
             }
@@ -359,6 +370,9 @@ export default function ChatPage() {
                         </div>
                       )}
 
+                      {agentData && (
+                        <AgentSimulation provider={agentData.provider} />
+                      )}
 
                       {chartData && (
                         <div style={{ borderRadius: 14, background: P.bg3, border: `1px solid ${P.border}`, padding: 16, marginTop: 4 }}>
@@ -560,4 +574,41 @@ function ChatChart({ chartData }) {
     default:
       return <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13 }}>Desteklenmeyen grafik tipi: {type}</div>;
   }
+}
+
+/* ─── Agent Simulation Component ─── */
+function AgentSimulation({ provider }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    let t1 = setTimeout(() => setStep(1), 1500); 
+    let t2 = setTimeout(() => setStep(2), 3500); 
+    let t3 = setTimeout(() => setStep(3), 5500); 
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  return (
+    <div style={{ marginTop: 12, background: '#0D0F1E', borderRadius: 16, border: '1px solid rgba(124,58,237,0.3)', padding: 16, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <Bot size={18} color="#A78BFA" />
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Otonom Ajan Devrede</span>
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+           {step >= 1 ? <CheckCircle2 size={18} color="#10B981" /> : <Loader2 size={18} color="#64748B" style={{ animation: 'spin 1s linear infinite' }} />}
+           <span style={{ fontSize: 13, color: step >= 1 ? '#F1F5F9' : '#64748B', fontWeight: 600 }}>Headless tarayıcı başlatıldı ({provider})</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+           {step >= 2 ? <CheckCircle2 size={18} color="#10B981" /> : step === 1 ? <Loader2 size={18} color="#3B82F6" style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
+           <span style={{ fontSize: 13, color: step >= 2 ? '#F1F5F9' : step === 1 ? '#3B82F6' : '#64748B', fontWeight: 600 }}>Abonelik iptal formu otonom dolduruluyor...</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+           {step >= 3 ? <CheckCircle2 size={18} color="#10B981" /> : step === 2 ? <Loader2 size={18} color="#F59E0B" style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
+           <span style={{ fontSize: 13, color: step >= 3 ? '#10B981' : step === 2 ? '#F59E0B' : '#64748B', fontWeight: step >= 3 ? 800 : 600 }}>{step >= 3 ? 'Abonelik başarıyla iptal edildi!' : 'Onay bekleniyor...'}</span>
+        </div>
+      </div>
+      {step >= 3 && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at center, rgba(16,185,129,0.15) 0%, transparent 70%)', animation: 'ping 1.5s ease-out' }} />}
+    </div>
+  );
 }

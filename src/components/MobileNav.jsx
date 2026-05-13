@@ -5,12 +5,15 @@ import {
   Target,
   Bot,
   BarChart3,
+  Clock,
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
   { to: '/goals', label: 'Hedefler', icon: Target },
+  { to: '/league', label: 'Lig', icon: Target },
+  { to: '/time-machine', label: 'Gelecek', icon: Clock },
   { to: '/chat', label: 'AI Koç', icon: Bot },
   { to: '/reports', label: 'Raporlar', icon: BarChart3 },
 ];
@@ -20,11 +23,11 @@ export default function MobileNav() {
     <nav
       className="
         fixed bottom-3 left-3 right-3 z-50
-        bg-[#0d0f1e]/90 backdrop-blur-2xl
-        border border-white/8
-        shadow-2xl shadow-black/35
+        bg-[var(--bg-surface)]/90 backdrop-blur-2xl
+        border border-[var(--border-color)]
+        shadow-2xl shadow-black/10
         flex items-center justify-around
-        h-16 px-2 rounded-lg
+        h-16 px-2 rounded-2xl
         lg:hidden
       "
     >

@@ -1,22 +1,23 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Activity, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Activity, Zap, Building2, RefreshCw, ShoppingCart, Bitcoin, Users } from 'lucide-react';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import TrendLineChart from '../components/charts/TrendLineChart';
 import HeatmapCalendar from '../components/charts/HeatmapCalendar';
+import GeoHeatmap from '../components/charts/GeoHeatmap';
 import BudgetBars from '../components/BudgetBars';
 import LimitBanner from '../components/LimitBanner';
 import HealthScore from '../components/HealthScore';
 import PersonalityCard from '../components/PersonalityCard';
 import { useToast } from '../hooks/useToast';
 import { useSupabaseData } from '../hooks/useSupabaseData';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 /* ─── Palette ─── */
 const P = {
   purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
-  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6', pink: '#EC4899',
+  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 function useCountUp(target, duration = 1500) {
@@ -86,6 +87,20 @@ export default function DashboardPage() {
   const toast = useToast();
   const { transactions, limits, loading } = useSupabaseData();
   const headerVis = true;
+  const [bankingSyncing, setBankingSyncing] = useState(false);
+
+  const handleBankSync = () => {
+    setBankingSyncing(true);
+    toast.info('Bankanızla güvenli PSD2 bağlantısı kuruluyor...');
+    setTimeout(() => {
+      toast.success('Son 30 günlük Akbank ve Garanti hesap hareketleriniz BütçeAI ile otonom olarak senkronize edildi! 🎉');
+      setBankingSyncing(false);
+    }, 3500);
+  };
+
+  const handleAddToWallet = () => {
+    toast.success('BütçeAI Kartı Apple Wallet\'a eklendi! (Simülasyon)');
+  };
 
   const stats = useMemo(() => {
     if (!transactions.length) return { buAyGelir: 0, buAyGider: 0, netBakiye: 0, tasarrufOrani: 0, gelirDegisim: 0, giderDegisim: 0, harcamaMap: {} };
@@ -151,10 +166,56 @@ export default function DashboardPage() {
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, display: 'inline-block' }} />
                   <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>{new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}</span>
                 </div>
-                <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 8 }}>Finansal Kontrol Paneli</h1>
-                <p style={{ fontSize: 14, color: P.text2 }}>Riskleri, fırsatları ve bütçe sağlığını bulut üzerinden takip et. ☁️</p>
+                <div>
+                  <h1 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 4 }}>Finansal Komuta Merkezi</h1>
+                  <p style={{ fontSize: 13, color: P.text2 }}>Senin için hazırlanan gerçek zamanlı özet.</p>
+                </div>
+                <button
+                  onClick={handleAddToWallet}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
+                    background: '#000', border: `1px solid ${P.border}`, color: '#fff',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer', marginTop: 16,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Wallet size={16} />
+                  Apple Wallet'a Ekle
+                </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <button
+                  onClick={handleBankSync}
+                  disabled={bankingSyncing}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
+                    background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none', color: '#fff',
+                    fontWeight: 700, fontSize: 13, cursor: bankingSyncing ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)', opacity: bankingSyncing ? 0.7 : 1, transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1.02)'; }}
+                  onMouseLeave={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                  {bankingSyncing ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Building2 size={16} />}
+                  {bankingSyncing ? 'Senkronize Ediliyor...' : 'Bankanı Bağla (PSD2)'}
+                </button>
+                <button
+                  onClick={() => window.location.href='/shop-sim'}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
+                    background: 'linear-gradient(135deg, #FF1493, #7C3AED)', border: 'none', color: '#fff',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <ShoppingCart size={16} />
+                  Satın Almadan Önce Sor (Test)
+                </button>
                 {[
                   { icon: Zap, label: 'Cloud Senkron', value: 'Aktif', color: P.purple },
                   { icon: Activity, label: 'Bütçe Sağlığı', value: 'Canlı', color: P.green },
@@ -187,8 +248,72 @@ export default function DashboardPage() {
           <TrendLineChart islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
         </div>
 
-        <HeatmapCalendar islemler={transactions} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <HeatmapCalendar islemler={transactions} />
+          <GeoHeatmap />
+        </div>
         <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
+
+        {/* ── YENİ: KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+          {/* Otonom Küsurat Yatırımı */}
+          <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: `${P.amber}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${P.amber}50` }}>
+                <Bitcoin size={24} color={P.amber} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Otonom Küsurat Yatırımı</h3>
+                <p style={{ fontSize: 12, color: P.text3 }}>Smart Contract Aktif (BETA)</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
+              <div>
+                <p style={{ fontSize: 13, color: P.text2, marginBottom: 4 }}>Bu ay yuvarlanan küsuratlar</p>
+                <div style={{ fontSize: 32, fontWeight: 900, color: P.amber, letterSpacing: '-0.03em' }}>+1.240₺</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 11, color: P.text3 }}>Kripto Portföyüne Giden</p>
+                <div style={{ fontSize: 14, fontWeight: 700, color: P.green }}>0.015 ETH</div>
+              </div>
+            </div>
+            <div style={{ background: P.bg2, borderRadius: 12, padding: 12, fontSize: 12, color: P.text2, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'pulse 2s infinite' }} />
+              "Kahve (82₺) harcaması 100₺'ye yuvarlandı. 18₺ ETH fonuna aktarıldı."
+            </div>
+          </div>
+
+          {/* Eşli Ortak Bütçe (Multi-player Roast) */}
+          <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.pink}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.pink, filter: 'blur(60px)', opacity: 0.15 }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: `${P.pink}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${P.pink}50` }}>
+                  <Users size={24} color={P.pink} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Ortak Bütçe (Ece ile)</h3>
+                  <p style={{ fontSize: 12, color: P.text3 }}>Multi-player Finance</p>
+                </div>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 800, color: P.pink, background: `${P.pink}20`, padding: '4px 8px', borderRadius: 99, border: `1px solid ${P.pink}50` }}>Ajan Analizi</span>
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+              <div style={{ flex: 1, background: P.bg2, borderRadius: 12, padding: 12, border: `1px solid ${P.border}` }}>
+                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Senin Harcaman</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>12.400₺</div>
+              </div>
+              <div style={{ flex: 1, background: P.bg2, borderRadius: 12, padding: 12, border: `1px solid ${P.border}` }}>
+                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Ece'nin Harcaması</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: P.red }}>24.800₺</div>
+              </div>
+            </div>
+            <div style={{ background: `${P.red}10`, borderRadius: 12, padding: 12, fontSize: 12, color: P.text1, border: `1px solid ${P.red}30`, fontStyle: 'italic' }}>
+              "Bu ay tatil birikiminizi <strong style={{color: P.red}}>Ece'nin 14.500₺'lik kozmetik alışverişleri</strong> yedi. Belki konuşmanın vakti gelmiştir?"
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

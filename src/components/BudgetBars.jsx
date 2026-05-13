@@ -4,8 +4,8 @@ import { AlertTriangle, ShoppingCart, UtensilsCrossed, Bus, Tv, Zap, ShoppingBag
 /* ─── Palette ─── */
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg2: '#141728', bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)', text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 const KAT_IKONLARI = {

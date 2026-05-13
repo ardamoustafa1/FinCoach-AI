@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 
 const P = {
-  bg2: '#141728', bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
   red: '#EF4444', purple: '#7C3AED',
 };
 

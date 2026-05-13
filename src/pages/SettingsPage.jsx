@@ -15,9 +15,9 @@ import { authFetch } from '../utils/api';
 const P = {
   purple: '#7C3AED', purpleLight: '#A78BFA',
   green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 function SettingRow({ icon: Icon, iconColor = P.purple, title, subtitle, action }) {

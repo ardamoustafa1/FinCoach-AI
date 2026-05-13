@@ -1,21 +1,27 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet,
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
   { to: '/goals', label: 'Hedefler', icon: Target },
+  { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
+  { to: '/time-machine', label: 'Zaman Makinesi', icon: Clock },
   { to: '/chat', label: 'AI Koç', icon: Bot },
   { to: '/reports', label: 'Raporlar', icon: BarChart3 },
   { to: '/settings', label: 'Ayarlar', icon: Settings },
 ];
 
 const P = {
-  purple: '#7C3AED', bg2: '#141728', border: 'rgba(255,255,255,0.06)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  purple: '#7C3AED', 
+  bg2: 'var(--bg-surface)', 
+  border: 'var(--border-color)',
+  text1: 'var(--text-primary)', 
+  text2: 'var(--text-secondary)', 
+  text3: 'var(--text-muted)',
 };
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -28,11 +34,11 @@ export default function Sidebar({ collapsed, onToggle }) {
       style={{
         position: 'fixed', top: 0, left: 0, zIndex: 40, height: '100vh',
         display: 'flex', flexDirection: 'column',
-        background: 'rgba(13,15,30,0.85)', backdropFilter: 'blur(24px)',
+        background: 'var(--bg-sidebar)', backdropFilter: 'blur(24px)',
         borderRight: `1px solid ${P.border}`,
         width: collapsed ? 80 : 260,
         transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.1)',
       }}
     >
       {/* Logo */}

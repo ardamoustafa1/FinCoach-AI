@@ -22,9 +22,9 @@ const P = {
   green: '#10B981', greenDim: 'rgba(16,185,129,0.12)',
   red: '#EF4444', redDim: 'rgba(239,68,68,0.12)',
   amber: '#F59E0B', blue: '#3B82F6', pink: '#EC4899',
-  bg0: '#050714', bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038', bg4: '#222540',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.35)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', bg4: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 const SAYFA_BOYUTU = 20;

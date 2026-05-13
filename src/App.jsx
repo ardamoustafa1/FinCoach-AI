@@ -14,6 +14,9 @@ const GoalsPage = lazy(() => import('./pages/GoalsPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LeaguePage = lazy(() => import('./pages/LeaguePage'));
+const TimeMachinePage = lazy(() => import('./pages/TimeMachinePage'));
+const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 
 function LoadingScreen({ label = 'BütçeAI Başlatılıyor...' }) {
   return (
@@ -26,7 +29,7 @@ function LoadingScreen({ label = 'BütçeAI Başlatılıyor...' }) {
 }
 
 export default function App() {
-  const [theme] = useState('dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('butceai_theme') || 'dark');
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
@@ -137,9 +140,18 @@ export default function App() {
   }, [checkUserStatus]);
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    saveTheme('dark');
-  }, []);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    saveTheme(theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+  };
 
   if (loading) {
     return <LoadingScreen />;
@@ -179,14 +191,17 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
-            <Route element={<Layout theme={theme} onToggleTheme={() => {}} />}>
+            <Route element={<Layout theme={theme} onToggleTheme={toggleTheme} />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/goals" element={<GoalsPage />} />
+              <Route path="/league" element={<LeaguePage />} />
+              <Route path="/time-machine" element={<TimeMachinePage />} />
+              <Route path="/shop-sim" element={<ShopSimulationPage />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={() => {}} />} />
+              <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={toggleTheme} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

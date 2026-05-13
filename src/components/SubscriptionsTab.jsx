@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   RefreshCw, X, Calendar, TrendingUp,
-  Bell, CreditCard, Clock, ChevronRight, Zap,
+  Bell, CreditCard, Clock, ChevronRight, Zap, ArrowRightLeft, CheckCircle2, Loader2
 } from 'lucide-react';
 import { fmt } from '../utils/categories';
 import { abonelikleriTespit, yaklasanYenilemeler } from '../utils/subscriptionDetector';
@@ -174,6 +174,18 @@ function AbonelikKarti({ abonelik, onDismiss }) {
   const gunKaldi = Math.ceil((sonrakiTarih - bugun) / (1000 * 60 * 60 * 24));
   const yaklasiyorMu = gunKaldi >= 0 && gunKaldi <= 7;
 
+  const [swapping, setSwapping] = useState(false);
+  const [swapped, setSwapped] = useState(false);
+  const isNetflix = abonelik.magaza.toLowerCase().includes('netflix');
+
+  const handleSwap = () => {
+    setSwapping(true);
+    setTimeout(() => {
+      setSwapping(false);
+      setSwapped(true);
+    }, 2500);
+  };
+
   return (
     <div className="glass-card rounded-2xl p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group relative overflow-hidden">
       {/* Yaklaşıyor indicator */}
@@ -236,18 +248,39 @@ function AbonelikKarti({ abonelik, onDismiss }) {
         </div>
       </div>
 
-      {/* Alt: Dismiss butonu */}
-      <button
-        onClick={onDismiss}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium
-          bg-surface-50 dark:bg-surface-800 text-surface-700 dark:text-surface-200
-          hover:bg-danger-500/10 hover:text-danger-500
-          border border-surface-200/50 dark:border-surface-700/30
-          opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
-      >
-        <X className="w-3 h-3" />
-        Bu abonelik değil
-      </button>
+      {/* Alt: İşlem Butonları */}
+      <div className="flex gap-2">
+        <button
+          onClick={onDismiss}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium
+            bg-surface-50 dark:bg-surface-800 text-surface-700 dark:text-surface-200
+            hover:bg-danger-500/10 hover:text-danger-500
+            border border-surface-200/50 dark:border-surface-700/30
+            opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
+        >
+          <X className="w-3 h-3" />
+          Abonelik Değil
+        </button>
+        
+        {isNetflix && !swapped && (
+          <button
+            onClick={handleSwap}
+            disabled={swapping}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold
+              bg-purple-600 text-white hover:bg-purple-500 border border-purple-500/50 shadow-lg shadow-purple-500/30
+              transition-all duration-200 cursor-pointer"
+          >
+            {swapping ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRightLeft className="w-3 h-3" />}
+            {swapping ? 'Geçiliyor...' : 'Mubi\'ye Geç (Kar: 120₺)'}
+          </button>
+        )}
+        
+        {isNetflix && swapped && (
+          <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-green-500/20 text-green-500 border border-green-500/30">
+             <CheckCircle2 className="w-3 h-3" /> Mubi Aktif
+          </div>
+        )}
+      </div>
     </div>
   );
 }

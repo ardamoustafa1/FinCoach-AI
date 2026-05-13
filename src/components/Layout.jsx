@@ -18,9 +18,9 @@ import { trackPageView } from '../utils/analytics';
 
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg1: '#0D0F1E', bg2: '#141728', bg3: '#1C2038',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(124,58,237,0.4)',
-  text1: '#F1F5F9', text2: '#94A3B8', text3: '#64748B',
+  bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
 export default function Layout({ theme, onToggleTheme }) {
@@ -47,7 +47,7 @@ export default function Layout({ theme, onToggleTheme }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: 'transparent', transition: 'background-color 0.3s' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-main)', transition: 'background-color 0.3s' }}>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0 transition-all duration-300" style={{ width: collapsed ? 80 : 260 }}>
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -62,7 +62,7 @@ export default function Layout({ theme, onToggleTheme }) {
         <header style={{
           position: 'sticky', top: 0, zIndex: 30, height: 72,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-          padding: '0 24px', background: 'rgba(13,15,30,0.85)', backdropFilter: 'blur(24px)',
+          padding: '0 24px', background: 'var(--header-bg)', backdropFilter: 'blur(24px)',
           borderBottom: `1px solid ${P.border}`
         }}>
           <div style={{ minWidth: 0 }}>
