@@ -6,7 +6,13 @@ import {
 import { fmt } from '../utils/categories';
 import { abonelikleriTespit, yaklasanYenilemeler } from '../utils/subscriptionDetector';
 
-// ─── Dismiss edilmiş abonelikleri localStorage'dan oku/yaz ───
+const P = {
+  purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
+  bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
+  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
+  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
+};
+
 const DISMISS_KEY = 'fincoach_dismissed_subs';
 function getDismissed() {
   try { return JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]'); }
@@ -16,23 +22,22 @@ function saveDismissed(list) {
   localStorage.setItem(DISMISS_KEY, JSON.stringify(list));
 }
 
-// ─── Mağaza ikonu renkleri ───────────────────────────────────
 const MARKA_RENK = {
-  netflix: { bg: 'bg-red-500/15', text: 'text-red-500', dot: '#ef4444' },
-  spotify: { bg: 'bg-green-500/15', text: 'text-green-500', dot: '#22c55e' },
-  'youtube premium': { bg: 'bg-red-600/15', text: 'text-red-600', dot: '#dc2626' },
-  youtube: { bg: 'bg-red-600/15', text: 'text-red-600', dot: '#dc2626' },
-  exxen: { bg: 'bg-purple-500/15', text: 'text-purple-500', dot: '#a855f7' },
-  apple: { bg: 'bg-surface-500/15', text: 'text-surface-700 dark:text-surface-200', dot: '#64748b' },
-  amazon: { bg: 'bg-orange-500/15', text: 'text-orange-500', dot: '#f97316' },
-  disney: { bg: 'bg-blue-500/15', text: 'text-blue-500', dot: '#3b82f6' },
+  netflix: { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', dot: '#ef4444' },
+  spotify: { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e', dot: '#22c55e' },
+  'youtube premium': { bg: 'rgba(220, 38, 38, 0.15)', text: '#dc2626', dot: '#dc2626' },
+  youtube: { bg: 'rgba(220, 38, 38, 0.15)', text: '#dc2626', dot: '#dc2626' },
+  exxen: { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7', dot: '#a855f7' },
+  apple: { bg: 'rgba(100, 116, 139, 0.15)', text: 'var(--text-primary)', dot: '#64748b' },
+  amazon: { bg: 'rgba(249, 115, 22, 0.15)', text: '#f97316', dot: '#f97316' },
+  disney: { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', dot: '#3b82f6' },
 };
 function markaRenk(magaza) {
   const key = (magaza || '').toLowerCase();
   for (const [k, v] of Object.entries(MARKA_RENK)) {
     if (key.includes(k)) return v;
   }
-  return { bg: 'bg-primary-500/15', text: 'text-primary-500', dot: '#6366f1' };
+  return { bg: 'rgba(99, 102, 241, 0.15)', text: '#6366f1', dot: '#6366f1' };
 }
 
 export default function SubscriptionsTab({ islemler }) {
@@ -58,26 +63,26 @@ export default function SubscriptionsTab({ islemler }) {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in-up">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 16 }}>
       {/* ── YAKLAŞAN YENİLEME UYARISI ── */}
       {yaklasan.length > 0 && (
-        <div className="space-y-2.5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {yaklasan.map(ab => (
             <div
               key={ab.key}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-warn-500/10 via-warn-400/5 to-orange-500/10 border border-warn-500/20 animate-fade-in-up"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 16,
+                background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)'
+              }}
             >
-              <div className="w-9 h-9 rounded-xl bg-warn-500/15 flex items-center justify-center shrink-0">
-                <Bell className="w-4.5 h-4.5 text-warn-500 animate-pulse" />
+              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Bell size={18} color={P.amber} />
               </div>
-              <p className="text-sm text-surface-900 dark:text-white flex-1">
-                <span className="font-bold">{ab.magaza}</span>
-                {' '}{ab.gunAdi} yenileniyor — {' '}
-                <span className="font-bold text-warn-500">{fmt(ab.aylikTutar)}</span>
-                {' '}hazır olsun
+              <p style={{ fontSize: 14, color: P.text1, flex: 1, margin: 0 }}>
+                <strong style={{ fontWeight: 800 }}>{ab.magaza}</strong> {ab.gunAdi} yenileniyor — <strong style={{ color: P.amber }}>{fmt(ab.aylikTutar)}</strong> hazır olsun
               </p>
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-warn-500 bg-warn-500/10 px-2.5 py-1 rounded-lg shrink-0">
-                <Clock className="w-3 h-3" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: P.amber, background: 'rgba(245, 158, 11, 0.1)', padding: '4px 10px', borderRadius: 8, flexShrink: 0 }}>
+                <Clock size={12} />
                 {ab.gunKaldi === 0 ? 'Bugün' : `${ab.gunKaldi} gün`}
               </div>
             </div>
@@ -86,54 +91,50 @@ export default function SubscriptionsTab({ islemler }) {
       )}
 
       {/* ── ÖZET KARTI ── */}
-      <div className="glass-card rounded-2xl p-5 overflow-hidden relative">
-        {/* Arka plan dekorasyon */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary-500/10 via-purple-500/5 to-transparent rounded-bl-full" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent-500/10 via-transparent to-transparent rounded-tr-full" />
-
-        <div className="relative flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center shadow-lg shadow-primary-500/25">
-            <RefreshCw className="w-5 h-5 text-white" />
+      <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(124, 58, 237, 0.08)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
+            <RefreshCw size={20} color="#fff" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-surface-900 dark:text-white">Abonelik Özeti</h2>
-            <p className="text-xs text-surface-700 dark:text-surface-200">
-              {abonelikler.length} aktif abonelik tespit edildi
-            </p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 2px 0' }}>Abonelik Özeti</h2>
+            <p style={{ fontSize: 12, color: P.text2, margin: 0 }}>{abonelikler.length} aktif abonelik tespit edildi</p>
           </div>
         </div>
 
-        <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {/* Aylık Toplam */}
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-surface-50/80 dark:bg-surface-800/50 border border-surface-200/50 dark:border-surface-700/30">
-            <div className="w-10 h-10 rounded-xl bg-danger-500/10 flex items-center justify-center shrink-0">
-              <CreditCard className="w-5 h-5 text-danger-500" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CreditCard size={20} color={P.red} />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-surface-700 dark:text-surface-200 uppercase tracking-wide">Aylık Gider</p>
-              <p className="text-xl font-bold text-danger-500">{fmt(toplamAylik)}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' }}>Aylık Gider</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: P.red, margin: 0 }}>{fmt(toplamAylik)}</p>
             </div>
           </div>
 
           {/* Yıllık Toplam */}
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-surface-50/80 dark:bg-surface-800/50 border border-surface-200/50 dark:border-surface-700/30">
-            <div className="w-10 h-10 rounded-xl bg-warn-500/10 flex items-center justify-center shrink-0">
-              <TrendingUp className="w-5 h-5 text-warn-500" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <TrendingUp size={20} color={P.amber} />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-surface-700 dark:text-surface-200 uppercase tracking-wide">Yıllık Tahmin</p>
-              <p className="text-xl font-bold text-warn-500">{fmt(toplamYillik)}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' }}>Yıllık Tahmin</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: P.amber, margin: 0 }}>{fmt(toplamYillik)}</p>
             </div>
           </div>
 
           {/* Abonelik Sayısı */}
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-surface-50/80 dark:bg-surface-800/50 border border-surface-200/50 dark:border-surface-700/30">
-            <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center shrink-0">
-              <Zap className="w-5 h-5 text-primary-500" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Zap size={20} color="#6366f1" />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-surface-700 dark:text-surface-200 uppercase tracking-wide">Aktif Abonelik</p>
-              <p className="text-xl font-bold text-primary-500">{abonelikler.length}</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' }}>Aktif Abonelik</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: '#6366f1', margin: 0 }}>{abonelikler.length}</p>
             </div>
           </div>
         </div>
@@ -141,17 +142,15 @@ export default function SubscriptionsTab({ islemler }) {
 
       {/* ── ABONELİK KARTLARI ── */}
       {abonelikler.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-            <RefreshCw className="w-7 h-7 text-surface-700 dark:text-surface-200" />
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 48, textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, margin: '0 auto 16px', borderRadius: 16, background: P.bg3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <RefreshCw size={28} color={P.text2} />
           </div>
-          <p className="text-lg font-semibold text-surface-900 dark:text-white mb-1">Abonelik bulunamadı</p>
-          <p className="text-sm text-surface-700 dark:text-surface-200">
-            En az 2 ay düzenli tekrar eden ödeme tespit edilmedi.
-          </p>
+          <p style={{ fontSize: 18, fontWeight: 700, color: P.text1, marginBottom: 4 }}>Abonelik bulunamadı</p>
+          <p style={{ fontSize: 14, color: P.text2 }}>En az 2 ay düzenli tekrar eden ödeme tespit edilmedi.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
           {abonelikler.map(ab => (
             <AbonelikKarti
               key={ab.key}
@@ -187,97 +186,101 @@ function AbonelikKarti({ abonelik, onDismiss }) {
   };
 
   return (
-    <div className="glass-card rounded-2xl p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group relative overflow-hidden">
+    <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 20, position: 'relative', overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+    >
       {/* Yaklaşıyor indicator */}
       {yaklasiyorMu && (
-        <div className="absolute top-0 right-0">
-          <div className="w-2 h-2 bg-warn-500 rounded-full absolute top-3 right-3 animate-ping" />
-          <div className="w-2 h-2 bg-warn-500 rounded-full absolute top-3 right-3" />
+        <div style={{ position: 'absolute', top: 12, right: 12 }}>
+          <div style={{ width: 8, height: 8, background: P.amber, borderRadius: '50%', boxShadow: `0 0 8px ${P.amber}` }} />
         </div>
       )}
 
       {/* Üst: Logo + Mağaza + Tutar */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className={`w-11 h-11 rounded-xl ${renk.bg} flex items-center justify-center shrink-0`}>
-            <RefreshCw className={`w-5 h-5 ${renk.text}`} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: renk.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <RefreshCw size={20} color={renk.text} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-surface-900 dark:text-white">{abonelik.magaza}</h3>
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${renk.bg} mt-0.5`}>
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: renk.dot }} />
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 2px 0' }}>{abonelik.magaza}</h3>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 700, background: renk.bg, color: renk.text }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: renk.dot, flexShrink: 0 }} />
               {abonelik.kategori}
             </span>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-danger-500">{fmt(abonelik.aylikTutar)}</p>
-          <p className="text-[10px] text-surface-700 dark:text-surface-200 font-medium">/ ay</p>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: 18, fontWeight: 800, color: P.red, margin: '0 0 2px 0' }}>{fmt(abonelik.aylikTutar)}</p>
+          <p style={{ fontSize: 10, color: P.text2, fontWeight: 600, margin: 0 }}>/ ay</p>
         </div>
       </div>
 
       {/* Orta: Detaylar */}
-      <div className="space-y-2 mb-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-surface-700 dark:text-surface-200">
-            <Calendar className="w-3 h-3" />
-            Son ödeme
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: P.text2 }}>
+            <Calendar size={12} /> Son ödeme
           </span>
-          <span className="font-medium text-surface-900 dark:text-white">{abonelik.sonOdeme}</span>
+          <span style={{ fontWeight: 600, color: P.text1 }}>{abonelik.sonOdeme}</span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-surface-700 dark:text-surface-200">
-            <ChevronRight className="w-3 h-3" />
-            Tahmini sonraki
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: P.text2 }}>
+            <ChevronRight size={12} /> Tahmini sonraki
           </span>
-          <span className={`font-medium ${yaklasiyorMu ? 'text-warn-500' : 'text-surface-900 dark:text-white'}`}>
+          <span style={{ fontWeight: 600, color: yaklasiyorMu ? P.amber : P.text1 }}>
             {abonelik.sonrakiOdeme}
             {yaklasiyorMu && (
-              <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-warn-500/15 text-warn-500 font-semibold">
+              <span style={{ marginLeft: 6, fontSize: 10, padding: '2px 6px', borderRadius: 99, background: 'rgba(245, 158, 11, 0.15)', color: P.amber, fontWeight: 700 }}>
                 {gunKaldi === 0 ? 'Bugün' : `${gunKaldi}g`}
               </span>
             )}
           </span>
         </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-surface-700 dark:text-surface-200">
-            <RefreshCw className="w-3 h-3" />
-            Tekrar sayısı
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: P.text2 }}>
+            <RefreshCw size={12} /> Tekrar sayısı
           </span>
-          <span className="font-medium text-surface-900 dark:text-white">{abonelik.tekrarSayisi} ay</span>
+          <span style={{ fontWeight: 600, color: P.text1 }}>{abonelik.tekrarSayisi} ay</span>
         </div>
       </div>
 
       {/* Alt: İşlem Butonları */}
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         <button
           onClick={onDismiss}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium
-            bg-surface-50 dark:bg-surface-800 text-surface-700 dark:text-surface-200
-            hover:bg-danger-500/10 hover:text-danger-500
-            border border-surface-200/50 dark:border-surface-700/30
-            opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
+            fontSize: 12, fontWeight: 600, background: P.bg3, color: P.text2, border: `1px solid ${P.border}`, cursor: 'pointer', transition: 'all 0.2s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = P.red; }}
+          onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text2; }}
         >
-          <X className="w-3 h-3" />
-          Abonelik Değil
+          <X size={12} /> Abonelik Değil
         </button>
         
         {isNetflix && !swapped && (
           <button
             onClick={handleSwap}
             disabled={swapping}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold
-              bg-purple-600 text-white hover:bg-purple-500 border border-purple-500/50 shadow-lg shadow-purple-500/30
-              transition-all duration-200 cursor-pointer"
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
+              fontSize: 12, fontWeight: 700, background: '#9333ea', color: '#fff', border: 'none', cursor: swapping ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 12px rgba(147, 51, 234, 0.3)', transition: 'all 0.2s'
+            }}
           >
-            {swapping ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRightLeft className="w-3 h-3" />}
-            {swapping ? 'Geçiliyor...' : 'Mubi\'ye Geç (Kar: 120₺)'}
+            {swapping ? <Loader2 size={12} className="animate-spin" /> : <ArrowRightLeft size={12} />}
+            {swapping ? 'Geçiliyor...' : 'Mubi\'ye Geç (+120₺)'}
           </button>
         )}
         
         {isNetflix && swapped && (
-          <div className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-green-500/20 text-green-500 border border-green-500/30">
-             <CheckCircle2 className="w-3 h-3" /> Mubi Aktif
+          <div style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
+            fontSize: 12, fontWeight: 700, background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)'
+          }}>
+             <CheckCircle2 size={12} /> Mubi Aktif
           </div>
         )}
       </div>
