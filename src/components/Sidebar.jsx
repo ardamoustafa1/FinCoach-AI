@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves
 } from 'lucide-react';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/wealth', label: 'Varlık Yönetimi', icon: Landmark },
   { to: '/micro-invest', label: 'Küsürat Yatırımı', icon: Coins },
   { to: '/debt-snowball', label: 'Borç Yapılandırma', icon: Snowflake },
+  { to: '/freelancer-smoother', label: 'Freelancer Dengeleyici', icon: Waves },
   { to: '/tax', label: 'Vergi Asistanı', icon: Calculator },
   { to: '/real-estate', label: 'Ev & Kredi AI', icon: Home },
   { to: '/goals', label: 'Hedefler', icon: Target },
