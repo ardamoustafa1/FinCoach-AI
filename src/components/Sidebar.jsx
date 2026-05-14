@@ -73,9 +73,9 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: '24px 16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <nav role="navigation" aria-label="Ana Menü" style={{ flex: 1, padding: '24px 16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} end={to === '/'}>
+          <NavLink key={to} to={to} end={to === '/'} aria-label={collapsed ? label : undefined}>
             {({ isActive }) => {
               const baseStyle = {
                 display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 14,
@@ -125,6 +125,8 @@ export default function Sidebar({ collapsed, onToggle }) {
       <div style={{ padding: '0 16px 16px', flexShrink: 0 }}>
         <button
           onClick={onToggle}
+          aria-label={collapsed ? 'Kenar çubuğunu genişlet' : 'Kenar çubuğunu daralt'}
+          aria-expanded={!collapsed}
           style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: 'none', color: P.text3, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#fff'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = P.text3; }}
