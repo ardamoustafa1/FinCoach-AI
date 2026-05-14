@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, Component } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
@@ -30,6 +30,38 @@ const FederatedLearningPage = lazy(() => import('./pages/FederatedLearningPage')
 const EscrowPage = lazy(() => import('./pages/EscrowPage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[Global Error]:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center', padding: 20 }}>
+          <div>
+            <h2 style={{ fontSize: 32, fontWeight: 900, marginBottom: 16 }}>Hoppala! Bir Şeyler Yanlış Gitti.</h2>
+            <p style={{ color: '#94A3B8', marginBottom: 24 }}>Uygulama beklenmedik bir hata ile karşılaştı. Lütfen sayfayı yenileyin.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{ padding: '12px 24px', borderRadius: 12, background: '#7c3aed', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Sayfayı Yenile
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
   return (
@@ -204,7 +236,11 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
-            <Route element={<Layout theme={theme} onToggleTheme={toggleTheme} />}>
+            <Route element={
+              <ErrorBoundary>
+                <Layout theme={theme} onToggleTheme={toggleTheme} />
+              </ErrorBoundary>
+            }>
               <Route path="/" element={<HomePage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
