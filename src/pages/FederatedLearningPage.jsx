@@ -46,12 +46,16 @@ export default function FederatedLearningPage() {
 
     if (trainingState === 'uploading') {
       addLog('[NETWORK] Eğitim tamamlandı. Ham veri (Raw Data) boyutu: 0 Bytes.', P.green);
-      addLog('[NETWORK] Model Ağırlıkları (Weights) AES-256 ile şifreleniyor...', P.purple);
-      addLog('[NETWORK] Şifreli Ağırlıklar (4.2 KB) Global Sunucuya gönderiliyor ⬆️', P.blue);
+      addLog('[PRIVACY] Differential Privacy devrede: Ağırlıklara Laplace Gürültüsü (ε=0.1) ekleniyor...', P.amber);
+      
+      setTimeout(() => {
+        addLog('[NETWORK] Model Ağırlıkları (Weights) AES-256 ile şifreleniyor...', P.purple);
+        addLog('[NETWORK] Şifreli Ağırlıklar (4.2 KB) Global Sunucuya gönderiliyor ⬆️', P.blue);
+      }, 1000);
       
       const t = setTimeout(() => {
         setTrainingState('aggregating');
-      }, 2000);
+      }, 3000);
       return () => clearTimeout(t);
     }
 
