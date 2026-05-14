@@ -85,22 +85,50 @@ export function detectUnusualSpending(transaction, previousExpenses = readExpens
   if (!transaction?.kategori || !transaction?.tarih || Number(transaction.tutar) <= 0) return null;
 
   const txDate = new Date(transaction.tarih);
+  // Son 6 aylık veriye bak (Daha geniş bağlam)
   const start = new Date(txDate);
-  start.setMonth(start.getMonth() - 3);
+  start.setMonth(start.getMonth() - 6);
+  
   const sameCategory = previousExpenses.filter(tx => {
     if (tx.id === transaction.id) return false;
     const tarih = new Date(tx.tarih);
     return tx.kategori === transaction.kategori && tarih < txDate && tarih >= start;
   });
 
-  if (sameCategory.length === 0) return null;
+  // Anomali/Orman algoritması için en az 4 veri noktası gerekir
+  if (sameCategory.length < 4) return null;
 
-  const average = sameCategory.reduce((sum, tx) => sum + tx.tutar, 0) / sameCategory.length;
-  if (transaction.tutar > average * 2) {
+  // 1. Tutar Vektörü İstatistikleri
+  const amounts = sameCategory.map(tx => tx.tutar);
+  const avgAmount = amounts.reduce((sum, val) => sum + val, 0) / amounts.length;
+  const stdDevAmount = Math.sqrt(amounts.reduce((sum, val) => sum + Math.pow(val - avgAmount, 2), 0) / amounts.length) || (avgAmount * 0.1);
+
+  // 2. Zaman Vektörü İstatistikleri (Haftanın Günü 0-6)
+  const days = sameCategory.map(tx => new Date(tx.tarih).getDay());
+  const avgDay = days.reduce((sum, val) => sum + val, 0) / days.length;
+  const stdDevDay = Math.sqrt(days.reduce((sum, val) => sum + Math.pow(val - avgDay, 2), 0) / days.length) || 1;
+
+  // Yeni işlemin değerleri
+  const currentAmount = Number(transaction.tutar);
+  const currentDay = txDate.getDay();
+
+  // Z-Score Hesaplamaları (Multidimensional Outlier Detection)
+  const zScoreAmount = Math.max(0, (currentAmount - avgAmount) / stdDevAmount);
+  const zScoreDay = Math.abs(currentDay - avgDay) / stdDevDay;
+
+  // Ağırlıklı Anomali Skoru (Tutar daha önemli ama zaman da etken)
+  const anomalyScore = (zScoreAmount * 0.75) + (zScoreDay * 0.25);
+
+  // Eşik değeri: Z-score ~2.5 (Yaklaşık %99 güvenilirlik sınırı dışı)
+  if (anomalyScore > 2.5) {
+    let reason = currentAmount > avgAmount * 1.5 ? 'tutar_anomalisi' : 'zaman_anomalisi';
+    
     return {
       transaction,
-      average: Math.round(average),
-      amount: Number(transaction.tutar),
+      average: Math.round(avgAmount),
+      amount: currentAmount,
+      score: anomalyScore.toFixed(2),
+      reason
     };
   }
 

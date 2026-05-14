@@ -91,30 +91,31 @@ export const TIPLER = {
   },
 };
 
-// ─── Tip Tespit Fonksiyonu ────────────────────────────────────
+// ─── Tip Tespit Fonksiyonu (K-Means / Oklid Uzaklığı) ───────────
 export function kisilikTipiBelirle(islemler) {
   if (!islemler || islemler.length === 0) return TIPLER.dengeli;
 
   const toplam = islemler.reduce((s, i) => s + (i.tutar || 0), 0);
   if (toplam === 0) return TIPLER.dengeli;
 
-  // Hafta sonu (Cmt=6, Paz=0) harcamaları
+  // 1. Hafta Sonu Oranı (0.0 - 1.0)
   const haftaSonu = islemler.filter((i) => {
     if (!i.tarih) return false;
     const gun = new Date(i.tarih).getDay();
     return gun === 0 || gun === 6;
   }).reduce((s, i) => s + i.tutar, 0);
+  const haftaSonuOrani = Math.min(1, haftaSonu / toplam);
 
-  // Tasarruf oranı (gelir bilinmiyorsa tahmini 18000/ay kullan)
+  // 2. Tasarruf Oranı (0.0 - 1.0)
   let aylikGelir = 18000;
   try {
     const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
     if (profil.income && Number(profil.income) > 0) aylikGelir = Number(profil.income);
   } catch { /* ignore */ }
-  const gelir = aylikGelir * 3; // 3 aylık
-  const tasarrufOrani = Math.max(0, (gelir - toplam) / gelir);
+  // Tahmini 3 aylık pencere gibi düşünelim (veya ortalama aya vurursak 1 aylık)
+  const tasarrufOrani = Math.max(0, Math.min(1, (aylikGelir - (toplam / (islemler.length > 20 ? 3 : 1))) / aylikGelir));
 
-  // Tekrarlayan harcamalar (aynı magaza, > 1 kez)
+  // 3. Tekrarlayan Harcama Oranı (0.0 - 1.0)
   const magazaSayac = {};
   islemler.forEach((i) => {
     if (i.magaza) magazaSayac[i.magaza] = (magazaSayac[i.magaza] || 0) + 1;
@@ -122,16 +123,42 @@ export function kisilikTipiBelirle(islemler) {
   const tekrarayanToplam = islemler
     .filter((i) => i.magaza && magazaSayac[i.magaza] > 1)
     .reduce((s, i) => s + i.tutar, 0);
+  const tekrarlayanOran = Math.min(1, tekrarayanToplam / toplam);
 
-  // Anlık büyük harcamalar (üst %20 dilim)
+  // 4. Dürtüsel Skor (0.0 - 1.0)
   const sirali = [...islemler].sort((a, b) => b.tutar - a.tutar);
   const esik = sirali[Math.floor(sirali.length * 0.2)]?.tutar || 0;
-  const anlikBuyuk = islemler.filter((i) => i.tutar >= esik * 1.5).length;
+  const anlikBuyukAdet = islemler.filter((i) => i.tutar >= esik * 1.5).length;
+  const durtuselSkor = Math.min(1, anlikBuyukAdet / 10); // 10+ büyük harcama = 1.0 max
 
-  // Kurallara göre tip belirle (öncelik sırası)
-  if (haftaSonu / toplam > 0.45) return TIPLER.anlık_zevk;
-  if (tasarrufOrani > 0.25) return TIPLER.tasarruf_ustasi;
-  if (tekrarayanToplam / toplam > 0.6) return TIPLER.planlayici;
-  if (anlikBuyuk > 5) return TIPLER.durtüsel;
-  return TIPLER.dengeli;
+  // Kullanıcı Vektörü: [haftaSonu, tasarruf, tekrarlayan, durtusel]
+  const userVector = [haftaSonuOrani, tasarrufOrani, tekrarlayanOran, durtuselSkor];
+
+  // Algoritma: K-Means Centroid'leri (Önceden Eğitilmiş Merkezler)
+  const centroids = {
+    anlık_zevk:      [0.60, 0.05, 0.20, 0.50],
+    tasarruf_ustasi: [0.10, 0.40, 0.60, 0.10],
+    planlayici:      [0.20, 0.20, 0.85, 0.15],
+    durtüsel:        [0.40, 0.05, 0.30, 0.85],
+    dengeli:         [0.25, 0.15, 0.50, 0.25],
+  };
+
+  // Euclidean Distance (Öklid Mesafesi) Hesaplama
+  let enYakinId = 'dengeli';
+  let minMesafe = Infinity;
+
+  for (const [id, merkez] of Object.entries(centroids)) {
+    let mesafeKareToplami = 0;
+    for (let i = 0; i < 4; i++) {
+      mesafeKareToplami += Math.pow(userVector[i] - merkez[i], 2);
+    }
+    const mesafe = Math.sqrt(mesafeKareToplami);
+    
+    if (mesafe < minMesafe) {
+      minMesafe = mesafe;
+      enYakinId = id;
+    }
+  }
+
+  return TIPLER[enYakinId] || TIPLER.dengeli;
 }

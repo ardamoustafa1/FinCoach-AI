@@ -18,84 +18,115 @@ export default function CashFlowPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Kurumsal düzeyde ARIMA / Prophet Zaman Serisi Simülasyonu
+    // ─── MONTE CARLO SIMULATION ───
     const tx = getTransactions();
     
-    // 1. Base Income/Expense
-    const monthlyIncome = tx.filter(t => t.tur === 'gelir').reduce((acc, t) => acc + Number(t.tutar), 0) || 50000;
-    const baseExpense = tx.filter(t => t.tur === 'gider').reduce((acc, t) => acc + Number(t.tutar), 0) || 35000;
+    // 1. Tarihsel Verilerden İstatistik Çıkarımı
+    const gelirler = tx.filter(t => t.tur === 'gelir').map(t => Number(t.tutar));
+    const giderler = tx.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
     
+    // Ortalama Gelir (Yoksa varsayılan 50k)
+    const avgIncome = gelirler.length > 0 ? gelirler.reduce((a, b) => a + b, 0) / Math.max(1, gelirler.length) : 50000;
+    
+    // Ortalama Gider ve Standart Sapma
+    const avgExpense = giderler.length > 0 ? giderler.reduce((a, b) => a + b, 0) / Math.max(1, giderler.length) : 35000;
+    
+    let variance = 0;
+    if (giderler.length > 1) {
+      variance = giderler.reduce((a, b) => a + Math.pow(b - avgExpense, 2), 0) / (giderler.length - 1);
+    } else {
+      variance = Math.pow(avgExpense * 0.2, 2); // %20 sapma varsay
+    }
+    const stdDevExpense = Math.sqrt(variance);
+
+    // Box-Muller Transform (Normal Dağılım Rastgele Sayı Üreteci)
+    const randomNormal = (mean, stdDev) => {
+      let u = 0, v = 0;
+      while(u === 0) u = Math.random();
+      while(v === 0) v = Math.random();
+      const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+      return num * stdDev + mean;
+    };
+
     setTimeout(() => {
-      let currentBalance = 25000; // Başlangıç bakiyesi
-      const projection = [];
-      let crisisMonth = null;
-      let worstBalance = currentBalance;
+      const NUM_SIMULATIONS = 500;
+      const MONTHS_AHEAD = 12;
+      let initialBalance = 25000; // Gerçekte kullanıcının banka API'sinden gelir
       
       const currentMonthIdx = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
-      // Gelecek 12 Ayı Simüle Et (Prophet benzeri seasonality ile)
-      for (let i = 0; i <= 12; i++) {
-        const targetDate = new Date(currentYear, currentMonthIdx + i, 1);
-        const monthName = MONTHS[targetDate.getMonth()];
-        const targetYear = targetDate.getFullYear();
-        const displayLabel = `${monthName} '${targetYear.toString().slice(-2)}`;
+      // Tüm simülasyonların sonuçlarını tutacak matris [monthIndex][simulationIndex]
+      const simulationResults = Array.from({ length: MONTHS_AHEAD + 1 }, () => []);
+      
+      // Simülasyonları Çalıştır
+      for (let s = 0; s < NUM_SIMULATIONS; s++) {
+        let balance = initialBalance;
+        simulationResults[0].push(balance); // 0. ay (şu an)
         
-        let seasonalityMultiplier = 1.0;
-        let eventLabel = null;
-
-        // Mevsimsellik Kuralları (Seasonality)
-        if (targetDate.getMonth() === 10) { // Kasım (Black Friday)
-          seasonalityMultiplier = 1.6;
-          eventLabel = 'E-Ticaret & Black Friday Çıkışı';
-        } else if (targetDate.getMonth() === 6 || targetDate.getMonth() === 7) { // Temmuz/Ağustos (Tatil)
-          seasonalityMultiplier = 1.4;
-          eventLabel = 'Yaz Tatili & Seyahat Çıkışı';
-        } else if (targetDate.getMonth() === 0) { // Ocak (Yılbaşı, Vergi, Zam)
-          seasonalityMultiplier = 1.2;
-          eventLabel = 'Yılbaşı & Yıllık Ödemeler';
-        } else if (targetDate.getMonth() === 8) { // Eylül (Okul)
-          seasonalityMultiplier = 1.3;
-          eventLabel = 'Okul & Eğitim Giderleri';
+        for (let m = 1; m <= MONTHS_AHEAD; m++) {
+          // Mevsimsellik (Seasonality) eklentisi
+          const targetDate = new Date(currentYear, currentMonthIdx + m, 1);
+          let seasonality = 1.0;
+          if (targetDate.getMonth() === 10) seasonality = 1.4; // Kasım
+          else if (targetDate.getMonth() === 6 || targetDate.getMonth() === 7) seasonality = 1.2; // Yaz
+          
+          const simulatedExpense = Math.max(0, randomNormal(avgExpense * seasonality, stdDevExpense * seasonality));
+          const simulatedIncome = Math.max(0, randomNormal(avgIncome, avgIncome * 0.05)); // Gelir daha az dalgalı
+          
+          balance += (simulatedIncome - simulatedExpense);
+          simulationResults[m].push(balance);
         }
+      }
 
-        const predictedExpense = baseExpense * seasonalityMultiplier;
-        const netCashFlow = monthlyIncome - predictedExpense;
-        currentBalance += netCashFlow;
+      // Sonuçları Yüzdelik Dilimlere (Percentiles) Ayır
+      const projection = [];
+      let crisisMonth = null;
+      let worstBalance = initialBalance;
 
-        if (currentBalance < worstBalance) worstBalance = currentBalance;
-        if (currentBalance < 0 && !crisisMonth) crisisMonth = displayLabel;
+      for (let m = 0; m <= MONTHS_AHEAD; m++) {
+        const sortedBalances = simulationResults[m].sort((a, b) => a - b);
+        
+        const p5 = sortedBalances[Math.floor(NUM_SIMULATIONS * 0.05)]; // En kötü %5 senaryo (yhat_lower)
+        const p50 = sortedBalances[Math.floor(NUM_SIMULATIONS * 0.50)]; // Medyan (yhat)
+        const p95 = sortedBalances[Math.floor(NUM_SIMULATIONS * 0.95)]; // En iyi %95 senaryo (yhat_upper)
 
-        // Prophet Model Confidence Interval (Güven Aralığı)
-        const uncertainty = (i * 0.05) * Math.abs(currentBalance); // Uzak gelecek daha belirsiz
+        const targetDate = new Date(currentYear, currentMonthIdx + m, 1);
+        const displayLabel = m === 0 ? 'Şu An' : `${MONTHS[targetDate.getMonth()]} '${targetDate.getFullYear().toString().slice(-2)}`;
+
+        let eventLabel = null;
+        if (targetDate.getMonth() === 10) eventLabel = 'Yüksek Mevsimsel Dalgalanma (Kasım)';
+
+        if (p50 < worstBalance) worstBalance = p50;
+        if (p50 < 0 && !crisisMonth && m > 0) crisisMonth = displayLabel;
 
         projection.push({
           month: displayLabel,
-          yhat: Math.round(currentBalance), // Modelin ana tahmini
-          yhat_lower: Math.round(currentBalance - uncertainty - 5000), // Alt sınır
-          yhat_upper: Math.round(currentBalance + uncertainty + 5000), // Üst sınır
+          yhat: Math.round(p50),
+          yhat_lower: Math.round(p5),
+          yhat_upper: Math.round(p95),
           event: eventLabel,
-          isNegative: currentBalance < 0
+          isNegative: p50 < 0
         });
       }
 
       setData(projection);
       setMetrics({
         startingBalance: projection[0].yhat,
-        worstBalance,
+        worstBalance: Math.round(worstBalance),
         crisisMonth,
-        finalBalance: projection[12].yhat
+        finalBalance: projection[MONTHS_AHEAD].yhat
       });
       
       setLoading(false);
-    }, 1000);
+    }, 1200); // UI için yapay bekleme
   }, []);
 
   if (loading || !metrics) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.blue}30`, borderTopColor: P.blue, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Prophet Zaman Serisi (Time Series) Modeli çalıştırılıyor...</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Monte Carlo Nakit Akışı Simülasyonu çalıştırılıyor (500 Senaryo)...</p>
       </div>
     );
   }
@@ -107,11 +138,11 @@ export default function CashFlowPage() {
         <div style={{ background: P.bg2, border: `1px solid ${data.isNegative ? P.red : P.border}`, borderRadius: 12, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
           <p style={{ fontSize: 13, fontWeight: 800, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>{data.month}</p>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <span style={{ fontSize: 12, color: P.text3 }}>Tahmin (yhat):</span>
+            <span style={{ fontSize: 12, color: P.text3 }}>Medyan Senaryo:</span>
             <span style={{ fontSize: 20, fontWeight: 900, color: data.isNegative ? P.red : P.blue }}>{fmt(data.yhat)}</span>
           </div>
           <div style={{ fontSize: 11, color: P.text3, marginTop: 4 }}>
-            Güven Aralığı: [{fmt(data.yhat_lower)} - {fmt(data.yhat_upper)}]
+            %90 Güven Aralığı: [{fmt(data.yhat_lower)} - {fmt(data.yhat_upper)}]
           </div>
           
           {data.event && (
@@ -144,13 +175,13 @@ export default function CashFlowPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <BrainCircuit size={20} color={P.blue} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.blue }}>ARIMA / Prophet Model Analizi</span>
+              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.blue }}>Stokastik Finansal Modelleme</span>
             </div>
             <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              12 Aylık Nakit Akışı Projeksiyonu
+              Monte Carlo Nakit Akışı Simülasyonu
             </h1>
             <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Düz bir harcama çizgisi çizmiyoruz. Meta'nın (Facebook) geliştirdiği Prophet algoritması, <strong>Kasım'daki E-ticaret indirimlerini veya Yaz aylarındaki tatil masraflarını</strong> (mevsimsellik) öğrenerek 1 yıllık nakit durumunuzu öngörür.
+              Gelecek belirsizdir. Bu yüzden düz bir tahmin çizgisi çizmek yerine, geçmiş harcama varyansınızı (standart sapma) kullanarak gelecek 12 ay için <strong>500 farklı rastgele senaryo (Box-Muller)</strong> üretiyoruz ve en olası sonuçları (%90 Güven Aralığı) gösteriyoruz.
             </p>
           </div>
 
@@ -199,13 +230,13 @@ export default function CashFlowPage() {
         <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Zaman Serisi Tahmini (Prophet Model)</h3>
-              <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Koyu mavi çizgi modelin ana tahmini, gölgeli alan modelin güven aralığını (%95 Confidence Interval) temsil eder.</p>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Monte Carlo Projeksiyonu (500 İterasyon)</h3>
+              <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Koyu mavi çizgi medyan (%50) senaryoyu, gölgeli alan ise %5 ve %95'lik uç senaryoları temsil eder.</p>
             </div>
             <div style={{ display: 'flex', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: P.blue }} />
-                <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>Tahmin (yhat)</span>
+                <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>Medyan (En Olası)</span>
               </div>
             </div>
           </div>
