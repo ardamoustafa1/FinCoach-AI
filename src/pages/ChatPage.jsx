@@ -230,7 +230,7 @@ export default function ChatPage() {
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
               <Zap size={16} color="#c4b5fd" />
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 1.5 Pro</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 2.5 Flash</span>
             </div>
           </div>
         </div>

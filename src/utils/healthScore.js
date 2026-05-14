@@ -94,7 +94,8 @@ const AY_ISIMLERI = ['', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu
 
 export function skorGecmisi(islemler, gelirler) {
   const limitler = getBudgetLimits();
-  const simdi = { yil: 2025, ay: 5 }; // Mayıs 2025
+  const now = new Date();
+  const simdi = { yil: now.getFullYear(), ay: now.getMonth() + 1 };
 
   return Array.from({ length: 6 }, (_, i) => {
     let { yil, ay } = simdi;

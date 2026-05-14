@@ -23,6 +23,18 @@ function tutarBenzer(a, b) {
   return (fark / ort) <= 0.10;
 }
 
+// ─── Yardımcı: mağaza adını normalize et (fuzzy eşleştirme) ──
+function normalizeName(raw) {
+  return (raw || '')
+    .toLowerCase()
+    .trim()
+    // Yaygın ekleri kaldır: " tr", " web", " app", " ltd", " inc", numaralar ve özel karakterler
+    .replace(/\b(tr|web|app|ltd|inc|com|net|mobile|online|türkiye|turkey)\b/g, '')
+    .replace(/[^a-zçğıöşü0-9]/g, '') // alfanümerik olmayan karakterleri sil
+    .replace(/\d+/g, '')               // rakamları sil
+    .trim();
+}
+
 // ─── Tekrarlayan ödeme gruplarını bul ─────────────────────────
 function islemleriGrupla(islemler) {
   const gruplar = {};
@@ -32,16 +44,18 @@ function islemleriGrupla(islemler) {
     const isGider = tx.tur === 'gider' || (!tx.tur && tx.tutar > 0);
     if (!isGider) return;
 
-    const key = (tx.magaza || tx.aciklama || '').trim().toLowerCase();
+    const rawKey = (tx.magaza || tx.aciklama || '').trim();
+    const key = normalizeName(rawKey);
     if (!key) return;
 
     if (!gruplar[key]) {
       gruplar[key] = {
-        magaza: tx.magaza || tx.aciklama,
+        magaza: rawKey, // Orijinal adı sakla, normalize edilmişini key olarak kullan
         kategori: tx.kategori,
         islemler: [],
       };
     }
+    // Orijinal adı en sık görülene güncelle (frequency-based labeling)
     gruplar[key].islemler.push({
       tarih: tx.tarih,
       tutar: Number(tx.tutar),

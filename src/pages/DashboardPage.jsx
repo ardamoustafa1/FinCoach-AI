@@ -10,6 +10,7 @@ import PersonalityCard from '../components/PersonalityCard';
 import { useToast } from '../hooks/useToast';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /* ─── Palette ─── */
 const P = {
@@ -85,6 +86,7 @@ function StatCard({ label, target, icon: Icon, color, isCurrency = true, change,
 
 export default function DashboardPage() {
   const toast = useToast();
+  const navigate = useNavigate();
   const { transactions, limits, loading } = useSupabaseData();
   const headerVis = true;
   const [bankingSyncing, setBankingSyncing] = useState(false);
@@ -203,7 +205,7 @@ export default function DashboardPage() {
                   {bankingSyncing ? 'Senkronize Ediliyor...' : 'Bankanı Bağla (PSD2)'}
                 </button>
                 <button
-                  onClick={() => window.location.href='/shop-sim'}
+                  onClick={() => navigate('/shop-sim')}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
                     background: 'linear-gradient(135deg, #FF1493, #7C3AED)', border: 'none', color: '#fff',

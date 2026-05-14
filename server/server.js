@@ -51,15 +51,46 @@ const whatsappStatus = {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-// Middleware
-app.use(cors());
+// ─── Güvenlik Headers ──────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// ─── CORS (Origin Whitelist) ─────────────────────────────────────
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173')
+  .split(',')
+  .map(o => o.trim());
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow non-browser requests (Postman, WhatsApp bot internal calls) and whitelisted origins
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: ${origin} izinli değil.`));
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 
-// Rate Limiters
+// ─── Rate Limiters ────────────────────────────────────────────────
 const chatLimiter = rateLimit({
-  windowMs: 60 * 1000, 
-  max: 20, // Gemini'nin ücretsiz kotası daha yüksek
-  message: { error: 'Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.' },
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla istek gönderdiniz. Lütfen 1 dakika sonra tekrar deneyin.' },
+});
+
+// Daha katı limiter: OCR, voice, categorize (Gemini API maliyetli)
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'AI işlem limiti aşıldı. Lütfen bekleyin.' },
 });
 
 // ─── ENDPOINTS ──────────────────────────────────────────────────
@@ -224,7 +255,7 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
 });
 
 // Categorize Endpoint
-app.post('/api/categorize', async (req, res) => {
+app.post('/api/categorize', aiLimiter, async (req, res) => {
   try {
     const { transactions } = req.body;
     const prompt = `Aşağıdaki işlemleri kategorize et ve SADECE JSON array döndür. 
@@ -243,7 +274,7 @@ Format: [{"id": "...", "kategori": "..."}]
 });
 
 // OCR Endpoint
-app.post('/api/ocr', async (req, res) => {
+app.post('/api/ocr', aiLimiter, async (req, res) => {
   try {
     const { image, mimeType } = req.body;
     const base64Data = String(image).replace(/^data:[^;]+;base64,/, '');
@@ -263,7 +294,7 @@ app.post('/api/ocr', async (req, res) => {
 });
 
 // Analyze Endpoint
-app.post('/api/analyze', async (req, res) => {
+app.post('/api/analyze', aiLimiter, async (req, res) => {
   try {
     const { aylikVeri, limitler, hedefler } = req.body;
     const prompt = `Aşağıdaki verileri analiz et ve Markdown formatında kısa bir özet, en iyi yapılanlar, dikkat edilecekler ve gelecek ay önerileri sun.
@@ -277,7 +308,7 @@ Veriler: ${JSON.stringify({ aylikVeri, limitler, hedefler })}`;
 });
 
 // Voice Parse Endpoint
-app.post('/api/voice', async (req, res) => {
+app.post('/api/voice', aiLimiter, async (req, res) => {
   try {
     const { text } = req.body;
     const prompt = `Şu cümleden harcama detaylarını çıkar ve SADECE JSON döndür: {"tutar": number, "magaza": string, "kategori": string, "tur": "gelir"|"gider"}

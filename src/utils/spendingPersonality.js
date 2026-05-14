@@ -106,7 +106,12 @@ export function kisilikTipiBelirle(islemler) {
   }).reduce((s, i) => s + i.tutar, 0);
 
   // Tasarruf oranı (gelir bilinmiyorsa tahmini 18000/ay kullan)
-  const gelir = 18000 * 3; // 3 aylık
+  let aylikGelir = 18000;
+  try {
+    const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
+    if (profil.income && Number(profil.income) > 0) aylikGelir = Number(profil.income);
+  } catch { /* ignore */ }
+  const gelir = aylikGelir * 3; // 3 aylık
   const tasarrufOrani = Math.max(0, (gelir - toplam) / gelir);
 
   // Tekrarlayan harcamalar (aynı magaza, > 1 kez)

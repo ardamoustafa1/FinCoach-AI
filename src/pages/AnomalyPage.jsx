@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ZAxis } from 'recharts';
-import { ShieldAlert, AlertTriangle, Lock, Eye, CheckCircle2, Search } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Clock, Lock, Eye, CheckCircle2, Search } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {

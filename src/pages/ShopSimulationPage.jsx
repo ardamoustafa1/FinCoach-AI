@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, ShieldAlert, Shield, Bot, ShieldCheck, Zap, Scale } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../hooks/useToast';
 
 const P = {
   purple: '#7C3AED', red: '#EF4444', green: '#10B981', amber: '#F59E0B', 
@@ -12,6 +13,7 @@ export default function ShopSimulationPage() {
   const [buying, setBuying] = useState(false);
   const [swarmStep, setSwarmStep] = useState(0); // 0: none, 1: Risk, 2: Opp, 3: Orch, 4: Final
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleBuy = () => {
     setBuying(true);
@@ -154,7 +156,7 @@ export default function ShopSimulationPage() {
                   onMouseEnter={e => e.currentTarget.style.background = '#334155'} onMouseLeave={e => e.currentTarget.style.background = P.bg2}>
                   Vazgeç
                 </button>
-                <button onClick={() => { alert('Apple Store Taksitli Ödeme API sine yönlendiriliyor...'); navigate(-1); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(124,58,237,0.4)' }}
+                <button onClick={() => { toast.info('🏦 Apple Store taksitli ödeme sayfasına yönlendiriliyorsunuz...'); setTimeout(() => navigate(-1), 1500); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(124,58,237,0.4)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                   <ShieldCheck size={18} /> Şartlı Onay (6 Taksit)
                 </button>

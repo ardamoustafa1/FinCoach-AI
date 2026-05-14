@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   Plus, Target, Calendar, Edit2, Trash2, X,
-  CheckCircle, Sparkles, Scissors, TrendingUp, Flame, Wallet, CheckSquare, BrainCircuit, Brain
+  CheckCircle, Sparkles, Scissors, TrendingUp, Flame, Wallet, CheckSquare, BrainCircuit, Brain, AlertTriangle
 } from 'lucide-react';
+import { useToast } from '../hooks/useToast';
 import confetti from 'canvas-confetti';
 import { getGoals, addGoal, updateGoal, deleteGoal } from '../utils/storage';
 import { fmt } from '../utils/categories';
@@ -84,6 +85,8 @@ export default function GoalsPage() {
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [completedModal, setCompletedModal] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const toast = useToast();
 
   const handleOpenModal = (g = null) => { setDuzenlenen(g); setModalAcik(true); };
 
@@ -111,10 +114,15 @@ export default function GoalsPage() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Bu hedefi silmek istediğinize emin misiniz?')) {
-      await deleteGoal(id);
-      refreshGoals();
-    }
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    await deleteGoal(deleteConfirm);
+    refreshGoals();
+    toast.success('Hedef silindi.');
+    setDeleteConfirm(null);
   };
 
   const handleTemplate = async (template) => {
@@ -258,6 +266,29 @@ export default function GoalsPage() {
             <button onClick={() => setCompletedModal(null)} style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(16,185,129,0.35)', transition: 'opacity 0.2s' }}>
               Harika! 🚀
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── SİL ONAY MODALI (native confirm() yerine) ── */}
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 65, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)' }} onClick={e => e.target === e.currentTarget && setDeleteConfirm(null)}>
+          <div style={{ width: '100%', maxWidth: 360, background: 'linear-gradient(160deg, #1a0e0e 0%, #0e0c1a 100%)', border: '1px solid rgba(244,63,94,0.35)', borderRadius: 28, padding: '36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: '50%', background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={30} color="#f43f5e" />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: P.text1, marginBottom: 10 }}>Hedefi Sil</h2>
+            <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 28 }}>
+              Bu hedef kalıcı olarak silinecek. Bu işlem geri alınamaz.
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text1, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                Vazgeç
+              </button>
+              <button onClick={confirmDelete} style={{ flex: 1, padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #f43f5e, #b91c1c)', color: '#fff', fontWeight: 800, fontSize: 14, border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(244,63,94,0.35)' }}>
+                Evet, Sil
+              </button>
+            </div>
           </div>
         </div>
       )}

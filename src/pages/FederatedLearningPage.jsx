@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Smartphone, Cloud, ArrowUp, ArrowDown, Lock, CheckCircle2, Cpu, Loader2, Database } from 'lucide-react';
+import { ShieldCheck, Smartphone, Cloud, ArrowUp, ArrowDown, Lock, CheckCircle2, Cpu, Loader2, Database, Terminal } from 'lucide-react';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
