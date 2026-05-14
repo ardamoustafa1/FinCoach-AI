@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network
 } from 'lucide-react';
 
 const navItems = [
@@ -14,6 +14,7 @@ const navItems = [
   { to: '/tax', label: 'Vergi Asistanı', icon: Calculator },
   { to: '/real-estate', label: 'Ev & Kredi AI', icon: Home },
   { to: '/anomaly', label: 'Anomali & Fraud AI', icon: Lock },
+  { to: '/graph-analysis', label: 'Market Basket Graph', icon: Network },
   { to: '/system-monitor', label: 'Sistem Mimarisi', icon: Server },
   { to: '/federated', label: 'Federated AI', icon: ShieldCheck },
   { to: '/escrow', label: 'Web3 Escrow (Kilit)', icon: Lock },

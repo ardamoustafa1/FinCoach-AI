@@ -25,6 +25,7 @@ const MicroInvestPage = lazy(() => import('./pages/MicroInvestPage'));
 const DebtSnowballPage = lazy(() => import('./pages/DebtSnowballPage'));
 const FreelancerPage = lazy(() => import('./pages/FreelancerPage'));
 const AnomalyPage = lazy(() => import('./pages/AnomalyPage'));
+const GraphAnalysisPage = lazy(() => import('./pages/GraphAnalysisPage'));
 const SystemMonitorPage = lazy(() => import('./pages/SystemMonitorPage'));
 const FederatedLearningPage = lazy(() => import('./pages/FederatedLearningPage'));
 const EscrowPage = lazy(() => import('./pages/EscrowPage'));
@@ -265,6 +266,7 @@ export default function App() {
               <Route path="/debt-snowball" element={<DebtSnowballPage />} />
               <Route path="/freelancer-smoother" element={<FreelancerPage />} />
               <Route path="/anomaly" element={<AnomalyPage />} />
+              <Route path="/graph-analysis" element={<GraphAnalysisPage />} />
               <Route path="/system-monitor" element={<SystemMonitorPage />} />
               <Route path="/federated" element={<FederatedLearningPage />} />
               <Route path="/escrow" element={<EscrowPage />} />
