@@ -180,10 +180,11 @@ export default function DashboardPage() {
                     fontWeight: 700, fontSize: 13, cursor: 'pointer', marginTop: 16,
                     boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'all 0.2s'
                   }}
+                  aria-label="Cüzdanı Apple Wallet'a Ekle"
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <Wallet size={16} />
+                  <Wallet size={16} aria-hidden="true" />
                   Apple Wallet'a Ekle
                 </button>
               </div>
@@ -197,11 +198,13 @@ export default function DashboardPage() {
                     fontWeight: 700, fontSize: 13, cursor: bankingSyncing ? 'not-allowed' : 'pointer',
                     boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)', opacity: bankingSyncing ? 0.7 : 1, transition: 'all 0.2s'
                   }}
+                  aria-label={bankingSyncing ? 'Banka verileri senkronize ediliyor' : 'Bankayı PSD2 ile bağla'}
+                  aria-live="polite"
                   onMouseEnter={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1.02)'; }}
                   onMouseLeave={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1)'; }}
                 >
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                  {bankingSyncing ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Building2 size={16} />}
+                  {bankingSyncing ? <RefreshCw size={16} aria-hidden="true" style={{ animation: 'spin 1s linear infinite' }} /> : <Building2 size={16} aria-hidden="true" />}
                   {bankingSyncing ? 'Senkronize Ediliyor...' : 'Bankanı Bağla (PSD2)'}
                 </button>
                 <button
@@ -212,10 +215,11 @@ export default function DashboardPage() {
                     fontWeight: 700, fontSize: 13, cursor: 'pointer',
                     boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)', transition: 'all 0.2s'
                   }}
+                  aria-label="Satın Almadan Önce Sor simülasyonunu başlat"
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <ShoppingCart size={16} />
+                  <ShoppingCart size={16} aria-hidden="true" />
                   Satın Almadan Önce Sor (Test)
                 </button>
                 {[
