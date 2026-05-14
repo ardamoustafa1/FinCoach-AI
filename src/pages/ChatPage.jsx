@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, Maximize2, X, Zap, Share2, Loader2, CheckCircle2, Database, Search } from 'lucide-react';
+import { Send, Bot, User, Home, Sparkles, Zap, Share2, Maximize2, X, Download, TrendingUp, TrendingDown, Clock, Search, Loader2, Database, CheckCircle2 } from 'lucide-react';
+import { sanitize } from '../utils/security';
 import ReactMarkdown from 'react-markdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -120,8 +121,9 @@ export default function ChatPage() {
   };
 
   const handleSend = useCallback(async (text = input) => {
-    if (!text.trim() || isLoading) return;
-    const userMsg = { role: 'user', content: text };
+    const cleanInput = sanitize(text);
+    if (!cleanInput || isLoading) return;
+    const userMsg = { role: 'user', content: cleanInput };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
