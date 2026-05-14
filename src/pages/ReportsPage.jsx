@@ -5,8 +5,6 @@ import {
   BarChart3, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import { getBudgetLimits, getGoals, getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
@@ -147,18 +145,43 @@ export default function ReportsPage() {
     if (!reportRef.current) return;
     setPdfLoading(true);
     try {
-      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#050714' });
+      // Dinamik import ile bundle boyutunu küçültüyoruz
+      const [html2canvas, { jsPDF }] = await Promise.all([
+        import('html2canvas').then(m => m.default),
+        import('jspdf')
+      ]);
+
+      const canvas = await html2canvas(reportRef.current, { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: '#050714',
+        logging: false 
+      });
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imgHeight = (canvas.height * pageWidth) / canvas.width;
-      let remainingHeight = imgHeight; let y = 0;
+      let remainingHeight = imgHeight; 
+      let y = 0;
+
       pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight);
       remainingHeight -= pageHeight;
-      while (remainingHeight > 0) { y -= pageHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight); remainingHeight -= pageHeight; }
-      pdf.save(`FinCoach AI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
-    } finally { setPdfLoading(false); }
+
+      while (remainingHeight > 0) { 
+        y -= pageHeight; 
+        pdf.addPage(); 
+        pdf.addImage(imgData, 'PNG', 0, y, pageWidth, imgHeight); 
+        remainingHeight -= pageHeight; 
+      }
+      pdf.save(`FinCoach_AI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
+    } catch (err) {
+      console.error('PDF Hatası:', err);
+      setAiError('PDF oluşturulurken bir hata oluştu.');
+    } finally { 
+      setPdfLoading(false); 
+    }
   };
 
   const handleCsv = () => {
