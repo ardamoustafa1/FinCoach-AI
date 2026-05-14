@@ -256,9 +256,9 @@ export default function DashboardPage() {
         </div>
         <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
 
-        {/* ── YENİ: KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
+        {/* ── KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-          {/* Otonom Küsurat Yatırımı */}
+          {/* Otonom Küsurat Yatırımı — gerçek hesaplama */}
           <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -270,23 +270,45 @@ export default function DashboardPage() {
                 <p style={{ fontSize: 12, color: P.text3 }}>Smart Contract Aktif (BETA)</p>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
-              <div>
-                <p style={{ fontSize: 13, color: P.text2, marginBottom: 4 }}>Bu ay yuvarlanan küsuratlar</p>
-                <div style={{ fontSize: 32, fontWeight: 900, color: P.amber, letterSpacing: '-0.03em' }}>+1.240₺</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: 11, color: P.text3 }}>Kripto Portföyüne Giden</p>
-                <div style={{ fontSize: 14, fontWeight: 700, color: P.green }}>0.015 ETH</div>
-              </div>
-            </div>
-            <div style={{ background: P.bg2, borderRadius: 12, padding: 12, fontSize: 12, color: P.text2, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'pulse 2s infinite' }} />
-              "Kahve (82₺) harcaması 100₺'ye yuvarlandı. 18₺ ETH fonuna aktarıldı."
-            </div>
+            {(() => {
+              // Gerçek küsurat hesabı: her işlem en yakın 10'a yuvarlanır, fark biriktirilir
+              const buAyGider = transactions.filter(t =>
+                t.tur === 'gider' && t.tarih?.startsWith(new Date().toISOString().slice(0, 7))
+              );
+              const roundUpTotal = buAyGider.reduce((s, t) => {
+                const rounded = Math.ceil(t.tutar / 10) * 10;
+                return s + (rounded - t.tutar);
+              }, 0);
+              const ethApprox = (roundUpTotal / 100000).toFixed(4); // ~kaba ETH tahmini
+              const lastTx = buAyGider[0];
+              const lastRounded = lastTx ? Math.ceil(lastTx.tutar / 10) * 10 : null;
+              const lastDiff = lastTx ? lastRounded - lastTx.tutar : null;
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
+                    <div>
+                      <p style={{ fontSize: 13, color: P.text2, marginBottom: 4 }}>Bu ay yuvarlanan küsuratlar</p>
+                      <div style={{ fontSize: 32, fontWeight: 900, color: P.amber, letterSpacing: '-0.03em' }}>
+                        +{Math.round(roundUpTotal).toLocaleString('tr-TR')}₺
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 11, color: P.text3 }}>Kripto Portföyüne Giden</p>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: P.green }}>{ethApprox} ETH</div>
+                    </div>
+                  </div>
+                  <div style={{ background: P.bg2, borderRadius: 12, padding: 12, fontSize: 12, color: P.text2, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', flexShrink: 0 }} />
+                    {lastTx && lastDiff > 0
+                      ? `"${lastTx.magaza || lastTx.aciklama || 'Son işlem'}" (${Math.round(lastTx.tutar)}₺) ${lastRounded}₺'ye yuvarlandı. ${Math.round(lastDiff)}₺ ETH fonuna aktarıldı."`
+                      : 'İşlem eklendikçe küsuratlar otomatik hesaplanır.'}
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
-          {/* Eşli Ortak Bütçe (Multi-player Roast) */}
+          {/* Eşli Ortak Bütçe — Coming Soon */}
           <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.pink}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.pink, filter: 'blur(60px)', opacity: 0.15 }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -295,27 +317,31 @@ export default function DashboardPage() {
                   <Users size={24} color={P.pink} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Ortak Bütçe (Ece ile)</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Ortak Bütçe</h3>
                   <p style={{ fontSize: 12, color: P.text3 }}>Multi-player Finance</p>
                 </div>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 800, color: P.pink, background: `${P.pink}20`, padding: '4px 8px', borderRadius: 99, border: `1px solid ${P.pink}50` }}>Ajan Analizi</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: P.pink, background: `${P.pink}20`, padding: '4px 8px', borderRadius: 99, border: `1px solid ${P.pink}50` }}>Yakında</span>
             </div>
             <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
               <div style={{ flex: 1, background: P.bg2, borderRadius: 12, padding: 12, border: `1px solid ${P.border}` }}>
-                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Senin Harcaman</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>12.400₺</div>
+                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Senin Bu Ay</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>
+                  {Math.round(stats.buAyGider).toLocaleString('tr-TR')}₺
+                </div>
               </div>
-              <div style={{ flex: 1, background: P.bg2, borderRadius: 12, padding: 12, border: `1px solid ${P.border}` }}>
-                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Ece'nin Harcaması</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: P.red }}>24.800₺</div>
+              <div style={{ flex: 1, background: P.bg2, borderRadius: 12, padding: 12, border: `1px solid ${P.border}`, opacity: 0.5 }}>
+                <div style={{ fontSize: 11, color: P.text3, marginBottom: 4 }}>Partner (Bekleniyor)</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: P.text3 }}>— ₺</div>
               </div>
             </div>
-            <div style={{ background: `${P.red}10`, borderRadius: 12, padding: 12, fontSize: 12, color: P.text1, border: `1px solid ${P.red}30`, fontStyle: 'italic' }}>
-              "Bu ay tatil birikiminizi <strong style={{color: P.red}}>Ece'nin 14.500₺'lik kozmetik alışverişleri</strong> yedi. Belki konuşmanın vakti gelmiştir?"
+            <div style={{ background: `${P.pink}10`, borderRadius: 12, padding: 12, fontSize: 13, color: P.text2, border: `1px solid ${P.pink}20`, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Users size={16} color={P.pink} />
+              Eşinizi veya iş ortağınızı davet edin — ortak bütçe takibi çok yakında geliyor!
             </div>
           </div>
         </div>
+
       </div>
     </>
   );

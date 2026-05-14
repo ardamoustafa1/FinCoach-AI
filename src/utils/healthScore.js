@@ -30,11 +30,30 @@ export function aySkoru(islemler, gelirler, yil, ay, limitler) {
   const oncekiAy = ay === 1 ? { yil: yil - 1, ay: 12 } : { yil, ay: ay - 1 };
   const oncekiTx = ayIslemler(islemler, oncekiAy.yil, oncekiAy.ay);
 
-  const buAyGelir = ayGelir(gelirler, yil, ay) || 18000;
+  // Gerçek geliri veya onboarding'deki geliri kullan
+  let profilGelir = 0;
+  try {
+    const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
+    if (profil.income && Number(profil.income) > 0) profilGelir = Number(profil.income);
+  } catch { /* ignore */ }
+  const buAyGelir = ayGelir(gelirler, yil, ay) || profilGelir || 18000;
   const buAyGider = buAyTx.reduce((s, i) => s + i.tutar, 0);
   const oncekiGider = oncekiTx.reduce((s, i) => s + i.tutar, 0);
 
-  // 1. Bütçe uyumu (25p) ───────────────────────────────────────
+  // ─── Dinamik Ağırlık Sistemi (Kullanıcı Hedefine Göre) ──────
+  let profil = {};
+  try { profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}'); } catch { /* ignore */ }
+  const goal = profil.goal || 'takip';
+
+  // Hedef bazlı ağırlıklar (toplam = 100)
+  const WEIGHTS = {
+    birikim: { butce: 20, tasarruf: 40, duzenlilik: 20, trend: 20 },
+    tasarruf: { butce: 20, tasarruf: 40, duzenlilik: 20, trend: 20 },
+    takip:    { butce: 35, tasarruf: 20, duzenlilik: 25, trend: 20 },
+  };
+  const W = WEIGHTS[goal] || WEIGHTS.takip;
+
+  // 1. Bütçe uyumu ─────────────────────────────────────────────
   const katHarcama = {};
   buAyTx.forEach((i) => {
     katHarcama[i.kategori] = (katHarcama[i.kategori] || 0) + i.tutar;
@@ -43,14 +62,16 @@ export function aySkoru(islemler, gelirler, yil, ay, limitler) {
   const uyumlu = Object.entries(limitler).filter(
     ([kat, limit]) => (katHarcama[kat] || 0) <= limit
   ).length;
-  const butceUyumu = Math.round((uyumlu / katSayisi) * 25);
+  const butceUyumu = Math.round((uyumlu / katSayisi) * W.butce);
 
-  // 2. Tasarruf oranı (25p) ────────────────────────────────────
+  // 2. Tasarruf oranı ──────────────────────────────────────────
   const tasarrufPct = buAyGelir > 0 ? ((buAyGelir - buAyGider) / buAyGelir) * 100 : 0;
-  const tasarrufPuan = Math.max(0, Math.min(25, Math.round(25 - Math.max(0, 20 - tasarrufPct) * 1.25)));
+  // 20%+ tasarruf = tam puan; 0% = yarı puan; negatif = 0
+  const tasarrufPuan = Math.max(0, Math.min(W.tasarruf,
+    Math.round(W.tasarruf * Math.min(1, Math.max(0, tasarrufPct) / 20))
+  ));
 
-  // 3. Düzenlilik (25p) ─────────────────────────────────────────
-  // Haftalık harcama toplamları
+  // 3. Düzenlilik ───────────────────────────────────────────────
   const haftaMap = {};
   buAyTx.forEach((i) => {
     const gun = parseInt(i.tarih.split('-')[2], 10);
@@ -59,24 +80,29 @@ export function aySkoru(islemler, gelirler, yil, ay, limitler) {
   });
   const haftaDegerleri = Object.values(haftaMap);
   const sapma = standartSapma(haftaDegerleri);
-  // Sapma 0-5000 arasında normalize; 0 sapma = 25p, ≥5000 = 0p
-  const duzenlilik = Math.max(0, Math.round(25 - (sapma / 200)));
+  const duzenlilik = Math.max(0, Math.min(W.duzenlilik, Math.round(W.duzenlilik - (sapma / 200))));
 
-  // 4. İyileşme trendi (25p) ───────────────────────────────────
-  const iyilesmeTrendi = oncekiGider > 0 && buAyGider < oncekiGider ? 25 : 0;
+  // 4. İyileşme trendi — sürekli ölçek (0-W.trend) ─────────────
+  let iyilesmeTrendi = 0;
+  if (oncekiGider > 0) {
+    const iyilesmePct = (oncekiGider - buAyGider) / oncekiGider; // pozitif = iyileşme
+    // %0 iyileşme = 0p, %10+ iyileşme = tam puan
+    iyilesmeTrendi = Math.max(0, Math.min(W.trend, Math.round(W.trend * Math.min(1, iyilesmePct / 0.10))));
+  }
 
   const toplam = Math.min(100, butceUyumu + tasarrufPuan + duzenlilik + iyilesmeTrendi);
 
   return {
     toplam,
     metrikler: {
-      butceUyumu: { puan: butceUyumu, max: 25, etiket: 'Bütçe Uyumu' },
-      tasarruf: { puan: tasarrufPuan, max: 25, etiket: 'Tasarruf Oranı', yuzde: Math.round(tasarrufPct) },
-      duzenlilik: { puan: duzenlilik, max: 25, etiket: 'Düzenlilik' },
-      iyilesmeTrendi: { puan: iyilesmeTrendi, max: 25, etiket: 'İyileşme Trendi' },
+      butceUyumu:      { puan: butceUyumu,      max: W.butce,    etiket: 'Bütçe Uyumu' },
+      tasarruf:        { puan: tasarrufPuan,     max: W.tasarruf, etiket: 'Tasarruf Oranı', yuzde: Math.round(tasarrufPct) },
+      duzenlilik:      { puan: duzenlilik,       max: W.duzenlilik, etiket: 'Düzenlilik' },
+      iyilesmeTrendi:  { puan: iyilesmeTrendi,   max: W.trend,    etiket: 'İyileşme Trendi' },
     },
   };
 }
+
 
 // ─── 6 Aylık Skor Geçmişi ────────────────────────────────────
 const YORUMLAR = {
