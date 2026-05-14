@@ -1,34 +1,64 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, ShieldAlert, Shield, Bot, ShieldCheck, Zap, Scale } from 'lucide-react';
+import { ShoppingBag, ShieldAlert, Shield, Bot, ShieldCheck, Zap, Scale, BrainCircuit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 
 const P = {
-  purple: '#7C3AED', red: '#EF4444', green: '#10B981', amber: '#F59E0B', 
+  purple: '#7C3AED', red: '#EF4444', green: '#10B981', amber: '#F59E0B', cyan: '#06B6D4',
   text1: '#f8fafc', text2: '#94a3b8', text3: '#64748b', 
   bg0: '#020617', bg1: '#0f172a', bg2: '#1e293b', border: 'rgba(255,255,255,0.1)'
 };
 
+// ─── DAVRANIŞSAL İKTİSAT MOTORU ───
+// Formül: V = A / (1 + kD)
+function calculateHyperbolicDiscounting(price) {
+  const k = 0.15; // Kullanıcının dürtüsellik katsayısı (Kişilik modelinden gelebilir)
+  const years = 5;
+  const days = years * 365;
+  const expectedROI = 0.08; // Yıllık %8 getiri (Hisse senedi/Fon)
+  
+  // Gelecekteki Paranın Matematiksel Değeri (Bileşik Faiz)
+  const futureValue = price * Math.pow(1 + expectedROI, years);
+  
+  // İnsanın Beynindeki Öznel (İndirgenmiş) Değeri (Hiperbolik İndirgeme)
+  const subjectiveFutureValue = futureValue / (1 + k * days);
+  
+  // Anlık zevkin nesnel değeri
+  const immediateValue = price;
+
+  // İrrasyonalite Skoru (Yüzde olarak ne kadar mantıksız bir karar?)
+  // Eğer beynimiz gelecekteki 36.000 TL'yi bugün 1.200 TL gibi algılıyorsa, çok mantıksız bir karar veriyoruzdur.
+  const irrationalityRatio = 1 - (subjectiveFutureValue / immediateValue);
+  const score = Math.max(0, Math.min(100, Math.round(irrationalityRatio * 100)));
+
+  return { futureValue, subjectiveFutureValue, score };
+}
+
 export default function ShopSimulationPage() {
   const [buying, setBuying] = useState(false);
-  const [swarmStep, setSwarmStep] = useState(0); // 0: none, 1: Risk, 2: Opp, 3: Orch, 4: Final
+  const [swarmStep, setSwarmStep] = useState(0); // 0: none, 1: Risk, 2: Opp, 3: Psychologist, 4: Orch, 5: Final
+  const [psyData, setPsyData] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
 
   const handleBuy = () => {
     setBuying(true);
-    setSwarmStep(1); // Start swarm simulation
+    setSwarmStep(1); 
+    setPsyData(calculateHyperbolicDiscounting(24999));
   };
 
   useEffect(() => {
     if (swarmStep === 1) {
-      const t = setTimeout(() => setSwarmStep(2), 2500);
+      const t = setTimeout(() => setSwarmStep(2), 2000);
       return () => clearTimeout(t);
     } else if (swarmStep === 2) {
-      const t = setTimeout(() => setSwarmStep(3), 2500);
+      const t = setTimeout(() => setSwarmStep(3), 2000);
       return () => clearTimeout(t);
     } else if (swarmStep === 3) {
-      const t = setTimeout(() => setSwarmStep(4), 3000);
+      const t = setTimeout(() => setSwarmStep(4), 3500); // Psikolog daha uzun okunsun
+      return () => clearTimeout(t);
+    } else if (swarmStep === 4) {
+      const t = setTimeout(() => setSwarmStep(5), 2500);
       return () => clearTimeout(t);
     }
   }, [swarmStep]);
@@ -120,27 +150,50 @@ export default function ShopSimulationPage() {
                   <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.border}`, flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: P.green, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fırsat Ajanı (Yatırımcı)</div>
                     <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
-                      "İtiraz ediyorum! Tüketici elektroniği enflasyonu %40 seviyesinde. Parayı bankada tutmak reel kayıp yaratır. 2 ay sonra zam gelecek. <strong>ONAY!</strong>"
+                      "Tüketici elektroniği enflasyonu %40. Parayı nakitte tutmak erimesine sebep olur. Gelecek ay zam gelme ihtimali var. <strong>ONAY!</strong>"
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Agent 3: Orchestrator */}
-              {swarmStep >= 3 && (
+              {/* Agent 3: Behavioral Psychologist (Hyperbolic Discounting) */}
+              {swarmStep >= 3 && psyData && (
                 <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(124, 58, 237, 0.1)', border: `1px solid ${P.purple}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: swarmStep === 3 ? 'pulseBorder 1.5s infinite' : 'none' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(6, 182, 212, 0.1)', border: `1px solid ${P.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <BrainCircuit size={20} color={P.cyan} />
+                  </div>
+                  <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.cyan}40`, flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: P.cyan, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Psikolog Ajan (Davranışsal İktisat)</div>
+                    <p style={{ fontSize: 14, color: P.text1, margin: '0 0 8px', lineHeight: 1.5 }}>
+                      "Kullanıcının kararını <strong>Hiperbolik İndirgeme</strong> algoritmasıyla analiz ettim. Bu tutar 5 yıl yatırıma dönse <strong>{(psyData.futureValue).toLocaleString('tr-TR', {maximumFractionDigits:0})} ₺</strong> olacak."
+                    </p>
+                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: 10, borderRadius: 8, border: `1px solid ${P.cyan}20` }}>
+                      <p style={{ fontSize: 12, color: P.text2, margin: '0 0 4px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Anlık Zevk Dürtüsü:</span> <span style={{ color: P.red, fontWeight: 700 }}>Çok Yüksek</span>
+                      </p>
+                      <p style={{ fontSize: 12, color: P.text2, margin: 0, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>İrrasyonalite Skoru:</span> <span style={{ color: P.amber, fontWeight: 700 }}>%{psyData.score} (Mantıksız)</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Agent 4: Orchestrator */}
+              {swarmStep >= 4 && (
+                <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(124, 58, 237, 0.1)', border: `1px solid ${P.purple}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: swarmStep === 4 ? 'pulseBorder 1.5s infinite' : 'none' }}>
                     <Scale size={20} color={P.purple} />
                   </div>
                   <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.1), transparent)', borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.purple}`, flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: P.purple, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hakem Ajan (Orkestratör)</div>
-                    {swarmStep === 3 ? (
+                    {swarmStep === 4 ? (
                       <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5, fontStyle: 'italic', opacity: 0.8 }}>
-                        Argümanlar sentezleniyor...
+                        Psikolojik ve Finansal veriler sentezleniyor...
                       </p>
                     ) : (
                       <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
-                        "İki veriyi de birleştirdim. Peşin alım REDDEDİLDİ. Ancak, eğer <strong>6 taksit</strong> seçeneği ile alınırsa nakit akışı bozulmadan enflasyondan kar edilebilir."
+                        "Mantıksızlık skoru (%{psyData?.score}) çok yüksek. Peşin alım REDDEDİLDİ. Psikolojik dürtüyü kırmak için <strong>7 Gün Bekleme Kuralı</strong> veya likiditeyi korumak için <strong>6 Taksit</strong> şartı koşuyorum."
                       </p>
                     )}
                   </div>
@@ -150,15 +203,15 @@ export default function ShopSimulationPage() {
             </div>
 
             {/* FINAL ACTION BUTTON */}
-            {swarmStep >= 4 && (
+            {swarmStep >= 5 && (
               <div className="animate-enter" style={{ marginTop: 32, display: 'flex', gap: 12, animationDelay: '0.2s' }}>
                 <button onClick={() => navigate(-1)} style={{ flex: 1, padding: '16px', borderRadius: 16, background: P.bg2, color: P.text1, fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: `1px solid ${P.border}` }}
                   onMouseEnter={e => e.currentTarget.style.background = '#334155'} onMouseLeave={e => e.currentTarget.style.background = P.bg2}>
-                  Vazgeç
+                  7 Gün Bekle (Önerilen)
                 </button>
                 <button onClick={() => { toast.info('🏦 Apple Store taksitli ödeme sayfasına yönlendiriliyorsunuz...'); setTimeout(() => navigate(-1), 1500); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(124,58,237,0.4)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                  <ShieldCheck size={18} /> Şartlı Onay (6 Taksit)
+                  <ShieldCheck size={18} /> Al (6 Taksit)
                 </button>
               </div>
             )}
