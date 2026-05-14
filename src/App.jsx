@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useCallback, Component } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import AuthPage from './pages/AuthPage';
@@ -30,6 +30,14 @@ const FederatedLearningPage = lazy(() => import('./pages/FederatedLearningPage')
 const EscrowPage = lazy(() => import('./pages/EscrowPage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -234,6 +242,7 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
             <Route element={
