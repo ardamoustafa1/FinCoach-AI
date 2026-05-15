@@ -1,4 +1,4 @@
-import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight } from 'lucide-react';
+import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert } from 'lucide-react';
 import useStore from '../store/useStore';
 
 const P = {
@@ -18,21 +18,21 @@ const TOUR_CONTENT = {
   '/micro-invest': {
     title: 'Autonomous Yield Routing 🌾',
     subtitle: 'Yatan Para (Idle Money) Devri Bitti',
-    desc: 'Harcamalarınızdan arta kalan küsüratlar pasif olarak beklemez. Saniyeler içinde Aave ve Compound gibi DeFi havuzlarına aktarılarak sizin için saniyelik getiri üretir.',
+    desc: "Harcamalarınızdan arta kalan küsüratlar pasif olarak beklemez. Saniyeler içinde Aave ve Compound gibi DeFi havuzlarına aktarılarak sizin için saniyelik getiri üretir.",
     icon: <Layers size={32} color={P.green} />,
     color: P.green
   },
   '/time-machine': {
     title: 'Paralel Evren Simülatörü 🦋',
     subtitle: 'Kelebek Etkisi Motoru',
-    desc: 'Hedge fonlarının kullandığı Monte Carlo algoritmalarıyla bugün yapacağınız sıradan bir harcamanın, 10 yıl sonra hayatınızı nasıl ikiye böldüğünü (Harcama vs Otonom Fon) görün.',
+    desc: "Hedge fonlarının kullandığı Monte Carlo algoritmalarıyla bugün yapacağınız sıradan bir harcamanın, 10 yıl sonra hayatınızı nasıl ikiye böldüğünü (Harcama vs Otonom Fon) görün.",
     icon: <Dices size={32} color={P.blue} />,
     color: P.blue
   },
   '/stress-test': {
     title: 'Kıyamet Senaryosu & Dijital İkiz 🌪️',
     subtitle: 'Makroekonomik Stres Testi',
-    desc: 'Finansal kriz, hiperenflasyon ve işsizlik durumlarında portföyünüzün ne kadar dayanacağını test edin. Yapay zeka, hayatta kalma sürenizi (Survival Runway) hesaplar.',
+    desc: "Finansal kriz, hiperenflasyon ve işsizlik durumlarında portföyünüzün ne kadar dayanacağını test edin. Yapay zeka, hayatta kalma sürenizi (Survival Runway) hesaplar.",
     icon: <Brain size={32} color={P.amber} />,
     color: P.amber
   },
@@ -46,8 +46,50 @@ const TOUR_CONTENT = {
   '/federated-learning': {
     title: 'Federated AI & Mahremiyet 🛡️',
     subtitle: 'Sıfır Veri Sızıntısı',
-    desc: 'Banka verileriniz asla cihazınızdan çıkmaz. FinCoach AI, Apple tarzı Federated Learning ile verilerinizi cihazınızda eğitir. Merkezi sunuculara sadece anonim şifreli ağırlıklar gider.',
+    desc: "Banka verileriniz asla cihazınızdan çıkmaz. FinCoach AI, Apple tarzı Federated Learning ile verilerinizi cihazınızda eğitir. Merkezi sunuculara sadece anonim şifreli ağırlıklar gider.",
     icon: <FileText size={32} color="#8B5CF6" />,
+    color: "#8B5CF6"
+  },
+  '/tax': {
+    title: 'Vergi Optimizasyon AI 🧾',
+    subtitle: 'Yasal Olarak Paranızı Geri Alın',
+    desc: "Maaşınızdan ne kadar kesinti yapıldığını analiz eder. Freelance gelirlerinizi ve giderlerinizi tarayarak kanuni çerçevede (vergi indirimleri, istisnalar) maksimum iade almanızı sağlayan asistan.",
+    icon: <Calculator size={32} color="#EC4899" />,
+    color: "#EC4899"
+  },
+  '/graph-analysis': {
+    title: 'Market Basket Neural Net 🕸️',
+    subtitle: 'Harcama Tetikleyicilerini Bul',
+    desc: "Apriori algoritması kullanarak harcamalarınızı bir Nöral Ağ olarak çizer. Hangi harcamaların birbirini tetiklediğini (örneğin: Kahve aldıktan sonra genelde Sinemaya gidersiniz) bulur ve zayıf noktalarınızı ortaya çıkarır.",
+    icon: <Network size={32} color="#06B6D4" />,
+    color: "#06B6D4"
+  },
+  '/debt-snowball': {
+    title: 'Borç Yıkım Stratejisti ❄️',
+    subtitle: 'Çığ Etkisi Algoritması (Snowball/Avalanche)',
+    desc: "Tüm kredi ve kart borçlarınızı faiz oranlarına göre dizer. Matematiksel olarak en hızlı ve en az faiz ödeyerek kurtulacağınız otonom bir ödeme planı (Avalanche) oluşturur.",
+    icon: <Target size={32} color={P.red} />,
+    color: P.red
+  },
+  '/real-estate': {
+    title: 'Ev & Kredi Radar AI 🏠',
+    subtitle: 'Gayrimenkul ve Faiz Analisti',
+    desc: "Almak istediğiniz evin değerine ve piyasadaki anlık kredi faizlerine göre otonom analiz yapar. Peşinat biriktirme hızınızı ve kredinin gerçek maliyetini ortaya koyar.",
+    icon: <Building size={32} color="#14B8A6" />,
+    color: "#14B8A6"
+  },
+  '/league': {
+    title: 'Global Tasarruf Ligi 🏆',
+    subtitle: 'Finansal Oyunlaştırma',
+    desc: "Tasarruf oranlarınıza ve hedeflerinize ulaşma hızınıza göre diğer anonim kullanıcılarla global bir ligde yarışın. Finansal okuryazarlığı bir e-spor haline getirin.",
+    icon: <Trophy size={32} color={P.amber} />,
+    color: P.amber
+  },
+  '/freelancer-smoother': {
+    title: 'Freelancer Income Smoother 🌊',
+    subtitle: 'Düzensiz Geliri Sabitle',
+    desc: "Düzensiz gelirleriniz varsa stres yapmayın. Algoritma, yüksek aylardan rezerv alıp düşük aylara dağıtarak size 'Düzenli Bir Kurumsal Maaş' simülasyonu sunar.",
+    icon: <ShieldAlert size={32} color="#8B5CF6" />,
     color: "#8B5CF6"
   }
 };
@@ -87,13 +129,13 @@ export default function FeatureTourModal({ pathname }) {
             {content.icon}
           </div>
           
-          <h4 style={{ fontSize: 13, fontWeight: 800, color: content.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 800, color: content.color, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px 0' }}>
             {content.subtitle}
           </h4>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 16px 0' }}>
             {content.title}
           </h2>
-          <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, marginBottom: 40 }}>
+          <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, margin: '0 0 40px 0' }}>
             {content.desc}
           </p>
           
