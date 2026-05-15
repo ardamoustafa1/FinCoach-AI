@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   Moon, Sun, Globe, Bell, Database, RotateCcw, Save,
   Wallet, QrCode, Shield, Sparkles, Flame, LogOut,
-  User, Mail, Phone, Lock, Eye, EyeOff, Check, X, Edit3, BadgeCheck
+  User, Mail, Phone, Lock, Eye, EyeOff, Check, X, Edit3, BadgeCheck, Settings
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { initMockData } from '../data/mockData';
@@ -10,6 +10,7 @@ import useStore from '../store/useStore';
 import { TUM_KATEGORILER } from '../utils/categories';
 import { supabase } from '../utils/supabase';
 import { authFetch } from '../utils/api';
+import PageHeader from '../components/PageHeader';
 
 /* ─── Palette ─── */
 const P = {
@@ -370,18 +371,13 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-        {/* ── HERO ── */}
-        <div style={{
-          background: P.bg2, border: `1px solid ${P.border}`,
-          borderRadius: 20, padding: '28px 32px',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
-          <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'rgba(124,58,237,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.text3, marginBottom: 8 }}>Demo Kontrol Merkezi</p>
-          <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 6 }}>Ayarlar</h1>
-          <p style={{ fontSize: 14, color: P.text2 }}>Uygulama tercihlerinizi yönetin</p>
-        </div>
+        <PageHeader
+          icon={<Settings size={24} />}
+          color={P.purple}
+          title="Ayarlar"
+          subtitle="Uygulama tercihlerinizi, profilinizi ve bütçe limitlerini yönetin."
+          badge="Kontrol Merkezi"
+        />
 
         {/* ── PERSONAL INFORMATION ── */}
         <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, overflow: 'hidden' }}>

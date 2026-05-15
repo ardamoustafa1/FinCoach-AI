@@ -9,6 +9,7 @@ import CategoryPieChart from '../components/charts/CategoryPieChart';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 import { authFetch } from '../utils/api';
+import PageHeader from '../components/PageHeader';
 
 /* ─── Palette ─── */
 const P = {
@@ -200,59 +201,51 @@ export default function ReportsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-        {/* ── HERO ── */}
-        <div style={{
-          background: P.bg2, border: `1px solid ${P.border}`,
-          borderRadius: 20, padding: '28px 32px',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.text3, marginBottom: 8 }}>Aylık Analiz</p>
-              <h1 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 6 }}>Raporlar</h1>
-              <p style={{ fontSize: 14, color: P.text2 }}>Ay bazında gelir, gider ve kategori davranışlarını incele.</p>
-            </div>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-              {/* Month Picker */}
-              <div style={{ display: 'flex', alignItems: 'center', background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14, overflow: 'hidden' }}>
-                <button onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} disabled={selectedIndex === 0} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
-                  <ChevronLeft size={18} />
-                </button>
-                <div style={{ minWidth: 140, textAlign: 'center', padding: '8px 12px' }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seçili Ay</p>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{monthLabel(selectedMonth)}</p>
-                </div>
-                <button onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))} disabled={selectedIndex === months.length - 1} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
-                  <ChevronRight size={18} />
-                </button>
+        <PageHeader
+          icon={<BarChart3 size={24} />}
+          color={P.purple}
+          title="Raporlar"
+          subtitle="Ay bazında gelir, gider ve kategori davranışlarını incele."
+          badge="Aylık Analiz"
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+            {/* Month Picker */}
+            <div style={{ display: 'flex', alignItems: 'center', background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14, overflow: 'hidden' }}>
+              <button onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} disabled={selectedIndex === 0} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+                <ChevronLeft size={18} />
+              </button>
+              <div style={{ minWidth: 140, textAlign: 'center', padding: '8px 12px' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seçili Ay</p>
+                <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{monthLabel(selectedMonth)}</p>
               </div>
-
-              <button onClick={handlePdf} disabled={pdfLoading} className="dl-btn" style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '10px 18px', borderRadius: 12,
-                background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`,
-                color: P.text1, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                transition: 'all 0.2s', opacity: pdfLoading ? 0.6 : 1,
-              }}>
-                {pdfLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <FileText size={16} />}
-                PDF İndir
-              </button>
-
-              <button onClick={handleCsv} className="csv-btn" style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '10px 18px', borderRadius: 12,
-                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
-                border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                transition: 'all 0.2s', boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
-              }}>
-                <Download size={16} />
-                CSV İndir
+              <button onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))} disabled={selectedIndex === months.length - 1} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+                <ChevronRight size={18} />
               </button>
             </div>
+
+            <button onClick={handlePdf} disabled={pdfLoading} className="dl-btn" style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 18px', borderRadius: 12,
+              background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`,
+              color: P.text1, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.2s', opacity: pdfLoading ? 0.6 : 1,
+            }}>
+              {pdfLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <FileText size={16} />}
+              PDF İndir
+            </button>
+
+            <button onClick={handleCsv} className="csv-btn" style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 18px', borderRadius: 12,
+              background: `linear-gradient(135deg, ${P.purple}, #6366f1)`,
+              border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.2s', boxShadow: '0 8px 20px rgba(124,58,237,0.3)',
+            }}>
+              <Download size={16} />
+              CSV İndir
+            </button>
           </div>
-        </div>
+        </PageHeader>
 
         <div ref={reportRef} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
