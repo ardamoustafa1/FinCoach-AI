@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import ThemeToggle from './ThemeToggle';
 import DemoQRCodeModal from './DemoQRCodeModal';
+import FeatureTourModal from './FeatureTourModal';
 import { useToast } from '../hooks/useToast';
 import { fmt } from '../utils/categories';
 import useStore from '../store/useStore';
@@ -197,6 +198,8 @@ export default function Layout({ theme, onToggleTheme }) {
       {showQrModal && (
         <DemoQRCodeModal onClose={() => setShowQrModal(false)} />
       )}
+      
+      <FeatureTourModal pathname={location.pathname} />
     </div>
   );
 }

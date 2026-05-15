@@ -13,11 +13,18 @@ const useStore = create((set, get) => ({
     email: ''
   },
   behavioralProfile: JSON.parse(localStorage.getItem('fincoach_profile') || '{}'),
+  seenTours: JSON.parse(localStorage.getItem('fincoach_seen_tours') || '[]'),
 
   setTransactions: (transactions) => set({ transactions }),
   setGoals: (goals) => set({ goals }),
   setBudgetLimits: (budgetLimits) => set({ budgetLimits }),
   setCategoryRules: (categoryRules) => set({ categoryRules }),
+  markTourSeen: (path) => set((state) => {
+    if (state.seenTours.includes(path)) return state;
+    const next = [...state.seenTours, path];
+    localStorage.setItem('fincoach_seen_tours', JSON.stringify(next));
+    return { seenTours: next };
+  }),
   
   setUserProfile: (updates) => {
     set((state) => {
