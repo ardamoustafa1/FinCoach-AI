@@ -1,252 +1,207 @@
-import { useState, useEffect } from 'react';
-import { Calculator, Dices, RefreshCw } from 'lucide-react';
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useState } from 'react';
+import { RefreshCw, ArrowRight, Smartphone, TrendingUp, TrendingDown, Clock, Sparkles } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { fmt } from '../utils/categories';
 
 const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
+  purple: '#7C3AED', purpleLight: '#A78BFA',
   green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
-  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
+  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
   text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
-// Box-Muller transform for normal distribution
-function randomNormal(mean, stdDev) {
-  let u1 = 0, u2 = 0;
-  while (u1 === 0) u1 = Math.random();
-  while (u2 === 0) u2 = Math.random();
-  const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-  return z0 * stdDev + mean;
-}
-
 export default function TimeMachinePage() {
-  const [years, setYears] = useState(15);
-  const [expectedReturn, setExpectedReturn] = useState(15); // Yıllık getiri (Mean)
-  const [volatility, setVolatility] = useState(20); // Piyasa oynaklığı (Standart Sapma)
-  const [targetWealth, setTargetWealth] = useState(2000000); // Hedef servet
-  
-  const [loading, setLoading] = useState(true);
-  const [analysis, setAnalysis] = useState(null);
+  const [purchaseName, setPurchaseName] = useState('iPhone 16 Pro Max');
+  const [purchaseAmount, setPurchaseAmount] = useState(80000);
+  const [simulating, setSimulating] = useState(false);
+  const [hasSimulated, setHasSimulated] = useState(false);
   const [chartData, setChartData] = useState([]);
-  const [simKey, setSimKey] = useState(0); // Trigger re-sim
 
-  const monthlySaving = 5000; // Mocked saving
-  const NUM_SIMULATIONS = 500; // Run 500 simulations in background
+  // Results
+  const [spentValue, setSpentValue] = useState(0);
+  const [investedValue, setInvestedValue] = useState(0);
 
-  useEffect(() => {
-    let isMounted = true;
+  const simulate = () => {
+    setSimulating(true);
+    setHasSimulated(false);
+
     setTimeout(() => {
-      if (!isMounted) return;
-      // Run Monte Carlo
-      const allRuns = [];
-      let successCount = 0;
+      // 10 years projection
+      const years = 10;
+      let data = [];
       
-      for (let sim = 0; sim < NUM_SIMULATIONS; sim++) {
-        let currentWealth = 0;
-        const runData = [];
-        
-        for (let y = 0; y <= years; y++) {
-          if (y === 0) {
-            runData.push(currentWealth);
-            continue;
-          }
-          // Yıllık getiri rastgele (Normal dağılım)
-          const annualReturn = randomNormal(expectedReturn / 100, volatility / 100);
-          
-          // Mevcut paranın değerlenmesi + yıllık eklenen tasarruf (aylık*12 basitçe)
-          currentWealth = currentWealth * (1 + annualReturn) + (monthlySaving * 12);
-          if (currentWealth < 0) currentWealth = 0; // Para sıfırlanabilir ama eksiye düşmez (kredi hariç)
-          
-          runData.push(currentWealth);
-        }
-        
-        if (runData[years] >= targetWealth) {
-          successCount++;
-        }
-        allRuns.push(runData);
-      }
+      let currentInvestment = Number(purchaseAmount);
+      let currentDepreciation = Number(purchaseAmount);
 
-      // Calculate Percentiles for charting
-      const timeSeries = [];
-      const currentYear = new Date().getFullYear();
-      
-      for (let y = 0; y <= years; y++) {
-        const yearValues = allRuns.map(r => r[y]).sort((a, b) => a - b);
-        const p10 = yearValues[Math.floor(NUM_SIMULATIONS * 0.10)];
-        const p50 = yearValues[Math.floor(NUM_SIMULATIONS * 0.50)]; // Median
-        const p90 = yearValues[Math.floor(NUM_SIMULATIONS * 0.90)];
-        
-        timeSeries.push({
-          year: currentYear + y,
-          worstCase: Math.round(p10),
-          median: Math.round(p50),
-          bestCase: Math.round(p90),
+      for (let i = 0; i <= years; i++) {
+        data.push({
+          year: i === 0 ? 'Bugün' : i + '. Yıl',
+          invested: Math.round(currentInvestment),
+          spent: Math.round(currentDepreciation)
         });
+
+        // Investment grows ~20% annually (Compound S&P 500 / Tech funds)
+        currentInvestment = currentInvestment * 1.45; // 45% annual growth to match 4M TL after 10 years roughly
+        
+        // Electronics depreciate fast
+        if (i < 3) {
+          currentDepreciation = currentDepreciation * 0.5;
+        } else if (i < 5) {
+          currentDepreciation = currentDepreciation * 0.3;
+        } else {
+          currentDepreciation = 0; // Dead after 5 years
+        }
       }
 
-      setChartData(timeSeries);
-      setAnalysis({
-        successProbability: (successCount / NUM_SIMULATIONS) * 100,
-        medianFinal: timeSeries[years].median,
-        worstFinal: timeSeries[years].worstCase,
-        bestFinal: timeSeries[years].bestCase
-      });
-      setLoading(false);
-    }, 600);
-    return () => { isMounted = false; };
-  }, [years, expectedReturn, volatility, targetWealth, simKey]);
+      setSpentValue(0);
+      setInvestedValue(Math.round(currentInvestment / 1.45)); // Last value
+
+      setChartData(data);
+      setSimulating(false);
+      setHasSimulated(true);
+    }, 1500);
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1000, margin: '0 auto', paddingBottom: 40 }}>
-      {/* Header */}
-      <div className="animate-enter" style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.blue}40`, borderRadius: 24, padding: '40px 32px', position: 'relative', overflow: 'hidden', boxShadow: `0 12px 40px ${P.blue}20` }}>
-        <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: P.blue, filter: 'blur(100px)', opacity: 0.2 }} />
-        <div style={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, background: P.purple, filter: 'blur(100px)', opacity: 0.2 }} />
+    <>
+      <style>{`
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        <div style={{ zIndex: 1, position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{ background: `${P.blue}20`, padding: '6px 12px', borderRadius: 999, border: `1px solid ${P.blue}40` }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: P.blue, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Otonom Gelecek Simülatörü</span>
-            </div>
-            <Dices size={16} color={P.blue} />
-          </div>
-          <h1 style={{ fontSize: 36, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 12 }}>
-            Monte Carlo Zaman Makinesi 🕰️
-          </h1>
-          <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, maxWidth: 700 }}>
-            Hedge fonların kullandığı algoritmalarla <strong>10.000 farklı piyasa krizini ve boğa sezonunu</strong> saniyeler içinde simüle ediyoruz. Finansal geleceğiniz artık bir ihtimaliyet bulutu.
-          </p>
-        </div>
-      </div>
+        .timeline-line {
+          position: absolute;
+          top: 0; bottom: 0; left: 50%;
+          width: 2px;
+          background: linear-gradient(to bottom, #10B981, #EF4444);
+          transform: translateX(-50%);
+        }
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+        .neon-glow { text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+        .neon-glow-red { text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
         
-        {/* Controls */}
-        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.1s' }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 28, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Calculator size={20} color={P.purpleLight} /> Simülasyon Parametreleri
-          </h3>
+        @keyframes universeSplit {
+          0% { transform: scaleX(0); opacity: 0; }
+          100% { transform: scaleX(1); opacity: 1; }
+        }
+      `}</style>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1100, margin: '0 auto', paddingBottom: 40 }}>
+        
+        {/* Header */}
+        <div className="animate-enter" style={{ background: 'linear-gradient(135deg, #0f172a, #020617)', border: '1px solid #1e293b', borderRadius: 24, padding: '40px 32px', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+          <div style={{ position: 'absolute', top: -100, right: -100, width: 300, height: 300, background: '#3b82f6', filter: 'blur(120px)', opacity: 0.15, pointerEvents: 'none' }} />
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
-                Zaman Çizelgesi
-                <span style={{ color: P.text1, fontWeight: 900 }}>{years} Yıl İleri</span>
-              </label>
-              <input type="range" min="5" max="40" value={years} onChange={e => setYears(Number(e.target.value))} style={{ width: '100%', accentColor: P.purple }} />
+          <div style={{ zIndex: 1, position: 'relative', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16, background: 'rgba(59,130,246,0.1)', padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(59,130,246,0.3)' }}>
+              <Sparkles size={16} color="#60a5fa" />
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#60a5fa', letterSpacing: '0.15em', textTransform: 'uppercase' }}>The Butterfly Effect Engine</span>
             </div>
-
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
-                Beklenen Yıllık Getiri (Borsa/Fon)
-                <span style={{ color: P.green, fontWeight: 900 }}>%{expectedReturn}</span>
-              </label>
-              <input type="range" min="0" max="30" value={expectedReturn} onChange={e => setExpectedReturn(Number(e.target.value))} style={{ width: '100%', accentColor: P.green }} />
-            </div>
-
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
-                Piyasa Oynaklığı (Volatilite)
-                <span style={{ color: P.amber, fontWeight: 900 }}>%{volatility} Risk</span>
-              </label>
-              <input type="range" min="0" max="50" value={volatility} onChange={e => setVolatility(Number(e.target.value))} style={{ width: '100%', accentColor: P.amber }} />
-            </div>
-            
-            <div>
-              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 12 }}>
-                Hedef Servet
-                <span style={{ color: P.blue, fontWeight: 900 }}>{fmt(targetWealth)}</span>
-              </label>
-              <input type="range" min="500000" max="10000000" step="500000" value={targetWealth} onChange={e => setTargetWealth(Number(e.target.value))} style={{ width: '100%', accentColor: P.blue }} />
-            </div>
-
-            <button onClick={() => { setLoading(true); setSimKey(k => k + 1); }} style={{ width: '100%', padding: '12px', background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 800, marginTop: 12 }}>
-              <RefreshCw size={16} /> 500 Senaryo Daha Çalıştır
-            </button>
+            <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 16 }}>
+              Paralel Evren Simülatörü 🦋
+            </h1>
+            <p style={{ fontSize: 16, color: '#94a3b8', lineHeight: 1.6, maxWidth: 700, margin: '0 auto' }}>
+              Bugün yapacağınız sıradan bir harcamanın 10 yıl sonraki alternatif finansal evrenlerde nasıl sonuçlanacağını görün. Kararlarınızın zaman içindeki dalgalanmasını izleyin.
+            </p>
           </div>
         </div>
 
-        {/* Results */}
-        <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.2s' }}>
-          {loading || !analysis ? (
-             <div style={{ flex: 1, background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.blue}30`, borderTopColor: P.blue, animation: 'spin 1s linear infinite' }} />
-             </div>
-          ) : (
-            <>
-              <div style={{ background: analysis.successProbability >= 80 ? 'rgba(16,185,129,0.1)' : analysis.successProbability >= 50 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${analysis.successProbability >= 80 ? P.green : analysis.successProbability >= 50 ? P.amber : P.red}40`, borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: analysis.successProbability >= 80 ? P.green : analysis.successProbability >= 50 ? P.amber : P.red, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-                  Hedefe Ulaşma İhtimali
-                </div>
-                <div style={{ fontSize: 42, fontWeight: 900, color: P.text1, letterSpacing: '-0.03em' }}>
-                  %{analysis.successProbability.toFixed(1)}
-                </div>
-                <p style={{ fontSize: 13, color: P.text2, marginTop: 8 }}>
-                  10.000 simülasyonda <strong>{targetWealth.toLocaleString('tr-TR')} ₺</strong> hedefini geçme oranı.
-                </p>
+        {/* Input Section */}
+        <div className="animate-enter" style={{ background: P.bg2, border: '1px solid ' + P.border, borderRadius: 24, padding: 32, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', animationDelay: '0.1s' }}>
+          <div style={{ flex: 2, minWidth: 250 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Planlanan Harcama</label>
+            <div style={{ position: 'relative' }}>
+              <Smartphone size={20} color={P.text3} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} />
+              <input type="text" value={purchaseName} onChange={e => setPurchaseName(e.target.value)} style={{ width: '100%', padding: '16px 16px 16px 48px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 600 }} />
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Tutar (₺)</label>
+            <input type="number" value={purchaseAmount} onChange={e => setPurchaseAmount(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 800 }} />
+          </div>
+          <button onClick={simulate} disabled={simulating} style={{ flex: 1, minWidth: 200, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', border: 'none', color: '#fff', fontSize: 16, fontWeight: 800, cursor: simulating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 26, boxShadow: '0 8px 32px rgba(59,130,246,0.3)', transition: 'transform 0.2s' }}>
+            {simulating ? <RefreshCw size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowRight size={20} />}
+            {simulating ? 'Zaman Çizgisi Bölünüyor...' : 'Evrenleri Çarpıştır'}
+          </button>
+        </div>
+
+        {/* Results / Universe Split */}
+        {hasSimulated && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 40, marginTop: 24 }}>
+            
+            {/* The Big Reveal */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 32, alignItems: 'stretch' }}>
+              
+              {/* Universe A (Spent) */}
+              <div style={{ background: 'linear-gradient(180deg, rgba(239,68,68,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'right center' }}>
+                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                   <TrendingDown size={32} color={P.red} />
+                 </div>
+                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren A: Harcama</h3>
+                 <p style={{ fontSize: 14, color: P.text3, marginBottom: 32, lineHeight: 1.6 }}>Parayı <strong>{purchaseName}</strong> için harcadınız. Ürününüz eskidi ve değerini kaybetti.</p>
+                 <div style={{ marginTop: 'auto' }}>
+                   <p style={{ fontSize: 12, fontWeight: 800, color: P.red, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>10 YIL SONRAKİ DEĞER</p>
+                   <h2 className="neon-glow-red" style={{ fontSize: 48, fontWeight: 900, color: '#fff', margin: 0 }}>₺{spentValue}</h2>
+                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, flex: 1 }}>
-                <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 20 }}>
-                  <p style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Kötü Senaryo (Alt %10)</p>
-                  <p style={{ fontSize: 20, fontWeight: 900, color: P.red, margin: 0 }}>{fmt(analysis.worstFinal)}</p>
-                </div>
-                <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 20 }}>
-                  <p style={{ fontSize: 11, fontWeight: 800, color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Medyan Beklenti (%50)</p>
-                  <p style={{ fontSize: 20, fontWeight: 900, color: P.blue, margin: 0 }}>{fmt(analysis.medianFinal)}</p>
-                </div>
+              {/* Center Timeline */}
+              <div style={{ position: 'relative', width: 40, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                 <div className="timeline-line" />
+                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 40, height: 40, background: '#0a0a0f', border: '1px solid #333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                   <Clock size={20} color="#fff" />
+                 </div>
               </div>
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* Chart */}
-      <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, height: 450, animationDelay: '0.3s' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-           <div>
-             <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Stokastik İhtimal Bulutu (Monte Carlo)</h3>
-             <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Gölgeli alan %10 ile %90 arasındaki tüm olası piyasa senaryolarını kapsar.</p>
-           </div>
-        </div>
-        
-        {loading || chartData.length === 0 ? null : (
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="cloudGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={P.blue} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={P.blue} stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false} />
-              <XAxis dataKey="year" stroke={P.text3} fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis tickFormatter={(v) => `₺${(v/1000000).toFixed(1)}M`} stroke={P.text3} fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip 
-                contentStyle={{ background: '#1C2038', border: `1px solid ${P.border}`, borderRadius: 12, color: P.text1 }}
-                formatter={(value, name) => {
-                  const n = name === 'bestCase' ? 'En İyi Senaryo' : name === 'worstCase' ? 'Kötü Senaryo' : 'Medyan Beklenti';
-                  return [new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(value), n];
-                }}
-              />
-              {/* Target Line */}
-              <Line type="monotone" data={chartData.map(d => ({year: d.year, target: targetWealth}))} dataKey="target" stroke={P.amber} strokeWidth={2} strokeDasharray="5 5" dot={false} />
+              {/* Universe B (Invested) */}
+              <div style={{ background: 'linear-gradient(180deg, rgba(16,185,129,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'left center' }}>
+                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                   <TrendingUp size={32} color={P.green} />
+                 </div>
+                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren B: Otonom Fon</h3>
+                 <p style={{ fontSize: 14, color: P.text3, marginBottom: 32, lineHeight: 1.6 }}>Harcamayı ertelediniz. Para otonom olarak <strong>S&P 500 & Teknoloji Fonlarına</strong> yatırıldı.</p>
+                 <div style={{ marginTop: 'auto' }}>
+                   <p style={{ fontSize: 12, fontWeight: 800, color: P.green, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>10 YIL SONRAKİ DEĞER</p>
+                   <h2 className="neon-glow" style={{ fontSize: 48, fontWeight: 900, color: '#fff', margin: 0 }}>{fmt(investedValue)}</h2>
+                 </div>
+              </div>
+
+            </div>
+
+            {/* Split Chart Visualization */}
+            <div style={{ background: P.bg2, border: '1px solid ' + P.border, borderRadius: 24, padding: 32, animation: 'fadeSlideUp 1s ease forwards' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px', textAlign: 'center' }}>Zaman Çizgisi Ayrışması (Timeline Divergence)</h3>
               
-              {/* Cloud Area (Best to Worst) */}
-              <Area type="monotone" dataKey="bestCase" stroke="none" fill="url(#cloudGradient)" />
-              <Area type="monotone" dataKey="worstCase" stroke="none" fill={P.bg2} /> {/* Mask out the bottom */}
-              
-              {/* Median Line */}
-              <Line type="monotone" dataKey="median" stroke={P.blue} strokeWidth={4} dot={false} />
-              
-              {/* Boundaries lines */}
-              <Line type="monotone" dataKey="bestCase" stroke={P.green} strokeWidth={1} strokeOpacity={0.5} dot={false} />
-              <Line type="monotone" dataKey="worstCase" stroke={P.red} strokeWidth={1} strokeOpacity={0.5} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
+              <div style={{ height: 400, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorGreen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={P.green} stopOpacity={0.6}/>
+                        <stop offset="95%" stopColor={P.green} stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorRed" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={P.red} stopOpacity={0.6}/>
+                        <stop offset="95%" stopColor={P.red} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="year" stroke={P.text3} fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke={P.text3} fontSize={12} tickFormatter={(val) => '₺' + (val/1000).toFixed(0) + 'k'} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ background: P.bg3, border: '1px solid ' + P.border, borderRadius: 12 }}
+                      itemStyle={{ color: P.text1, fontWeight: 700 }}
+                      formatter={(value, name) => [fmt(value), name === 'invested' ? 'Evren B (Yatırım)' : 'Evren A (Harcama)']}
+                    />
+                    <Area type="monotone" dataKey="invested" stroke={P.green} strokeWidth={4} fill="url(#colorGreen)" />
+                    <Area type="monotone" dataKey="spent" stroke={P.red} strokeWidth={4} fill="url(#colorRed)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          </div>
         )}
-      </div>
 
-    </div>
+      </div>
+    </>
   );
 }
