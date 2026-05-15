@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, useEffect, useCallback, Component } from 'rea
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
+import FeatureTourModal from './components/FeatureTourModal';
 import AuthPage from './pages/AuthPage';
 import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
@@ -31,6 +32,27 @@ const FederatedLearningPage = lazy(() => import('./pages/FederatedLearningPage')
 const EscrowPage = lazy(() => import('./pages/EscrowPage'));
 const ShopSimulationPage = lazy(() => import('./pages/ShopSimulationPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+
+/** Inner component so it can use useLocation (must be inside BrowserRouter) */
+function TourOverlay() {
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener('fincoach:open-tour', handler);
+    return () => window.removeEventListener('fincoach:open-tour', handler);
+  }, []);
+
+  if (!open) return null;
+  return (
+    <FeatureTourModal
+      pathname={pathname}
+      forceShow
+      onClose={() => setOpen(false)}
+    />
+  );
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -132,7 +154,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  const [showTour, setShowTour] = useState(false);
 
   const checkUserStatus = useCallback(async (user) => {
     try {
@@ -248,13 +269,6 @@ export default function App() {
     localStorage.setItem('fincoach_theme', theme);
   }, [theme]);
 
-  // Tour replay listener — fired by PageHeader's sparkles button
-  useEffect(() => {
-    const handler = () => setShowTour(true);
-    window.addEventListener('fincoach:open-tour', handler);
-    return () => window.removeEventListener('fincoach:open-tour', handler);
-  }, []);
-
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -297,12 +311,7 @@ export default function App() {
     <ToastProvider>
       <BrowserRouter>
         <ScrollToTop />
-        {/* Tour overlay — shown when sparkles button clicked */}
-        {showTour && (
-          <Onboarding onComplete={async () => {
-            setShowTour(false);
-          }} />
-        )}
+        <TourOverlay />
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
             <Route element={

@@ -171,14 +171,21 @@ const TOUR_CONTENT = {
   }
 };
 
-export default function FeatureTourModal({ pathname }) {
+export default function FeatureTourModal({ pathname, forceShow = false, onClose }) {
   const seenTours = useStore(state => state.seenTours);
   const markTourSeen = useStore(state => state.markTourSeen);
   
   const content = TOUR_CONTENT[pathname];
 
-  // If no content for this route or already seen, don't show
-  if (!content || seenTours.includes(pathname)) return null;
+  // If no content for this route, don't show
+  if (!content) return null;
+  // If already seen and not forced open, skip
+  if (!forceShow && seenTours.includes(pathname)) return null;
+
+  const handleClose = () => {
+    if (!forceShow) markTourSeen(pathname);
+    if (onClose) onClose();
+  };
 
   return (
     <div style={{
@@ -217,7 +224,7 @@ export default function FeatureTourModal({ pathname }) {
           </p>
           
           <button 
-            onClick={() => markTourSeen(pathname)}
+            onClick={handleClose}
             style={{
               width: '100%', padding: '16px', borderRadius: 16,
               background: `linear-gradient(135deg, ${content.color}, ${content.color}dd)`,
