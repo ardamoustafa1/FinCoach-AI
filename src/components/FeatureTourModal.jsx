@@ -1,4 +1,4 @@
-import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert } from 'lucide-react';
+import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert, LayoutDashboard, ArrowRightLeft, Crosshair, BarChart3, Landmark, Bell, ShoppingBag, Cpu, MessageSquare, Settings } from 'lucide-react';
 import useStore from '../store/useStore';
 
 const P = {
@@ -91,6 +91,83 @@ const TOUR_CONTENT = {
     desc: "Serbest çalışıyorsanız bilirsiniz: Bir ay çok kazanırsınız, bir ay hiç para gelmez. Bu ekran yüksek kazançlı aylarınızdan otomatik olarak kenara koyar ve düşük aylarda size düzenli bir gelir akışı sağlar. Sanki her ay aynı maaşı alıyormuşsunuz gibi hissedersiniz. Strese son.",
     icon: <ShieldAlert size={32} color="#8B5CF6" />,
     color: "#8B5CF6"
+  },
+  '/dashboard': {
+    title: 'Finansal Kokpitiniz 📊',
+    subtitle: 'Her Şey Tek Bir Bakışta',
+    desc: "Geliriniz, gideriniz, tasarruf oranınız, hedeflerinize ne kadar yaklaştığınız... Tüm finansal durumunuz bu tek ekranda özetleniyor. Her sabah buraya bir göz atmanız, paranızın kontrolünü elinizde tutmanız için yeterli.",
+    icon: <LayoutDashboard size={32} color={P.blue} />,
+    color: P.blue
+  },
+  '/transactions': {
+    title: 'Gelir & Gider Takibi 💰',
+    subtitle: 'Her Kuruşun Hesabını Tutun',
+    desc: "Tüm harcamalarınızı ve gelirlerinizi buraya ekleyin. Banka ekstresi yükleyebilir, sesli komutla işlem girebilir veya tek tek manuel ekleyebilirsiniz. FinCoach her işlemi otomatik kategorize eder ve size akıllı analizler sunar.",
+    icon: <ArrowRightLeft size={32} color={P.purple} />,
+    color: P.purple
+  },
+  '/goals': {
+    title: 'Hedef Belirle, Takip Et 🎯',
+    subtitle: 'Hayallerinize Ne Kadar Yakınsınız?',
+    desc: "Yeni araba, tatil, acil durum fonu, düğün birikiminiz... Ne için biriktiriyorsanız buraya ekleyin. FinCoach her hedefinize ne kadar yaklaştığınızı takip eder ve size motivasyon verir. Hedefsiz tasarruf, pusulasız yolculuk gibidir.",
+    icon: <Crosshair size={32} color={P.green} />,
+    color: P.green
+  },
+  '/cashflow': {
+    title: 'Nakit Akışı Takvimi 📅',
+    subtitle: 'Paranız Ayın Hangi Günü Nereye Gidiyor?',
+    desc: "Maaş günü ile bir sonraki maaş günü arasında paranız nasıl eriyor? Bu ekran günlük nakit akışınızı gösteriyor. Hangi günlerde en çok harcama yaptığınızı, ayın sonuna doğru paranızın ne durumda olduğunu net olarak görün.",
+    icon: <BarChart3 size={32} color="#06B6D4" />,
+    color: "#06B6D4"
+  },
+  '/wealth': {
+    title: 'Varlık Yönetimi 🏦',
+    subtitle: 'Toplam Servetinizi Tek Ekranda Görün',
+    desc: "Bankadaki paranız, yatırımlarınız, mülkleriniz ve borçlarınız... Hepsini buraya girin. FinCoach net servetinizi (varlıklar - borçlar) hesaplar ve zamanla nasıl değiştiğini takip eder. Gerçek zenginliğinizi bilin.",
+    icon: <Landmark size={32} color={P.amber} />,
+    color: P.amber
+  },
+  '/subscriptions': {
+    title: 'Abonelik Takipçisi 🔔',
+    subtitle: 'Unuttuğunuz Abonelikler Cebinizi Yakmasın',
+    desc: "Netflix, Spotify, spor salonu, dergi abonelikleri... Her ay kartınızdan çekilen ama belki kullanmadığınız abonelikler var mı? Bu ekran tüm düzenli ödemelerinizi listeler, yenileme tarihlerini hatırlatır ve iptal etmeniz gerekenleri önerir.",
+    icon: <Bell size={32} color="#EC4899" />,
+    color: "#EC4899"
+  },
+  '/chat': {
+    title: 'Yapay Zeka Koçunuz 🤖',
+    subtitle: 'Finansal Sorularınızı Sormaktan Çekinmeyin',
+    desc: "Bu ay ne kadar harcadım? Bütçemi aşıyor muyum? Tatile gitmek için ne kadar biriktirmeliyim? Aklınıza gelen her finansal soruyu buraya yazın. FinCoach AI sizin verilerinize bakarak size özel, kişiselleştirilmiş cevaplar verir.",
+    icon: <MessageSquare size={32} color={P.green} />,
+    color: P.green
+  },
+  '/reports': {
+    title: 'Detaylı Raporlar 📈',
+    subtitle: 'Aylık ve Haftalık Finansal Karneleriniz',
+    desc: "Her ayın sonunda otomatik oluşan detaylı raporlarınıza buradan ulaşabilirsiniz. Kategorilere göre harcama dağılımınız, geçen aya kıyasla değişimleriniz ve tasarruf performansınız — hepsi güzel grafiklerle sunulur. PDF olarak da indirebilirsiniz.",
+    icon: <BarChart3 size={32} color={P.purple} />,
+    color: P.purple
+  },
+  '/settings': {
+    title: 'Ayarlar ⚙️',
+    subtitle: 'Uygulamayı Size Göre Özelleştirin',
+    desc: "Profil bilgilerinizi güncelleyin, bütçe limitlerinizi belirleyin, tema tercihlerinizi (karanlık/aydınlık) değiştirin ve bildirim ayarlarınızı yönetin. FinCoach sizin alışkanlıklarınıza göre çalışır — burada ince ayar yapabilirsiniz.",
+    icon: <Settings size={32} color={P.text2} />,
+    color: "#64748B"
+  },
+  '/shop-sim': {
+    title: 'Harcama Simülatörü 🛍️',
+    subtitle: 'Almadan Önce Bütçenize Etkisini Görün',
+    desc: "Bir şey almayı düşünüyorsunuz ama bütçenize nasıl etki edeceğinden emin değil misiniz? Bu ekranda alışverişi simüle edin. Harcamayı yapsanız ay sonunda ne kadar paranız kalır, hedefleriniz nasıl etkilenir — hepsini önceden görün.",
+    icon: <ShoppingBag size={32} color={P.amber} />,
+    color: P.amber
+  },
+  '/system-monitor': {
+    title: 'Sistem Mimarisi 🖥️',
+    subtitle: 'FinCoach AI Nasıl Çalışıyor?',
+    desc: "Merak edenler için: FinCoach arka planda hangi yapay zeka modellerini kullanıyor, verileriniz nasıl işleniyor, hangi güvenlik katmanları devrede? Bu ekran tüm teknik altyapıyı şeffaf bir şekilde gösterir. Güvenliğiniz bizim için her şeyden önce gelir.",
+    icon: <Cpu size={32} color="#06B6D4" />,
+    color: "#06B6D4"
   }
 };
 
