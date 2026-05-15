@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Target, TrendingUp, Cpu, Gauge, Globe2 } from 'lucide-react';
 import useStore from '../store/useStore';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -107,14 +108,7 @@ export default function WealthPage() {
     }, 800);
   }, []);
 
-  if (loading || !optimalPoint) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.purple}30`, borderTopColor: P.purple, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Kovaryans matrisi ve etkin sınır hesaplanıyor...</p>
-      </div>
-    );
-  }
+  if (loading || !optimalPoint) return <PageLoader message="Kovaryans matrisi ve etkin sınır hesaplanıyor..." />;
 
   return (
     <>
@@ -123,26 +117,13 @@ export default function WealthPage() {
         .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(124,58,237,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Cpu size={20} color={P.purple} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>Modern Portfolio Theory</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Markowitz "Etkin Sınır" Optimizasyonu
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-              Risk skoru sabit paketlerle hesaplanmaz. FinCoach, Harry Markowitz'in Nobel ödüllü algoritmasıyla varlıkların korelasyonunu hesaplar ve size milimetrik, <strong>matematiksel olarak kanıtlanmış en yüksek getirili</strong> portföyü sunar.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          icon={<Cpu size={24} />}
+          color={P.purple}
+          title="Etkin Sınır Optimizasyonu"
+          subtitle="Markowitz Portföy Teorisi ile risk skorunuza göre matematiksel olarak en iyi portföyü bulun."
+          badge="Nobel Alımlı Algoritma"
+        />
 
         {/* RISK ANALYSIS RESULTS */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>

@@ -11,6 +11,7 @@ import { useToast } from '../hooks/useToast';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
 
 /* ─── Palette ─── */
 const P = {
@@ -159,87 +160,41 @@ export default function DashboardPage() {
     <>
       <style>{`@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ opacity: headerVis ? 1 : 0, transform: headerVis ? 'none' : 'translateY(-16px)', transition: 'all 0.7s cubic-bezier(0.4,0,0.2,1)' }}>
-          <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #3b82f6, #10b981)', backgroundSize: '300% 100%', animation: 'gradientShift 4s ease infinite' }} />
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, display: 'inline-block' }} />
-                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: P.text3 }}>{new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}</span>
-                </div>
-                <div>
-                  <h1 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', marginBottom: 4 }}>Finansal Komuta Merkezi</h1>
-                  <p style={{ fontSize: 13, color: P.text2 }}>Senin için hazırlanan gerçek zamanlı özet.</p>
-                </div>
-                <button
-                  onClick={handleAddToWallet}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
-                    background: '#000', border: `1px solid ${P.border}`, color: '#fff',
-                    fontWeight: 700, fontSize: 13, cursor: 'pointer', marginTop: 16,
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.5)', transition: 'all 0.2s'
-                  }}
-                  aria-label="Cüzdanı Apple Wallet'a Ekle"
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <Wallet size={16} aria-hidden="true" />
-                  Apple Wallet'a Ekle
-                </button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <button
-                  onClick={handleBankSync}
-                  disabled={bankingSyncing}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
-                    background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none', color: '#fff',
-                    fontWeight: 700, fontSize: 13, cursor: bankingSyncing ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)', opacity: bankingSyncing ? 0.7 : 1, transition: 'all 0.2s'
-                  }}
-                  aria-label={bankingSyncing ? 'Banka verileri senkronize ediliyor' : 'Bankayı PSD2 ile bağla'}
-                  aria-live="polite"
-                  onMouseEnter={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1.02)'; }}
-                  onMouseLeave={e => { if (!bankingSyncing) e.currentTarget.style.transform = 'scale(1)'; }}
-                >
-                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                  {bankingSyncing ? <RefreshCw size={16} aria-hidden="true" style={{ animation: 'spin 1s linear infinite' }} /> : <Building2 size={16} aria-hidden="true" />}
-                  {bankingSyncing ? 'Senkronize Ediliyor...' : 'Bankanı Bağla (PSD2)'}
-                </button>
-                <button
-                  onClick={() => navigate('/shop-sim')}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12,
-                    background: 'linear-gradient(135deg, #FF1493, #7C3AED)', border: 'none', color: '#fff',
-                    fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)', transition: 'all 0.2s'
-                  }}
-                  aria-label="Satın Almadan Önce Sor simülasyonunu başlat"
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <ShoppingCart size={16} aria-hidden="true" />
-                  Satın Almadan Önce Sor (Test)
-                </button>
-                {[
-                  { icon: Zap, label: 'Cloud Senkron', value: 'Aktif', color: P.purple },
-                  { icon: Activity, label: 'Bütçe Sağlığı', value: 'Canlı', color: P.green },
-                ].map(({ icon: Icon, label, value, color }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '10px 14px' }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 9, background: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={14} color={color} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, color: P.text3, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</p>
-                      <p style={{ fontSize: 12, color: P.text1, fontWeight: 700 }}>{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <PageHeader
+          icon={<Zap size={24} />}
+          color={P.purple}
+          title="Komuta Merkezi"
+          subtitle="Finansal hayatınızın gerçek zamanlı özeti ve yapay zeka analizleri."
+          badge={new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}
+        >
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <button
+              onClick={handleBankSync}
+              disabled={bankingSyncing}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
+                background: bankingSyncing ? P.bg3 : `linear-gradient(135deg, ${P.green}, #059669)`, color: bankingSyncing ? P.text3 : '#fff',
+                fontSize: 13, fontWeight: 800, cursor: bankingSyncing ? 'not-allowed' : 'pointer', border: 'none',
+                boxShadow: bankingSyncing ? 'none' : '0 8px 20px rgba(16,185,129,0.3)', transition: 'all 0.2s'
+              }}
+            >
+              {bankingSyncing ? <RefreshCw size={16} className="animate-spin" /> : <Building2 size={16} />}
+              {bankingSyncing ? 'Senkronize...' : 'Bankanı Bağla'}
+            </button>
+            <button
+              onClick={() => navigate('/shop-sim')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
+                background: `linear-gradient(135deg, #EC4899, ${P.purple})`, color: '#fff',
+                fontSize: 13, fontWeight: 800, cursor: 'pointer', border: 'none',
+                boxShadow: '0 8px 20px rgba(236,72,153,0.3)', transition: 'all 0.2s'
+              }}
+            >
+              <ShoppingCart size={16} />
+              AI Simülatör
+            </button>
           </div>
-        </div>
+        </PageHeader>
 
         <LimitBanner asimlar={asimlar} persistent />
         <HealthScore islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ZAxis } from 'recharts';
 import { ShieldAlert, Clock, Lock, CheckCircle2, Search } from 'lucide-react';
 import { fmt } from '../utils/categories';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -69,14 +70,7 @@ export default function AnomalyPage() {
     setTimeout(() => setWalletLocked(false), 3000); // auto unlock for demo
   };
 
-  if (loading || data.length === 0) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.red}30`, borderTopColor: P.red, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Unsupervised ML: Isolation Forest modeli eğitiliyor...</p>
-      </div>
-    );
-  }
+  if (loading || data.length === 0) return <PageLoader message="Unsupervised ML: Isolation Forest modeli eğitiliyor..." />;
 
   return (
     <>
@@ -88,41 +82,28 @@ export default function AnomalyPage() {
       `}</style>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(245,158,11,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <ShieldAlert size={20} color={P.red} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.red }}>Fraud Detection AI</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              İzolasyon Ormanı (Anomali Tespiti)
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-              Kredi kartı devlerinin kullandığı <strong>Gözetimsiz Makine Öğrenmesi (Isolation Forest)</strong> algoritması. İşlem tutarı küçük olsa bile, alışkanlıklarınızın dışındaki aykırı verileri saniyesinde yakalar.
-            </p>
-          </div>
-
+        <PageHeader
+          icon={<ShieldAlert size={24} />}
+          color={P.red}
+          title="Anomali Tespiti"
+          subtitle="Gözetimsiz Makine Öğrenmesi (Isolation Forest) ile aykırı harcamaları saniyesinde yakalayın."
+          badge="Fraud Detection"
+        >
           <button 
             onClick={handleLock}
             disabled={walletLocked}
             className={!walletLocked ? 'pulse-red' : ''}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 16, border: 'none',
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none',
               background: walletLocked ? P.bg3 : `linear-gradient(135deg, ${P.red}, #B91C1C)`, color: walletLocked ? P.text3 : '#fff',
-              fontSize: 15, fontWeight: 800, cursor: walletLocked ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s'
+              fontSize: 13, fontWeight: 800, cursor: walletLocked ? 'not-allowed' : 'pointer',
+              boxShadow: walletLocked ? 'none' : `0 8px 20px rgba(239,68,68,0.3)`, transition: 'all 0.2s'
             }}
           >
-            {walletLocked ? <CheckCircle2 size={18} /> : <Lock size={18} />}
-            {walletLocked ? 'Cüzdan Kilitlendi (Geçici)' : 'Acil Durum: Cüzdanı Kilitle'}
+            {walletLocked ? <CheckCircle2 size={16} /> : <Lock size={16} />}
+            {walletLocked ? 'Cüzdan Kilitli' : 'Cüzdanı Kilitle'}
           </button>
-        </div>
+        </PageHeader>
 
         {walletLocked && (
           <div className="animate-enter" style={{ background: 'rgba(239,68,68,0.1)', border: `1px solid ${P.red}`, padding: 20, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 12, color: P.red }}>

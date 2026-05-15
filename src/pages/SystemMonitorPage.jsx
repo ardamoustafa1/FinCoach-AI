@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key, Filter } from 'lucide-react';
 import { fmt } from '../utils/categories';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -81,30 +82,18 @@ export default function SystemMonitorPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24,
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Zap size={20} color={P.blue} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.blue }}>System Architecture</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Kafka Event-Driven Mimari
-            </h1>
-            <p style={{ fontSize: 14, color: '#94a3b8', margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-              Canlı sistem topolojisi. Gelen işlemler geleneksel monolitik yapılar gibi veritabanını beklemez; <strong>Apache Kafka</strong> üzerinden asenkron olarak tüm makine öğrenmesi modellerine (Fraud, Prophet, RAG) aynı milisaniye içinde dağıtılır.
-            </p>
+        <PageHeader
+          icon={<Zap size={24} />}
+          color={P.blue}
+          title="Sistem Monitörü"
+          subtitle="Apache Kafka event-driven mimarisi ile tüm AI servislerinin canlı sistem topolojisi."
+          badge="Canlı"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
+            <Activity size={16} color={P.green} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: P.green }}>0ms Gecikme</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 16 }}>
-             <Activity size={20} color={P.green} className="pulse-active" />
-             <span style={{ fontSize: 14, fontWeight: 800, color: P.green }}>Sistem Canlı (0ms Gecikme)</span>
-          </div>
-        </div>
+        </PageHeader>
 
         {/* TOPOLOGY GRAPH */}
         <div className="animate-enter" style={{ background: '#0f172a', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 40, animationDelay: '0.1s', opacity: 0, position: 'relative', overflow: 'hidden' }}>

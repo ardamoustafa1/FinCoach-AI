@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { RefreshCw, ArrowRight, Smartphone, TrendingUp, TrendingDown, Clock, Sparkles } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { fmt } from '../utils/categories';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', purpleLight: '#A78BFA',
@@ -87,23 +88,13 @@ export default function TimeMachinePage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1100, margin: '0 auto', paddingBottom: 40 }}>
         
-        {/* Header */}
-        <div className="animate-enter" style={{ background: 'linear-gradient(135deg, #0f172a, #020617)', border: '1px solid #1e293b', borderRadius: 24, padding: '40px 32px', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-          <div style={{ position: 'absolute', top: -100, right: -100, width: 300, height: 300, background: '#3b82f6', filter: 'blur(120px)', opacity: 0.15, pointerEvents: 'none' }} />
-          
-          <div style={{ zIndex: 1, position: 'relative', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16, background: 'rgba(59,130,246,0.1)', padding: '8px 16px', borderRadius: 999, border: '1px solid rgba(59,130,246,0.3)' }}>
-              <Sparkles size={16} color="#60a5fa" />
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#60a5fa', letterSpacing: '0.15em', textTransform: 'uppercase' }}>The Butterfly Effect Engine</span>
-            </div>
-            <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 16 }}>
-              Paralel Evren Simülatörü 🦋
-            </h1>
-            <p style={{ fontSize: 16, color: '#94a3b8', lineHeight: 1.6, maxWidth: 700, margin: '0 auto' }}>
-              Bugün yapacağınız sıradan bir harcamanın 10 yıl sonraki alternatif finansal evrenlerde nasıl sonuçlanacağını görün. Kararlarınızın zaman içindeki dalgalanmasını izleyin.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          icon={<Clock size={24} />}
+          color="#3B82F6"
+          title="Paralel Evren Simülatörü 🦋"
+          subtitle="Bugün yapacağınız bir haracamanın 10 yıl sonra ne kadar değer kazanabileceğini görün."
+          badge="Butterfly Effect"
+        />
 
         {/* Input Section */}
         <div className="animate-enter" style={{ background: P.bg2, border: '1px solid ' + P.border, borderRadius: 24, padding: 32, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', animationDelay: '0.1s' }}>

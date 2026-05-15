@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ShieldCheck, Smartphone, Cloud, Lock, Cpu, Loader2, Database, Terminal } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -93,41 +94,29 @@ export default function FederatedLearningPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, maxWidth: 900, margin: '0 auto' }}>
         
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <ShieldCheck size={20} color={P.green} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.green }}>Enterprise Privacy</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Federated Learning
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Kullanıcı verisi en kutsal varlığımızdır. Uygulamamız geleneksel SaaS'lar gibi harcama verilerinizi sunuculara göndermez. Makine öğrenmesi modeli (AI) cihazınızda çalışır ve buluta sadece <strong>şifrelenmiş matematiksel ağırlıklar (weights)</strong> gönderilir.
-            </p>
-          </div>
-          
+        <PageHeader
+          icon={<ShieldCheck size={24} />}
+          color={P.green}
+          title="Federated Learning"
+          subtitle="Harcama verileriniz cihazınızda kalır, sadece matematiksel ağırlıklar anonim olarak birleştirilir."
+          badge="Gizlilik Odaklı AI"
+        >
           <button 
             onClick={startTraining}
             disabled={trainingState !== 'idle' && trainingState !== 'done'}
             style={{
-              background: trainingState === 'idle' || trainingState === 'done' ? P.blue : P.bg2,
+              background: trainingState === 'idle' || trainingState === 'done' ? `linear-gradient(135deg, ${P.blue}, #2563EB)` : P.bg3,
               color: trainingState === 'idle' || trainingState === 'done' ? '#fff' : P.text3,
-              border: `1px solid ${trainingState === 'idle' || trainingState === 'done' ? P.blue : P.border}`,
-              padding: '14px 24px', borderRadius: 16, fontSize: 14, fontWeight: 800, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.2s',
-              boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 24px rgba(59,130,246,0.4)' : 'none'
+              border: 'none',
+              padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
+              boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 20px rgba(59,130,246,0.3)' : 'none'
             }}
           >
-            {trainingState === 'idle' || trainingState === 'done' ? <Cpu size={18} /> : <Loader2 size={18} className="spin" />}
-            {trainingState === 'idle' || trainingState === 'done' ? 'Lokal Eğitimi Başlat' : 'Süreç Devam Ediyor...'}
+            {trainingState === 'idle' || trainingState === 'done' ? <Cpu size={16} /> : <Loader2 size={16} className="animate-spin" />}
+            {trainingState === 'idle' || trainingState === 'done' ? 'Eğitimi Başlat' : 'Eğitiliyor...'}
           </button>
-        </div>
+        </PageHeader>
 
         {/* VISUALIZATION TOPOLOGY */}
         <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 40, animationDelay: '0.1s', opacity: 0 }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Lock, ShieldCheck, Activity, ShieldAlert, Cpu, CheckCircle2, Mic, Code, Send, Check } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -110,34 +111,22 @@ export default function EscrowPage() {
 
       <div className="pt-24 pb-32 px-6 max-w-4xl mx-auto matrix-bg" style={{ minHeight: '100vh' }}>
         
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(124,58,237,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px', marginBottom: 32,
-          display: 'flex', flexDirection: 'column', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Cpu size={20} color={P.purple} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>Web3 Smart Contract Escrow</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Blockchain Güvenlik Ağı
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Doğal dil işleme (NLP) ile konuşarak Ethereum akıllı sözleşmeleri oluşturun veya acil durum fonunuzu otonom oracles ile güvence altına alın. Karmaşık Web3 dünyası artık Siri kolaylığında.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: 6, borderRadius: 16, border: `1px solid ${P.border}`, width: 'fit-content' }}>
-            <button onClick={() => setActiveTab('voice')} style={{ padding: '10px 24px', borderRadius: 12, background: activeTab === 'voice' ? P.purple : 'transparent', color: activeTab === 'voice' ? '#fff' : P.text2, fontSize: 14, fontWeight: 800, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: activeTab === 'voice' ? '0 4px 12px rgba(124,58,237,0.4)' : 'none' }}>
-              Sesli Şartlı Transfer
+        <PageHeader
+          icon={<Cpu size={24} />}
+          color={P.purple}
+          title="Blockchain Güvenlik Ağı"
+          subtitle="Doğal dil işleme (NLP) ile konuşarak akıllı sözleşmeler oluşturun veya acil durum fonunuzu güvence altına alın."
+          badge="Smart Contract"
+        >
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: 4, borderRadius: 12, border: `1px solid ${P.border}`, width: 'fit-content' }}>
+            <button onClick={() => setActiveTab('voice')} style={{ padding: '8px 20px', borderRadius: 10, background: activeTab === 'voice' ? P.purple : 'transparent', color: activeTab === 'voice' ? '#fff' : P.text2, fontSize: 13, fontWeight: 800, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
+              Şartlı Transfer
             </button>
-            <button onClick={() => setActiveTab('emergency')} style={{ padding: '10px 24px', borderRadius: 12, background: activeTab === 'emergency' ? P.amber : 'transparent', color: activeTab === 'emergency' ? '#fff' : P.text2, fontSize: 14, fontWeight: 800, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: activeTab === 'emergency' ? '0 4px 12px rgba(245,158,11,0.4)' : 'none' }}>
+            <button onClick={() => setActiveTab('emergency')} style={{ padding: '8px 20px', borderRadius: 10, background: activeTab === 'emergency' ? P.amber : 'transparent', color: activeTab === 'emergency' ? '#fff' : P.text2, fontSize: 13, fontWeight: 800, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
               Acil Durum Fonu
             </button>
           </div>
-        </div>
+        </PageHeader>
 
         {activeTab === 'emergency' && (
           <div className="animate-enter" style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 32, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}>

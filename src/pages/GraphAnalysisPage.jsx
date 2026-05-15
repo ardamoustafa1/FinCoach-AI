@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Network, Search, Link as LinkIcon, Zap } from 'lucide-react';
 import useStore from '../store/useStore';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B', cyan: '#06B6D4',
@@ -106,15 +107,7 @@ export default function GraphAnalysisPage() {
     }).filter(Boolean);
   }, [graphData.edges, visualNodes]);
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.purple}30`, borderTopColor: P.purple, animation: 'spin 1s linear infinite' }} />
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Apriori Algoritması Çalışıyor</h3>
-        <p style={{ fontSize: 13, color: P.text2 }}>Milyonlarca olası kombinasyon taranarak harcama bağımlılıkları çıkarılıyor...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader message="Apriori Algoritması Çalışıyor. Harcama bağımlılıkları çıkarılıyor..." />;
 
   return (
     <>
@@ -125,21 +118,14 @@ export default function GraphAnalysisPage() {
         .node-circle:hover { filter: drop-shadow(0 0 16px rgba(124,58,237,0.8)); }
       `}</style>
       
-      <div style={{ paddingBottom: 40, display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeUp 0.6s ease' }}>
-        
-        {/* HEADER */}
-        <div style={{ background: `linear-gradient(135deg, rgba(124,58,237,0.05), rgba(6,182,212,0.05))`, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Network size={20} color={P.purple} />
-            <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>Big Data Analitiği</span>
-          </div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 12px' }}>
-            Satıcı Bağımlılık Grafı (Market Basket)
-          </h1>
-          <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 700, lineHeight: 1.6 }}>
-            Büyük veri biliminde kullanılan <strong>Apriori Algoritması</strong> ile harcamalarınız arasındaki gizli bağlantıları ortaya çıkarıyoruz. Hangi mağazadan alışveriş yaptıktan sonra "tetiklenip" başka bir mağazadan alışveriş yaptığınızı (zincirleme reaksiyon) keşfedin.
-          </p>
-        </div>
+      <div style={{ paddingBottom: 40, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <PageHeader
+          icon={<Network size={24} />}
+          color={P.purple}
+          title="Market Basket Analizi"
+          subtitle="Harcamalarınız arasındaki gizli bağlantıları ve zincirleme reaksiyonları keşfedin."
+          badge="Apriori Algorithm"
+        />
 
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
