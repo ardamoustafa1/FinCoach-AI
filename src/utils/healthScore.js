@@ -1,3 +1,4 @@
+import useStore from '../store/useStore';
 /**
  * FinCoach AI - Finansal Sağlık Skoru Hesaplayıcı
  * Toplam 100 puan, 4 alt metrik
@@ -33,7 +34,7 @@ export function aySkoru(islemler, gelirler, yil, ay, limitler) {
   // Gerçek geliri veya onboarding'deki geliri kullan
   let profilGelir = 0;
   try {
-    const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
+    const profil = useStore.getState().behavioralProfile;
     if (profil.income && Number(profil.income) > 0) profilGelir = Number(profil.income);
   } catch { /* ignore */ }
   const buAyGelir = ayGelir(gelirler, yil, ay) || profilGelir || 18000;
@@ -41,8 +42,7 @@ export function aySkoru(islemler, gelirler, yil, ay, limitler) {
   const oncekiGider = oncekiTx.reduce((s, i) => s + i.tutar, 0);
 
   // ─── Dinamik Ağırlık Sistemi (Kullanıcı Hedefine Göre) ──────
-  let profil = {};
-  try { profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}'); } catch { /* ignore */ }
+  const profil = useStore.getState().behavioralProfile || {};
   const goal = profil.goal || 'takip';
 
   // Hedef bazlı ağırlıklar (toplam = 100)

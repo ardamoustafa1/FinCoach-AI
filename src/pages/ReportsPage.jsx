@@ -24,19 +24,11 @@ const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','A
 const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
 function normalizeTransactions() {
-  const giderler = useStore.getState().transactions.map((tx) => ({
+  return useStore.getState().transactions.map((tx) => ({
     id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
     kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
-  }));
-  try {
-    const gelirler = JSON.parse(localStorage.getItem('fincoach_gelir') || '[]').map((tx) => ({
-      id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || 'Gelir',
-      kategori: tx.kategori || 'Gelir', tutar: Number(tx.tutar ?? tx.amount ?? 0),
-      not: tx.not || '', tur: 'gelir',
-    }));
-    return [...giderler, ...gelirler].filter(tx => tx.tarih && tx.tutar > 0);
-  } catch { return giderler.filter(tx => tx.tarih && tx.tutar > 0); }
+  })).filter(tx => tx.tarih && tx.tutar > 0);
 }
 
 function monthKey(dateLike) { return String(dateLike || '').slice(0, 7); }

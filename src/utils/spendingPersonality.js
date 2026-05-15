@@ -1,3 +1,4 @@
+import useStore from '../store/useStore';
 /**
  * FinCoach AI - Harcama Kişilik Tipi Tespit Motoru
  */
@@ -109,7 +110,7 @@ export function kisilikTipiBelirle(islemler) {
   // 2. Tasarruf Oranı (0.0 - 1.0)
   let aylikGelir = 18000;
   try {
-    const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
+    const profil = useStore.getState().behavioralProfile;
     if (profil.income && Number(profil.income) > 0) aylikGelir = Number(profil.income);
   } catch { /* ignore */ }
   // Tahmini 3 aylık pencere gibi düşünelim (veya ortalama aya vurursak 1 aylık)

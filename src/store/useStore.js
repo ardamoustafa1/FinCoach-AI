@@ -6,11 +6,33 @@ const useStore = create((set, get) => ({
   goals: [],
   budgetLimits: {},
   categoryRules: {},
+  userProfile: {
+    name: localStorage.getItem('fincoach_user_name') || '',
+    phone: localStorage.getItem('fincoach_phone') || '',
+    bank: localStorage.getItem('fincoach_bank') || 'Finansal Koç',
+    email: ''
+  },
+  behavioralProfile: JSON.parse(localStorage.getItem('fincoach_profile') || '{}'),
 
   setTransactions: (transactions) => set({ transactions }),
   setGoals: (goals) => set({ goals }),
   setBudgetLimits: (budgetLimits) => set({ budgetLimits }),
   setCategoryRules: (categoryRules) => set({ categoryRules }),
+  
+  setUserProfile: (updates) => {
+    set((state) => {
+      const newUserProfile = { ...state.userProfile, ...updates };
+      if (updates.name) localStorage.setItem('fincoach_user_name', updates.name);
+      if (updates.phone) localStorage.setItem('fincoach_phone', updates.phone);
+      if (updates.bank) localStorage.setItem('fincoach_bank', updates.bank);
+      return { userProfile: newUserProfile };
+    });
+  },
+
+  setBehavioralProfile: (profile) => {
+    localStorage.setItem('fincoach_profile', JSON.stringify(profile));
+    set({ behavioralProfile: profile });
+  },
 
   // Transactions
   addTransaction: async (transaction) => {
@@ -168,6 +190,7 @@ const useStore = create((set, get) => ({
     const rules = get().categoryRules;
     return rules[magaza.trim().toLowerCase()] || '';
   }
+
 
 }));
 

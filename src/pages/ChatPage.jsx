@@ -35,7 +35,7 @@ const P = {
 const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#06B6D4'];
 
 const getInitialMessages = () => {
-  const userName = localStorage.getItem('fincoach_user_name') || '';
+  const userName = useStore.getState().userProfile?.name || '';
   const greeting = userName ? `Merhaba ${userName}! 👋` : 'Merhaba! 👋';
   return [
     { role: 'bot', content: `${greeting} Ben FinCoach AI, kişisel finans koçun. Finansal verilerini analiz ederek sana özel tavsiyeler verebilirim. Birlikte bütçeni yönetelim, bana ne sormak istersin?` },
@@ -70,13 +70,13 @@ function getUserContext() {
     // Onboarding profili — hedef, gelir, banka
     let kullaniciBilgisi = {};
     try {
-      const profil = JSON.parse(localStorage.getItem('fincoach_profile') || '{}');
+      const profil = useStore.getState().behavioralProfile;
       const goalLabels = { tasarruf: 'Tasarruf artırmak', takip: 'Harcamaları takip etmek', birikim: 'Birikim hedefi koymak' };
       kullaniciBilgisi = {
         hedefTipi: goalLabels[profil.goal] || profil.goal || 'Belirtilmedi',
         aylikGelir: profil.income ? `₺${Number(profil.income).toLocaleString('tr-TR')}` : 'Belirtilmedi',
         banka: profil.bank || 'Belirtilmedi',
-        kullaniciAdi: localStorage.getItem('fincoach_user_name') || 'Kullanıcı',
+        kullaniciAdi: useStore.getState().userProfile.name || 'Kullanıcı',
       };
     } catch {
       kullaniciBilgisi = {};

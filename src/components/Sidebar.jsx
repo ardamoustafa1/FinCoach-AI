@@ -3,6 +3,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
   ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network
 } from 'lucide-react';
+import useStore from '../store/useStore';
 
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
@@ -39,8 +40,8 @@ const P = {
 };
 
 export default function Sidebar({ collapsed, onToggle }) {
-  const userName = localStorage.getItem('fincoach_user_name') || 'Kullanıcı';
-  const userBank = localStorage.getItem('fincoach_bank') || 'Finansal Koç';
+  
+  const { name: userName = 'Kullanıcı', bank: userBank = 'Finansal Koç' } = useStore(state => state.userProfile);
   const initial = userName.charAt(0).toUpperCase() || 'K';
 
   return (

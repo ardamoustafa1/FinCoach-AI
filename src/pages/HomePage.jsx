@@ -356,7 +356,7 @@ export default function HomePage() {
     return areaData;
   })();
 
-  const userName = localStorage.getItem('fincoach_user_name') || 'Kullanıcı';
+  const userName = useStore(state => state.userProfile.name) || 'Kullanıcı';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
 
