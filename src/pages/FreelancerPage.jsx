@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Waves, Lock, TrendingUp, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { fmt } from '../utils/categories';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -61,56 +62,29 @@ export default function FreelancerPage() {
     setSmoothingActive(true);
   };
 
-  if (loading || !data) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.blue}30`, borderTopColor: P.blue, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Serbest meslek gelir oynaklığı analiz ediliyor...</p>
-      </div>
-    );
-  }
+  if (loading || !data) return <PageLoader message="Serbest meslek gelir oynakl&#305;&#287;&#305; analiz ediliyor..." />;
 
   return (
     <>
-      <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes flowLine { to { stroke-dashoffset: -20; } }
-      `}</style>
-
+      <style>{`@keyframes flowLine { to { stroke-dashoffset: -20; } }`}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(16,185,129,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Waves size={20} color={P.blue} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.blue }}>Freelancer & Esnaf Asistanı</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Düzensiz Gelir Dengeleyici
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Aydan aya değişen stresli gelir modelinizi bitirin. Yapay zeka, yüksek kazandığınız aylardaki fazlalığı kasaya kilitler ve size her ay huzurlu, <strong>sabit bir maaş</strong> öder.
-            </p>
-          </div>
-          
+        <PageHeader
+          icon={<Waves size={24} />}
+          color="#3B82F6"
+          title="Freelancer Gelir Dengeleyici"
+          subtitle="Aydan aya değişen gelirinizi sabit bir maaşa dönüştürün. Stressiz bir finansal hayat." 
+          badge="Freelancer & Esnaf"
+        >
           {!smoothingActive ? (
-             <button onClick={activateSmoothing} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 16, border: 'none', background: `linear-gradient(135deg, ${P.blue}, #2563EB)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', boxShadow: `0 8px 24px rgba(59,130,246,0.3)`, transition: 'all 0.2s', animation: 'fadeSlideUp 0.5s ease' }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-               <RefreshCw size={18} /> Sistemi Aktif Et
-             </button>
+            <button onClick={activateSmoothing} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #3B82F6, #2563EB)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(59,130,246,0.3)' }}>
+              <RefreshCw size={16} /> Sistemi Aktif Et
+            </button>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: `1px solid rgba(16,185,129,0.3)`, color: P.green, fontSize: 15, fontWeight: 800, animation: 'fadeSlideUp 0.3s ease' }}>
-               <CheckCircle2 size={18} /> Sistem Aktif
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: '#10B981', fontSize: 13, fontWeight: 800 }}>
+              <CheckCircle2 size={16} /> Sistem Aktif
             </div>
           )}
-        </div>
+        </PageHeader>
 
         {/* METRICS */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>

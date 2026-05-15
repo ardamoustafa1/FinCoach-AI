@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { Home, Calculator, AlertOctagon, CheckCircle2, TrendingDown } from 'lucide-react';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -95,36 +96,19 @@ export default function RealEstatePage() {
   return (
     <>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        /* Custom Range Slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: ${P.purple}; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px ${P.purple}80; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: ${P.bg3}; border-radius: 3px; border: 1px solid ${P.border}; }
       `}</style>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(124,58,237,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Home size={20} color={P.purple} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.purple }}>AI Gayrimenkul Asistanı</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Akıllı Kredi & Ev Alma Kararı
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Banka kredi faizlerini maaşınızla simüle edin. Yapay zeka, bu gayrimenkul yatırımının sizi finansal olarak batırıp batırmayacağını <strong>net direktiflerle</strong> söylesin.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          icon={<Home size={24} />}
+          color="#14B8A6"
+          title="Ev & Kredi Hesaplayıcı"
+          subtitle="Almak istediğiniz evin kredinizi batırıp batırmayacağını yapay zeka analiz etsin."
+          badge="AI Gayrimenkul"
+        />
 
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           

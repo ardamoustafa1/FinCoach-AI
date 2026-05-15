@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calculator, Download, CheckCircle2, Receipt, Search, Building2, Car, Coffee, Info, Loader2 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -75,56 +76,32 @@ export default function TaxOptimizerPage() {
     }, 2000);
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.green}30`, borderTopColor: P.green, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>OCR fişleri ve vergiden düşülebilir kalemler taranıyor...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader message="OCR fişleri ve vergiden düşülebilir kalemler taranıyor..." />;
 
   return (
     <>
-      <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      `}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Calculator size={20} color={P.green} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.green }}>AI Vergi Asistanı</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Vergi ve Kesinti Optimizasyonu
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 600, lineHeight: 1.6 }}>
-              FinCoach OCR yapay zekası, okuduğu fişleri analiz ederek freelancer ve şirket sahipleri için <strong style={{color: P.text1}}>vergiden düşülebilir giderleri</strong> otomatik tespit eder.
-            </p>
-          </div>
-
+        <PageHeader
+          icon={<Calculator size={24} />}
+          color="#EC4899"
+          title="Vergi Asistanı"
+          subtitle="Maaşınızdan hak ettiğiniz indirimleri bulun ve yasal olarak geri alın."
+          badge="AI Destekli"
+        >
           <button 
             onClick={generateReport}
             disabled={generating}
             style={{ 
-              display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 16, border: 'none',
-              background: generating ? P.bg3 : `linear-gradient(135deg, ${P.green}, #059669)`, color: generating ? P.text3 : '#fff',
-              fontSize: 14, fontWeight: 800, cursor: generating ? 'not-allowed' : 'pointer',
-              boxShadow: generating ? 'none' : `0 8px 24px rgba(16,185,129,0.3)`, transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none',
+              background: generating ? P.bg3 : `linear-gradient(135deg, #EC4899, #DB2777)`, color: generating ? P.text3 : '#fff',
+              fontSize: 13, fontWeight: 800, cursor: generating ? 'not-allowed' : 'pointer',
+              boxShadow: generating ? 'none' : `0 8px 20px rgba(236,72,153,0.3)`, transition: 'all 0.2s'
             }}
           >
-            {generating ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-            {generating ? 'Rapor Hazırlanıyor...' : 'Muhasebeciye Gönder (PDF)'}
+            {generating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {generating ? 'Hazırlanıyor...' : 'PDF Rapor'}
           </button>
-        </div>
+        </PageHeader>
 
         {/* METRICS */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>

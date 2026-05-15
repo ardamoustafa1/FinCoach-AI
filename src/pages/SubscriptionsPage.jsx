@@ -3,6 +3,7 @@ import {
   ShieldAlert, Bot, CheckCircle2, Loader2, PlayCircle, Video, Music, Dumbbell
 } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
+import PageHeader from '../components/PageHeader';
 
 /* ─── Palette ─── */
 const P = {
@@ -78,44 +79,13 @@ export default function SubscriptionsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         
-        {/* ── HERO ── */}
-        <div style={{
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)',
-          border: `1px solid rgba(255,255,255,0.08)`,
-          borderRadius: 24, padding: '32px 40px',
-          position: 'relative', overflow: 'hidden',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.2)',
-          backdropFilter: 'blur(20px)'
-        }}>
-          {/* Ambient glows */}
-          <div style={{ position: 'absolute', top: -50, right: -50, width: 300, height: 300, background: 'rgba(239,68,68,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -50, left: -50, width: 250, height: 250, background: 'rgba(124,58,237,0.15)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.5), rgba(124,58,237,0.5), transparent)' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, position: 'relative', zIndex: 1 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 20,
-              background: 'linear-gradient(135deg, #EF4444, #7C3AED)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 32px rgba(239,68,68,0.4)',
-              border: '1px solid rgba(255,255,255,0.2)'
-            }}>
-              <ShieldAlert size={32} color="#fff" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#fca5a5' }}>Agentic AI Devrede</span>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.red, display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-              </div>
-              <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
-                Abonelik Avcısı & Otonom İptal
-              </h1>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>
-                Hayalet harcamalarınızı tespit eder, iptal etmek istediklerinizi yapay zeka ajanımız <strong style={{color: '#fff'}}>sizin yerinize otonom olarak iptal eder.</strong>
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          icon={<ShieldAlert size={24} />}
+          color="#EF4444"
+          title="Abonelik Taksıpçisi"
+          subtitle="Unuttuğunuz abonelikleri tespit edin, yapay zeka ajanımız sizin yerinize iptal etsin."
+          badge="Agentic AI"
+        />
 
         {/* ── SUBSCRIPTIONS LIST ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>

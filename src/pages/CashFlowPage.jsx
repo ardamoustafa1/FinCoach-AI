@@ -3,6 +3,7 @@ import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip as Rech
 import { TrendingDown, AlertCircle, CalendarClock, BarChart4, ArrowUpRight, BrainCircuit } from 'lucide-react';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
+import PageHeader, { PageLoader } from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -148,42 +149,18 @@ export default function CashFlowPage() {
     }, 1200); // UI için yapay bekleme
   }, []);
 
-  if (loading || !metrics) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: `3px solid ${P.blue}30`, borderTopColor: P.blue, animation: 'spin 1s linear infinite' }} />
-        <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.05em' }}>Monte Carlo Nakit Akışı Simülasyonu çalıştırılıyor (500 Senaryo)...</p>
-      </div>
-    );
-  }
+  if (loading || !metrics) return <PageLoader message="Monte Carlo Nakit Akışı Simülas yonu çalıştırılıyor (500 Senaryo)..." />;
 
   return (
     <>
-      <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      `}</style>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
-        
-        {/* ── HEADER ── */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(124,58,237,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24
-        }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <BrainCircuit size={20} color={P.blue} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.blue }}>Stokastik Finansal Modelleme</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Monte Carlo Nakit Akışı Simülasyonu
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              Gelecek belirsizdir. Bu yüzden düz bir tahmin çizgisi çizmek yerine, geçmiş harcama varyansınızı (standart sapma) kullanarak gelecek 12 ay için <strong>500 farklı rastgele senaryo (Box-Muller)</strong> üretiyoruz ve en olası sonuçları (%90 Güven Aralığı) gösteriyoruz.
-            </p>
-          </div>
+        <PageHeader
+          icon={<BrainCircuit size={24} />}
+          color="#3B82F6"
+          title="Nakit Akışı Tahmini"
+          subtitle="Gelecek 12 ayda paranız nasıl gidecek? 500 farklı senaryo simüle ediliyor."
+          badge="Monte Carlo"
+        >
 
           {metrics.crisisMonth ? (
             <div style={{ background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 16, padding: 20, maxWidth: 350 }}>
@@ -192,7 +169,7 @@ export default function CashFlowPage() {
                 <span style={{ fontSize: 14, fontWeight: 800, color: P.red }}>Likidite Krizi Uyarısı</span>
               </div>
               <p style={{ fontSize: 13, color: P.text1, margin: 0, lineHeight: 1.5 }}>
-                Mevsimsel harcamalarınız sebebiyle <strong>{metrics.crisisMonth}</strong> döneminde nakit açığına düşeceğiniz öngörülmektedir. Tedbir alın.
+                Mevsimsel harcamalarınız sebebiyle <strong>{metrics.crisisMonth}</strong> döneminde nakit açığına düşeceğiniz öngörül mektedir. Tedbir alın.
               </p>
             </div>
           ) : (
@@ -206,7 +183,7 @@ export default function CashFlowPage() {
               </p>
             </div>
           )}
-        </div>
+        </PageHeader>
 
         {/* ── METRICS GRID ── */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
