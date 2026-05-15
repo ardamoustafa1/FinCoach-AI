@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ComposedChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { Waves, Lock, Zap, TrendingUp, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Waves, Lock, TrendingUp, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -26,8 +26,9 @@ export default function FreelancerPage() {
   const [smoothingActive, setSmoothingActive] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
     setTimeout(() => {
+      if (!isMounted) return;
       // AI calculates the "Safe Salary" (average of last 6 months with a 15% safety buffer)
       const totalIncome = VOLATILE_INCOME.reduce((a, b) => a + b.gercekGelir, 0);
       const avgIncome = totalIncome / VOLATILE_INCOME.length;
@@ -53,6 +54,7 @@ export default function FreelancerPage() {
       setChartData(history);
       setLoading(false);
     }, 800);
+    return () => { isMounted = false; };
   }, []);
 
   const activateSmoothing = () => {

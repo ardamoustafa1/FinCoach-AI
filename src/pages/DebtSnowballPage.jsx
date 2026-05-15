@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, ArrowRight, ShieldCheck, Snowflake, Calculator, AlertTriangle } from 'lucide-react';
+import { CreditCard, Snowflake, Calculator, AlertTriangle } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -22,8 +22,9 @@ export default function DebtSnowballPage() {
   const totalMonthlyBudget = 25000; // Kullanıcının borçlara ayırabildiği toplam para
 
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
     setTimeout(() => {
+      if (!isMounted) return;
       // Sort debts based on strategy
       let sortedDebts = [...MOCK_DEBTS];
       if (strategy === 'snowball') {
@@ -37,7 +38,7 @@ export default function DebtSnowballPage() {
       const extraPayment = totalMonthlyBudget - totalMinPayment; // Kartopu etkisi için kullanılacak fazlalık
 
       // Simple AI Advice
-      let aiAdvice = '';
+      let aiAdvice;
       if (extraPayment < 0) {
          aiAdvice = `ALARM: Asgari ödemeleriniz (₺${totalMinPayment}), bütçenizi (₺${totalMonthlyBudget}) aşıyor. Acilen harcamaları kısmalı veya borç yapılandırması (konsolidasyon) yapmalısınız.`;
       } else {
@@ -49,6 +50,7 @@ export default function DebtSnowballPage() {
          }
       }
 
+
       setPlan({
         totalBalance,
         totalMinPayment,
@@ -58,6 +60,7 @@ export default function DebtSnowballPage() {
       });
       setLoading(false);
     }, 600);
+    return () => { isMounted = false; };
   }, [strategy]);
 
   if (loading || !plan) {
@@ -98,13 +101,13 @@ export default function DebtSnowballPage() {
           
           <div style={{ display: 'flex', background: P.bg3, borderRadius: 12, padding: 4, border: `1px solid ${P.border}` }}>
             <button 
-              onClick={() => setStrategy('snowball')}
+              onClick={() => { setLoading(true); setStrategy('snowball'); }}
               style={{ background: strategy === 'snowball' ? P.blue : 'transparent', color: strategy === 'snowball' ? '#fff' : P.text2, border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
             >
               Kartopu (Hızlı Motive)
             </button>
             <button 
-              onClick={() => setStrategy('avalanche')}
+              onClick={() => { setLoading(true); setStrategy('avalanche'); }}
               style={{ background: strategy === 'avalanche' ? P.red : 'transparent', color: strategy === 'avalanche' ? '#fff' : P.text2, border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
             >
               Çığ (Düşük Faiz)

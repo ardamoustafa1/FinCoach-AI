@@ -40,7 +40,7 @@ export default function LeaguePage() {
       try {
         navigator.clipboard.writeText(text);
         toast.success('Davet bağlantısı kopyalandı ve WhatsApp açılıyor.');
-      } catch (e) {
+      } catch {
         // ignore clipboard error
       }
     }, 600);

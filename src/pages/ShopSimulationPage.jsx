@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, ShieldAlert, Shield, Bot, ShieldCheck, Zap, Scale, BrainCircuit } from 'lucide-react';
+import { ShoppingBag, ShieldAlert, ShieldCheck, Zap, Scale, BrainCircuit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 

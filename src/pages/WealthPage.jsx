@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { Landmark, ShieldCheck, Activity, Target, TrendingUp, Cpu, Newspaper, Gauge, Globe2 } from 'lucide-react';
+import { Target, TrendingUp, Cpu, Gauge, Globe2 } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
-import { fmt } from '../utils/categories';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',

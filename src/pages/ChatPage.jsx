@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Home, Sparkles, Zap, Share2, Maximize2, X, Download, TrendingUp, TrendingDown, Clock, Search, Loader2, Database, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Zap, Share2, Maximize2, X, Search, Loader2, Database, CheckCircle2 } from 'lucide-react';
 import { sanitize } from '../utils/security';
 import ReactMarkdown from 'react-markdown';
 import {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, ShieldCheck, Zap, Activity, ShieldAlert, Cpu, CheckCircle2, XCircle } from 'lucide-react';
+import { Lock, ShieldCheck, Activity, ShieldAlert, Cpu, CheckCircle2, XCircle } from 'lucide-react';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',

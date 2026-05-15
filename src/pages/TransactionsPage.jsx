@@ -556,6 +556,12 @@ export default function TransactionsPage() {
     return () => clearTimeout(t);
   }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
 
+  /* ─ CRUD ─ */
+  const refreshLocal = () => {
+    const tx = getTransactions();
+    setHam(tx.sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
+  };
+
   useEffect(() => {
     const handleTxAdded = () => refreshLocal();
     window.addEventListener('transaction_added', handleTxAdded);
@@ -600,12 +606,6 @@ export default function TransactionsPage() {
     recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
     recognition.onend = () => { setIsListening(false); };
     recognition.start();
-  };
-
-  /* ─ CRUD ─ */
-  const refreshLocal = () => {
-    const tx = getTransactions();
-    setHam(tx.sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
   };
 
   const handleKaydet = async (form) => {

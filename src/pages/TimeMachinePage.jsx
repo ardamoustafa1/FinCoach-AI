@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Clock, TrendingUp, AlertTriangle, Calculator, Dices, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calculator, Dices, RefreshCw } from 'lucide-react';
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -35,8 +34,9 @@ export default function TimeMachinePage() {
   const NUM_SIMULATIONS = 500; // Run 500 simulations in background
 
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
     setTimeout(() => {
+      if (!isMounted) return;
       // Run Monte Carlo
       const allRuns = [];
       let successCount = 0;
@@ -93,6 +93,7 @@ export default function TimeMachinePage() {
       });
       setLoading(false);
     }, 600);
+    return () => { isMounted = false; };
   }, [years, expectedReturn, volatility, targetWealth, simKey]);
 
   return (
@@ -159,7 +160,7 @@ export default function TimeMachinePage() {
               <input type="range" min="500000" max="10000000" step="500000" value={targetWealth} onChange={e => setTargetWealth(Number(e.target.value))} style={{ width: '100%', accentColor: P.blue }} />
             </div>
 
-            <button onClick={() => setSimKey(k => k + 1)} style={{ width: '100%', padding: '12px', background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 800, marginTop: 12 }}>
+            <button onClick={() => { setLoading(true); setSimKey(k => k + 1); }} style={{ width: '100%', padding: '12px', background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 800, marginTop: 12 }}>
               <RefreshCw size={16} /> 500 Senaryo Daha Çalıştır
             </button>
           </div>

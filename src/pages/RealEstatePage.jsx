@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { Home, Calculator, AlertOctagon, CheckCircle2, TrendingDown, Percent, Landmark } from 'lucide-react';
+import { Home, Calculator, AlertOctagon, CheckCircle2, TrendingDown } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
@@ -21,8 +21,10 @@ export default function RealEstatePage() {
 
   // Auto-calculate on input change
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
+    setTimeout(() => { if (isMounted) setLoading(true); }, 0);
     const timer = setTimeout(() => {
+      if (!isMounted) return;
       const tx = getTransactions();
       const monthlyIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       
@@ -31,7 +33,7 @@ export default function RealEstatePage() {
       const n = termMonths;
       
       // Amortization formula: M = P[r(1+r)^n]/[(1+r)^n-1]
-      let monthlyPayment = 0;
+      let monthlyPayment;
       if (r > 0) {
         monthlyPayment = principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
       } else {
@@ -65,12 +67,11 @@ export default function RealEstatePage() {
       }
 
       // AI Decision Logic
-      let decision = 'approved'; // approved, warning, rejected
-      let message = '';
+      let decision;
+      let message;
       
       if (dtiRatio > 55) {
         decision = 'rejected';
-        const requiredIncome = monthlyPayment / 0.40;
         const requiredDownPayment = housePrice - (((monthlyIncome * 0.40) * (Math.pow(1 + r, n) - 1)) / (r * Math.pow(1 + r, n)));
         message = `REDDEDİLDİ: Bu evi almak seni finansal olarak batırır. Aylık taksit (₺${Math.round(monthlyPayment).toLocaleString()}), toplam gelirinin %${Math.round(dtiRatio)}'si! Peşinatı en az ₺${Math.round(requiredDownPayment).toLocaleString()}'ye çıkarana kadar bekle veya daha ucuz bir ev bak.`;
       } else if (dtiRatio > 40) {
@@ -88,7 +89,7 @@ export default function RealEstatePage() {
       setLoading(false);
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => { isMounted = false; clearTimeout(timer); };
   }, [housePrice, downPayment, termMonths, interestRate]);
 
   return (

@@ -12,6 +12,32 @@ const P = {
 
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div style={{ background: P.bg2, border: `1px solid ${data.isNegative ? P.red : P.border}`, borderRadius: 12, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>{data.month}</p>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{ fontSize: 12, color: P.text3 }}>Medyan Senaryo:</span>
+          <span style={{ fontSize: 20, fontWeight: 900, color: data.isNegative ? P.red : P.blue }}>{fmt(data.yhat)}</span>
+        </div>
+        <div style={{ fontSize: 11, color: P.text3, marginTop: 4 }}>
+          %90 Güven Aralığı: [{fmt(data.yhat_lower)} - {fmt(data.yhat_upper)}]
+        </div>
+        
+        {data.event && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${P.border}` }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: P.amber, textTransform: 'uppercase', marginBottom: 4 }}>Mevsimsel Etki Tespit Edildi</p>
+            <p style={{ fontSize: 12, color: P.text1, fontWeight: 600, margin: 0 }}>{data.event}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function CashFlowPage() {
   const [data, setData] = useState([]);
   const [metrics, setMetrics] = useState(null);
@@ -31,7 +57,7 @@ export default function CashFlowPage() {
     // Ortalama Gider ve Standart Sapma
     const avgExpense = giderler.length > 0 ? giderler.reduce((a, b) => a + b, 0) / Math.max(1, giderler.length) : 35000;
     
-    let variance = 0;
+    let variance;
     if (giderler.length > 1) {
       variance = giderler.reduce((a, b) => a + Math.pow(b - avgExpense, 2), 0) / (giderler.length - 1);
     } else {
@@ -130,32 +156,6 @@ export default function CashFlowPage() {
       </div>
     );
   }
-
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div style={{ background: P.bg2, border: `1px solid ${data.isNegative ? P.red : P.border}`, borderRadius: 12, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-          <p style={{ fontSize: 13, fontWeight: 800, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>{data.month}</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <span style={{ fontSize: 12, color: P.text3 }}>Medyan Senaryo:</span>
-            <span style={{ fontSize: 20, fontWeight: 900, color: data.isNegative ? P.red : P.blue }}>{fmt(data.yhat)}</span>
-          </div>
-          <div style={{ fontSize: 11, color: P.text3, marginTop: 4 }}>
-            %90 Güven Aralığı: [{fmt(data.yhat_lower)} - {fmt(data.yhat_upper)}]
-          </div>
-          
-          {data.event && (
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${P.border}` }}>
-              <p style={{ fontSize: 11, fontWeight: 800, color: P.amber, textTransform: 'uppercase', marginBottom: 4 }}>Mevsimsel Etki Tespit Edildi</p>
-              <p style={{ fontSize: 12, color: P.text1, fontWeight: 600, margin: 0 }}>{data.event}</p>
-            </div>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <>

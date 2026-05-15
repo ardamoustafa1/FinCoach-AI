@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Smartphone, Cloud, ArrowUp, ArrowDown, Lock, CheckCircle2, Cpu, Loader2, Database, Terminal } from 'lucide-react';
+import { ShieldCheck, Smartphone, Cloud, Lock, Cpu, Loader2, Database, Terminal } from 'lucide-react';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -45,8 +45,10 @@ export default function FederatedLearningPage() {
     }
 
     if (trainingState === 'uploading') {
-      addLog('[NETWORK] Eğitim tamamlandı. Ham veri (Raw Data) boyutu: 0 Bytes.', P.green);
-      addLog('[PRIVACY] Differential Privacy devrede: Ağırlıklara Laplace Gürültüsü (ε=0.1) ekleniyor...', P.amber);
+      setTimeout(() => {
+        addLog('[NETWORK] Eğitim tamamlandı. Ham veri (Raw Data) boyutu: 0 Bytes.', P.green);
+        addLog('[PRIVACY] Differential Privacy devrede: Ağırlıklara Laplace Gürültüsü (ε=0.1) ekleniyor...', P.amber);
+      }, 0);
       
       setTimeout(() => {
         addLog('[NETWORK] Model Ağırlıkları (Weights) AES-256 ile şifreleniyor...', P.purple);
@@ -60,8 +62,10 @@ export default function FederatedLearningPage() {
     }
 
     if (trainingState === 'aggregating') {
-      addLog('[CLOUD] Global Aggregation (Ortalama Alma) işlemi başlatıldı...', P.amber);
-      addLog('[CLOUD] Sizin ve 12.409 diğer kullanıcının ağırlıkları birleştirildi.', P.text2);
+      setTimeout(() => {
+        addLog('[CLOUD] Global Aggregation (Ortalama Alma) işlemi başlatıldı...', P.amber);
+        addLog('[CLOUD] Sizin ve 12.409 diğer kullanıcının ağırlıkları birleştirildi.', P.text2);
+      }, 0);
       
       const t = setTimeout(() => {
         setTrainingState('done');

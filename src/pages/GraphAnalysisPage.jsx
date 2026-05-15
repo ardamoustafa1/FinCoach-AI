@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Network, Search, AlertTriangle, TrendingUp, Link as LinkIcon, ExternalLink, Zap } from 'lucide-react';
+import { Network, Search, Link as LinkIcon, Zap } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
 
 const P = {

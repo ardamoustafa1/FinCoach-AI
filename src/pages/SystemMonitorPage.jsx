@@ -25,6 +25,13 @@ export default function SystemMonitorPage() {
   const [logs, setLogs] = useState([]);
   const [activeNodes, setActiveNodes] = useState({ kafka: false, fraud: false, cashflow: false, rag: false });
 
+  const addLog = (msg, color = 'default') => {
+    setLogs(prev => {
+      const newLogs = [{ msg, color, id: Math.random() }, ...prev];
+      return newLogs.slice(0, 8); // Keep last 8
+    });
+  };
+
   useEffect(() => {
     // Event Stream Simulator
     const interval = setInterval(() => {
@@ -58,13 +65,6 @@ export default function SystemMonitorPage() {
 
     return () => clearInterval(interval);
   }, []);
-
-  const addLog = (msg, color = 'default') => {
-    setLogs(prev => {
-      const newLogs = [{ msg, color, id: Math.random() }, ...prev];
-      return newLogs.slice(0, 8); // Keep last 8
-    });
-  };
 
   return (
     <>

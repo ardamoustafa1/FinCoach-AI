@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { Globe, AlertTriangle, ShieldAlert, TrendingDown, ArrowRightLeft, Target, Briefcase, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Globe, AlertTriangle, TrendingDown, ArrowRightLeft, Briefcase, Zap } from 'lucide-react';
 import { getTransactions } from '../utils/storage';
 import { fmt } from '../utils/categories';
 
@@ -62,10 +62,12 @@ export default function StressTestPage() {
   const activeScenario = SCENARIOS.find(s => s.id === activeScenarioId);
 
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
+    setTimeout(() => { if (isMounted) setLoading(true); }, 0);
     
     // Simulate AI model calculation delay
     const timer = setTimeout(() => {
+      if (!isMounted) return;
       const tx = getTransactions();
       
       // Calculate base metrics
@@ -109,7 +111,7 @@ export default function StressTestPage() {
       setLoading(false);
     }, 600);
 
-    return () => clearTimeout(timer);
+    return () => { isMounted = false; clearTimeout(timer); };
   }, [activeScenarioId, activeScenario]);
 
   const generateAdvice = () => {

@@ -27,7 +27,7 @@ const CATEGORIZED_DATA = [
   { magaza: "Getir", kategori: "Yemek Siparişi", icon: "🛵", color: '#F97316' }
 ];
 
-export default function OpenBankingModal({ onComplete, onClose }) {
+export default function OpenBankingModal({ onComplete }) {
   const [step, setStep] = useState(0); 
   // 0: Connecting, 1: Fetching Raw, 2: AI Categorization, 3: Done
   const [visibleItems, setVisibleItems] = useState([]);

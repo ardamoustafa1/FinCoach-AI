@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  CreditCard, Repeat, ShieldAlert, Bot, CheckCircle2, Loader2, PlayCircle, Video, Music, Dumbbell, ExternalLink
+  ShieldAlert, Bot, CheckCircle2, Loader2, PlayCircle, Video, Music, Dumbbell
 } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 

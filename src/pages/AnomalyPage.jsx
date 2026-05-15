@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ZAxis } from 'recharts';
-import { ShieldAlert, AlertTriangle, Clock, Lock, Eye, CheckCircle2, Search } from 'lucide-react';
+import { ShieldAlert, Clock, Lock, CheckCircle2, Search } from 'lucide-react';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -53,13 +53,15 @@ export default function AnomalyPage() {
   const [walletLocked, setWalletLocked] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
     setTimeout(() => {
+      if (!isMounted) return;
       const txData = generateTransactions();
       setData(txData);
       setAnomalies(txData.filter(t => t.isAnomaly));
       setLoading(false);
     }, 1200); // simulate ML processing
+    return () => { isMounted = false; };
   }, []);
 
   const handleLock = () => {

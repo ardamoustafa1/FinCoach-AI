@@ -1,12 +1,9 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
-  ArrowLeftRight,
-  Bot,
   BarChart4,
   Globe,
   Landmark,
-  Calculator,
   Home
 } from 'lucide-react';
 
