@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingDown, AlertCircle, CalendarClock, BarChart4, ArrowUpRight, BrainCircuit } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -45,7 +45,7 @@ export default function CashFlowPage() {
 
   useEffect(() => {
     // ─── MONTE CARLO SIMULATION ───
-    const tx = getTransactions();
+    const tx = useStore.getState().transactions;
     
     // 1. Tarihsel Verilerden İstatistik Çıkarımı
     const gelirler = tx.filter(t => t.tur === 'gelir').map(t => Number(t.tutar));

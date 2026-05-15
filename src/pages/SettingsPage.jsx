@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { initMockData } from '../data/mockData';
-import { getBudgetLimits, saveBudgetLimits } from '../utils/storage';
+import useStore from '../store/useStore';
 import { TUM_KATEGORILER } from '../utils/categories';
 import { supabase } from '../utils/supabase';
 import { authFetch } from '../utils/api';
@@ -79,7 +79,7 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 }
 
 export default function SettingsPage({ theme, onToggleTheme }) {
-  const [limits, setLimits] = useState(() => getBudgetLimits());
+  const [limits, setLimits] = useState(() => useStore.getState().budgetLimits);
   const [isSaved, setIsSaved] = useState(false);
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('fincoach_roast_mode') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -227,7 +227,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const handleLimitChange = (kat, value) => { setLimits(prev => ({ ...prev, [kat]: Number(value) })); setIsSaved(false); };
 
   const handleSaveLimits = () => {
-    saveBudgetLimits(limits); setIsSaved(true);
+    useStore.getState().saveBudgetLimits(limits); setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
 

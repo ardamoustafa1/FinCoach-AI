@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Network, Search, Link as LinkIcon, Zap } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B', cyan: '#06B6D4',
@@ -66,7 +66,7 @@ export default function GraphAnalysisPage() {
 
   useEffect(() => {
     setTimeout(() => {
-      const tx = getTransactions();
+      const tx = useStore.getState().transactions;
       const data = runAprioriAnalysis(tx);
       setGraphData(data);
       setLoading(false);

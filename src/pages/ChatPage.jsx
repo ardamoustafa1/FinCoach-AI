@@ -7,7 +7,7 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { getTransactions, getGoals, getBudgetLimits } from '../utils/storage';
+import useStore from '../store/useStore';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { API_URL, authFetch } from '../utils/api';
@@ -53,9 +53,9 @@ const QUICK_QUESTIONS = [
 
 function getUserContext() {
   try {
-    const txs = getTransactions();
-    const goals = getGoals();
-    const limits = getBudgetLimits();
+    const txs = useStore.getState().transactions;
+    const goals = useStore.getState().goals;
+    const limits = useStore.getState().budgetLimits;
     const { toplam: totalScore } = aySkoru(txs, [], 2025, 5, limits);
     const { ad: personalityTitle } = kisilikTipiBelirle(txs);
     const thirtyDaysAgo = new Date();

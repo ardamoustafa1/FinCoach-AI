@@ -1,13 +1,14 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   LayoutList, LayoutGrid, Search, SlidersHorizontal,
   ChevronUp, ChevronDown, ChevronsUpDown, X,
-  Pencil, Trash2, ChevronLeft, ChevronRight, Check, Plus, AlertTriangle, Upload,
+  Pencil, Trash2,  Check, Plus, AlertTriangle, Upload,
   RefreshCw, Receipt, Camera, ImagePlus, Loader2, Mic,
   ArrowUpRight, ArrowDownRight, Calendar, Landmark
 } from 'lucide-react';
 import { TUM_KATEGORILER, fmt } from '../utils/categories';
-import { getTransactions, saveTransaction, removeTransaction } from '../utils/storage';
+import { TableVirtuoso, VirtuosoGrid } from 'react-virtuoso';
+import useStore from '../store/useStore';
 import TransactionModal from '../components/TransactionModal';
 import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
@@ -28,7 +29,7 @@ const P = {
   text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
 };
 
-const SAYFA_BOYUTU = 20;
+
 
 const CAT_COLORS = {
   Market: '#10B981', Ulaşım: '#3B82F6', Fatura: '#F59E0B', Eğlence: '#A855F7',
@@ -202,7 +203,7 @@ function AksiyonButonlari({ tx, onDuzenle, onSil }) {
         }}
         onMouseEnter={e => { e.currentTarget.style.background = P.purpleDim; e.currentTarget.style.color = P.purpleLight; }}
         onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text3; }}
-        title="Düzenle"
+        aria-label="İşlemi Düzenle" title="Düzenle"
       ><Pencil size={13} /></button>
       <button
         onClick={() => onSil(tx)}
@@ -214,30 +215,19 @@ function AksiyonButonlari({ tx, onDuzenle, onSil }) {
         }}
         onMouseEnter={e => { e.currentTarget.style.background = `${P.red}18`; e.currentTarget.style.color = P.red; }}
         onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text3; }}
-        title="Sil"
+        aria-label="İşlemi Sil" title="Sil"
       ><Trash2 size={13} /></button>
     </div>
   );
 }
 
 /* ─── TxTableRow ─── */
-function TxTableRow({ tx, index, onDuzenle, onSil }) {
+function TxTableRow({ tx, onDuzenle, onSil }) {
   const [hov, setHov] = useState(false);
-  const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 35, 600)); return () => clearTimeout(t); }, [index]);
   const isGelir = tx.tur === 'gelir';
   const amtColor = isGelir ? P.green : P.red;
   return (
-    <tr
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        borderBottom: `1px solid ${P.border}`,
-        background: hov ? P.bg3 : 'transparent',
-        opacity: vis ? 1 : 0,
-        transition: `opacity 0.4s ease ${Math.min(index * 25, 500)}ms, background 0.15s`,
-      }}
-    >
+    <>
       <td style={{ padding: '13px 16px', fontSize: 12, color: P.text3, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Calendar size={12} color={P.text3} />
@@ -262,19 +252,18 @@ function TxTableRow({ tx, index, onDuzenle, onSil }) {
         </div>
       </td>
       <td style={{ padding: '13px 16px' }}>
-        <div style={{ opacity: hov ? 1 : 0, transition: 'opacity 0.2s', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ opacity: hov ? 1 : 0, transition: 'opacity 0.2s', display: 'flex', justifyContent: 'flex-end' }} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
           <AksiyonButonlari tx={tx} onDuzenle={onDuzenle} onSil={onSil} />
         </div>
       </td>
-    </tr>
+    </>
   );
 }
 
-/* ─── TxKartRow ─── */
-function TxKartRow({ tx, index, onDuzenle, onSil }) {
+function TxKartRow({ tx, onDuzenle, onSil }) {
   const [hov, setHov] = useState(false);
   const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), Math.min(index * 40, 600)); return () => clearTimeout(t); }, [index]);
+  useEffect(() => { const t = setTimeout(() => setVis(true), 10); return () => clearTimeout(t); }, []);
   const isGelir = tx.tur === 'gelir';
   return (
     <div
@@ -287,7 +276,7 @@ function TxKartRow({ tx, index, onDuzenle, onSil }) {
         transition: 'all 0.25s',
         transform: hov ? 'translateY(-2px)' : 'none',
         opacity: vis ? 1 : 0,
-        animation: vis ? `fadeUp 0.4s ease ${Math.min(index * 30, 500)}ms both` : 'none',
+        animation: vis ? `fadeUp 0.4s ease both` : 'none',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -466,7 +455,7 @@ function FisTaraModal({ onSonuc, onApiError, onKapat }) {
             <h2 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Fiş Tara</h2>
             <p style={{ fontSize: 12, color: P.text3, marginTop: 2 }}>Fotoğrafı seç, FinCoach AI tutar ve tarihi çıkarsın.</p>
           </div>
-          <button onClick={onKapat} disabled={loading} style={{ width: 34, height: 34, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button aria-label="Kapat" onClick={onKapat} disabled={loading} style={{ width: 34, height: 34, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={15} />
           </button>
         </div>
@@ -523,9 +512,12 @@ function FisTaraModal({ onSonuc, onApiError, onKapat }) {
 /* ─── MAIN ─── */
 export default function TransactionsPage() {
   const toast = useToast();
-  const [ham, setHam] = useState(() => getTransactions().sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
+  const storeTransactions = useStore(state => state.transactions);
+  const ham = useMemo(() => [...storeTransactions].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')), [storeTransactions]);
+  const addTransaction = useStore(state => state.addTransaction);
+  const updateTransaction = useStore(state => state.updateTransaction);
+  const removeTransaction = useStore(state => state.removeTransaction);
   const [gorunum, setGorunum] = useState('tablo');
-  const [sayfa, setSayfa] = useState(1);
   const [sortKolon, setSortKolon] = useState('tarih');
   const [sortYon, setSortYon] = useState('desc');
   const [isListening, setIsListening] = useState(false);
@@ -551,27 +543,15 @@ export default function TransactionsPage() {
 
   useEffect(() => { const t = setTimeout(() => setHeaderVis(true), 80); return () => clearTimeout(t); }, []);
   useEffect(() => { const t = setTimeout(() => setArama(aramaHam), 300); return () => clearTimeout(t); }, [aramaHam]);
-  useEffect(() => {
-    const t = setTimeout(() => setSayfa(1), 0);
-    return () => clearTimeout(t);
-  }, [arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar]);
+  
 
   /* ─ CRUD ─ */
-  const refreshLocal = () => {
-    const tx = getTransactions();
-    setHam(tx.sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')));
-  };
-
-  useEffect(() => {
-    const handleTxAdded = () => refreshLocal();
-    window.addEventListener('transaction_added', handleTxAdded);
-    return () => window.removeEventListener('transaction_added', handleTxAdded);
-  }, []);
+  
 
   const handleSort = useCallback((kolon) => {
     if (sortKolon === kolon) setSortYon(y => y === 'asc' ? 'desc' : 'asc');
     else { setSortKolon(kolon); setSortYon('desc'); }
-    setSayfa(1);
+    
   }, [sortKolon]);
 
   /* ─ Sesle ekleme ─ */
@@ -598,8 +578,7 @@ export default function TransactionsPage() {
         const data = await res.json();
         const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
         if (!yeniIslem.tutar) { toast.warning('Tutar tam anlaşılamadı, formu doldurun.'); setTaslakIslem(yeniIslem); setModalAcik(true); return; }
-        await saveTransaction(yeniIslem);
-        refreshLocal();
+        await addTransaction(yeniIslem);
         toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
       } catch(err) { toast.error(`Analiz hatası: ${err.message}`); }
     };
@@ -608,11 +587,17 @@ export default function TransactionsPage() {
     recognition.start();
   };
 
-  const handleKaydet = async (form) => {
+    const handleKaydet = async (form) => {
     const yeniIslemMi = !duzenlenen;
-    const kaydedilen = await saveTransaction({ ...form });
+    let kaydedilen;
+    if (yeniIslemMi) {
+      kaydedilen = await addTransaction({ ...form });
+    } else {
+      await updateTransaction(duzenlenen.id, { ...form });
+      kaydedilen = { ...duzenlenen, ...form };
+    }
     if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
-    refreshLocal(); setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
+    setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
   };
 
   const handleFisSonucu = (ocr) => {
@@ -623,7 +608,7 @@ export default function TransactionsPage() {
   };
 
   const handleAlisilmadikSecim = (d) => { if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, d); setAlisilmadik(null); };
-  const handleSil = async () => { if (!silinecek) return; await removeTransaction(silinecek.id); refreshLocal(); setSilinecek(null); };
+  const handleSil = async () => { if (!silinecek) return; await removeTransaction(silinecek.id); setSilinecek(null); };
   const handleDuzenle = (tx) => { setDuzenlenen(tx); setModalAcik(true); };
   const handleCsvImport = async (islemler) => { 
     const keyFor = (tx) => tx.duplicateKey || [
@@ -632,7 +617,7 @@ export default function TransactionsPage() {
       String(tx.magaza || tx.aciklama || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim().slice(0, 48),
       tx.tur || 'gider',
     ].join('|');
-    const existingKeys = new Set(getTransactions().map(keyFor));
+    const existingKeys = new Set(useStore.getState().transactions.map(keyFor));
     let imported = 0;
     let skipped = 0;
 
@@ -642,11 +627,11 @@ export default function TransactionsPage() {
         skipped += 1;
         continue;
       }
-      await saveTransaction({ ...tx });
+      await addTransaction({ ...tx });
       existingKeys.add(key);
       imported += 1;
     }
-    refreshLocal(); setCsvAcik(false);
+    setCsvAcik(false);
     if (imported > 0) toast.success(`${imported} işlem içe aktarıldı${skipped ? `, ${skipped} tekrar atlandı` : ''}.`);
     else toast.info('Yeni işlem bulunamadı; tekrar kayıtlar atlandı.');
   };
@@ -669,8 +654,7 @@ export default function TransactionsPage() {
     });
   }, [ham, arama, seciliKatlar, tarihBas, tarihBit, minTutar, maxTutar, sortKolon, sortYon]);
 
-  const toplamSayfa = Math.max(1, Math.ceil(filtrelenmis.length / SAYFA_BOYUTU));
-  const sayfadakiler = filtrelenmis.slice((sayfa - 1) * SAYFA_BOYUTU, sayfa * SAYFA_BOYUTU);
+  
 
   const totalIncome = ham.filter(t => t.tur === 'gelir').reduce((s, t) => s + Math.abs(Number(t.tutar)), 0);
   const totalExpense = ham.filter(t => t.tur === 'gider').reduce((s, t) => s + Math.abs(Number(t.tutar)), 0);
@@ -735,7 +719,7 @@ export default function TransactionsPage() {
 
               {/* Action buttons */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                <button onClick={startListening} style={{
+                <button aria-label="Sesli İşlem Ekle" onClick={startListening} style={{
                   display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12,
                   background: isListening ? P.red : `${P.purple}25`, border: `1px solid ${isListening ? P.red + '50' : P.purple + '40'}`,
                   color: isListening ? '#fff' : P.purpleLight,
@@ -835,15 +819,15 @@ export default function TransactionsPage() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                   <Search size={15} color={P.text3} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                  <input className="tx-input" type="text" value={aramaHam} onChange={e => setAramaHam(e.target.value)}
+                  <input aria-label="Arama" className="tx-input" type="text" value={aramaHam} onChange={e => setAramaHam(e.target.value)}
                     placeholder="Mağaza veya açıklama ara..."
                     style={{ ...inputStyle, paddingLeft: 38, width: '100%', boxSizing: 'border-box' }} />
                 </div>
                 <KatDropdown secili={seciliKatlar} onChange={setSeciliKatlar} />
-                <input className="tx-input" type="date" value={tarihBas} onChange={e => setTarihBas(e.target.value)} style={inputStyle} title="Başlangıç tarihi" />
-                <input className="tx-input" type="date" value={tarihBit} onChange={e => setTarihBit(e.target.value)} style={inputStyle} title="Bitiş tarihi" />
-                <input className="tx-input" type="number" value={minTutar} onChange={e => setMinTutar(e.target.value)} placeholder="Min ₺" style={{ ...inputStyle, width: 90 }} />
-                <input className="tx-input" type="number" value={maxTutar} onChange={e => setMaxTutar(e.target.value)} placeholder="Max ₺" style={{ ...inputStyle, width: 90 }} />
+                <input className="tx-input" type="date" value={tarihBas} onChange={e => setTarihBas(e.target.value)} style={inputStyle} aria-label="Başlangıç Tarihi" title="Başlangıç tarihi" />
+                <input className="tx-input" type="date" value={tarihBit} onChange={e => setTarihBit(e.target.value)} style={inputStyle} aria-label="Bitiş Tarihi" title="Bitiş tarihi" />
+                <input className="tx-input" type="number" value={minTutar} onChange={e => setMinTutar(e.target.value)} aria-label="Minimum Tutar" placeholder="Min ₺" style={{ ...inputStyle, width: 90 }} />
+                <input className="tx-input" type="number" value={maxTutar} onChange={e => setMaxTutar(e.target.value)} aria-label="Maksimum Tutar" placeholder="Max ₺" style={{ ...inputStyle, width: 90 }} />
               </div>
               {aktifFiltreler.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
@@ -858,9 +842,26 @@ export default function TransactionsPage() {
             {/* ── TABLO ── */}
             {gorunum === 'tablo' && (
               <div style={{ background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 20, overflow: 'hidden', animation: 'fadeUp 0.4s ease 0.25s both' }}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
+                {filtrelenmis.length === 0 ? (
+                  <div style={{ padding: '56px 20px', textAlign: 'center', color: P.text3 }}>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
+                    <p style={{ fontWeight: 800, color: P.text2, marginBottom: 6 }}>{ham.length === 0 ? 'İlk işlemini ekleyelim' : 'Eşleşen işlem bulunamadı'}</p>
+                    <p style={{ fontSize: 13, margin: '0 auto 14px', maxWidth: 460 }}>
+                      {ham.length === 0 ? 'CSV ekstre yükle, fiş tara, sesle söyle veya manuel ekle. Yeni hesaplar demo veriyle kirlenmeden tertemiz başlar.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}
+                    </p>
+                    <button onClick={ham.length === 0 ? () => setCsvAcik(true) : tumunuTemizle} style={{ marginTop: 10, padding: '8px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      {ham.length === 0 ? <><Upload size={12} /> CSV Yükle</> : <><RefreshCw size={12} /> Filtreleri Temizle</>}
+                    </button>
+                  </div>
+                ) : (
+                  <TableVirtuoso
+                    style={{ height: 600, width: '100%' }}
+                    data={filtrelenmis}
+                    components={{
+                      Table: (props) => <table {...props} style={{ width: '100%', borderCollapse: 'collapse' }} />,
+                      TableRow: (props) => <tr {...props} style={{ borderBottom: `1px solid ${P.border}`, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = P.bg3} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} />
+                    }}
+                    fixedHeaderContent={() => (
                       <tr style={{ background: P.bg3, borderBottom: `1px solid ${P.border}` }}>
                         {[
                           { label: 'Tarih', kolon: 'tarih' },
@@ -869,7 +870,7 @@ export default function TransactionsPage() {
                           { label: 'Tutar', kolon: 'tutar' },
                         ].map(({ label, kolon }) => (
                           <th key={kolon} style={thStyle}>
-                            <button onClick={() => handleSort(kolon)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', transition: 'color 0.15s' }}
+                            <button aria-label={`${label} sütununa göre sırala`} onClick={() => handleSort(kolon)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', transition: 'color 0.15s' }}
                               onMouseEnter={e => e.currentTarget.style.color = P.purpleLight}
                               onMouseLeave={e => e.currentTarget.style.color = ''}>
                               {label} <SortIcon kolon={kolon} aktif={sortKolon} yon={sortYon} />
@@ -878,27 +879,12 @@ export default function TransactionsPage() {
                         ))}
                         <th style={{ ...thStyle, width: 80 }} />
                       </tr>
-                    </thead>
-                    <tbody>
-                      {sayfadakiler.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} style={{ padding: '56px 20px', textAlign: 'center', color: P.text3 }}>
-                            <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
-                            <p style={{ fontWeight: 800, color: P.text2, marginBottom: 6 }}>{ham.length === 0 ? 'İlk işlemini ekleyelim' : 'Eşleşen işlem bulunamadı'}</p>
-                            <p style={{ fontSize: 13, margin: '0 auto 14px', maxWidth: 460 }}>
-                              {ham.length === 0 ? 'CSV ekstre yükle, fiş tara, sesle söyle veya manuel ekle. Yeni hesaplar demo veriyle kirlenmeden tertemiz başlar.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}
-                            </p>
-                            <button onClick={ham.length === 0 ? () => setCsvAcik(true) : tumunuTemizle} style={{ marginTop: 10, padding: '8px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                              {ham.length === 0 ? <><Upload size={12} /> CSV Yükle</> : <><RefreshCw size={12} /> Filtreleri Temizle</>}
-                            </button>
-                          </td>
-                        </tr>
-                      ) : sayfadakiler.map((tx, i) => (
-                        <TxTableRow key={tx.id} tx={tx} index={i} onDuzenle={handleDuzenle} onSil={setSilinecek} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    )}
+                    itemContent={(index, tx) => (
+                      <TxTableRow key={tx.id} tx={tx}  onDuzenle={handleDuzenle} onSil={setSilinecek} />
+                    )}
+                  />
+                )}
                 {/* Table footer */}
                 <div style={{ padding: '12px 20px', borderTop: `1px solid ${P.border}`, background: P.bg3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: P.text3 }}>{filtrelenmis.length} / {ham.length} işlem</span>
@@ -916,46 +902,26 @@ export default function TransactionsPage() {
             {/* ── KART ── */}
             {gorunum === 'kart' && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
-                {sayfadakiler.length === 0
+                {filtrelenmis.length === 0
                   ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '56px 20px', color: P.text3 }}>
                     <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
                     <p style={{ fontWeight: 800, color: P.text2, marginBottom: 8 }}>{ham.length === 0 ? 'Veri bekleyen temiz hesap' : 'Eşleşen işlem bulunamadı'}</p>
                     <p style={{ fontSize: 13, maxWidth: 440, margin: '0 auto 16px' }}>{ham.length === 0 ? 'İlk verini CSV, fiş tarama, ses veya manuel kayıtla ekleyebilirsin.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}</p>
                     <button onClick={ham.length === 0 ? () => setCsvAcik(true) : tumunuTemizle} style={{ padding: '8px 16px', borderRadius: 10, border: 'none', background: P.purpleDim, color: P.purpleLight, fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>{ham.length === 0 ? 'CSV Yükle' : 'Filtreleri Temizle'}</button>
                   </div>
-                  : sayfadakiler.map((tx, i) => <TxKartRow key={tx.id} tx={tx} index={i} onDuzenle={handleDuzenle} onSil={setSilinecek} />)}
+                  : (
+                    <VirtuosoGrid
+                      style={{ height: 600, width: '100%' }}
+                      data={filtrelenmis}
+                      components={{
+                        List: React.forwardRef((props, ref) => <div {...props} ref={ref} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14, ...props.style }} />)
+                      }}
+                      itemContent={(index, tx) => <TxKartRow key={tx.id} tx={tx}  onDuzenle={handleDuzenle} onSil={setSilinecek} />}
+                    />
+                  )}
               </div>
             )}
 
-            {/* ── SAYFALAMA ── */}
-            {toplamSayfa > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                <span style={{ fontSize: 12, color: P.text3 }}>{sayfa} / {toplamSayfa} sayfa · {filtrelenmis.length} işlem</span>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <button onClick={() => setSayfa(s => Math.max(1, s - 1))} disabled={sayfa === 1} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 10, border: `1px solid ${P.border}`, background: P.bg3, color: P.text2, fontSize: 12, fontWeight: 600, cursor: sayfa === 1 ? 'not-allowed' : 'pointer', opacity: sayfa === 1 ? 0.4 : 1 }}>
-                    <ChevronLeft size={14} /> Önceki
-                  </button>
-                  {Array.from({ length: Math.min(5, toplamSayfa) }, (_, i) => {
-                    let p = i + 1;
-                    if (toplamSayfa > 5) { if (sayfa <= 3) p = i + 1; else if (sayfa >= toplamSayfa - 2) p = toplamSayfa - 4 + i; else p = sayfa - 2 + i; }
-                    return (
-                      <button key={p} onClick={() => setSayfa(p)} style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: sayfa === p ? `linear-gradient(135deg,${P.purple},#4F46E5)` : P.bg3,
-                        border: sayfa === p ? 'none' : `1px solid ${P.border}`,
-                        color: sayfa === p ? '#fff' : P.text2,
-                        fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        boxShadow: sayfa === p ? `0 4px 12px ${P.purpleGlow}` : 'none',
-                        transition: 'all 0.2s',
-                      }}>{p}</button>
-                    );
-                  })}
-                  <button onClick={() => setSayfa(s => Math.min(toplamSayfa, s + 1))} disabled={sayfa === toplamSayfa} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 10, border: `1px solid ${P.border}`, background: P.bg3, color: P.text2, fontSize: 12, fontWeight: 600, cursor: sayfa === toplamSayfa ? 'not-allowed' : 'pointer', opacity: sayfa === toplamSayfa ? 0.4 : 1 }}>
-                    Sonraki <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
           </>)}
 
           {/* ── MODALS ── */}

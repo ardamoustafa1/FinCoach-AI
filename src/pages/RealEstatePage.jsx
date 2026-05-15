@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Home, Calculator, AlertOctagon, CheckCircle2, TrendingDown } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -25,7 +25,7 @@ export default function RealEstatePage() {
     setTimeout(() => { if (isMounted) setLoading(true); }, 0);
     const timer = setTimeout(() => {
       if (!isMounted) return;
-      const tx = getTransactions();
+      const tx = useStore.getState().transactions;
       const monthlyIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       
       const principal = housePrice - downPayment;

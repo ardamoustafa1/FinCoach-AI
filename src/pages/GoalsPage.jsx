@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import confetti from 'canvas-confetti';
-import { getGoals, addGoal, updateGoal, deleteGoal } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const IKONLAR = ['✈️', '🚗', '🏠', '💍', '📱', '🎓', '💰', '🏖️', '🎮', '🛋️'];
@@ -81,7 +81,7 @@ function StatCard({ label, value, icon: Icon, color, isCurrency = false }) {
 }
 
 export default function GoalsPage() {
-  const [goals, setGoals] = useState(() => getGoals());
+  const [goals, setGoals] = useState(() => useStore.getState().goals);
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [completedModal, setCompletedModal] = useState(null);
@@ -91,16 +91,16 @@ export default function GoalsPage() {
   const handleOpenModal = (g = null) => { setDuzenlenen(g); setModalAcik(true); };
 
   const refreshGoals = () => {
-    setGoals(getGoals());
+    setGoals(useStore.getState().goals);
   };
 
   const handleSave = async (yeniHedef) => {
     const wasIncomplete = !duzenlenen || Number(duzenlenen.currentAmount) < Number(duzenlenen.targetAmount);
     
     if (duzenlenen) {
-      await updateGoal(duzenlenen.id, yeniHedef);
+      await useStore.getState().updateGoal(duzenlenen.id, yeniHedef);
     } else {
-      await addGoal(yeniHedef);
+      await useStore.getState().addGoal(yeniHedef);
     }
     
     refreshGoals();
@@ -119,14 +119,14 @@ export default function GoalsPage() {
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    await deleteGoal(deleteConfirm);
+    await useStore.getState().deleteGoal(deleteConfirm);
     refreshGoals();
     toast.success('Hedef silindi.');
     setDeleteConfirm(null);
   };
 
   const handleTemplate = async (template) => {
-    await addGoal(template);
+    await useStore.getState().addGoal(template);
     refreshGoals();
   };
 

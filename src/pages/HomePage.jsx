@@ -11,7 +11,7 @@ import {
   Sparkles, Activity, ChevronRight, Clock,
   ShieldCheck, Flame, Trophy, Users
 } from 'lucide-react';
-import { getTransactions, getGoals, saveTransaction } from '../utils/storage';
+import useStore from '../store/useStore';
 import { calculateEcoScore } from '../utils/ecoScore';
 import { calculatePrediction } from '../utils/predictive';
 import TransactionModal from '../components/TransactionModal';
@@ -283,8 +283,8 @@ function TxRow({ tx, index, onClick }) {
 export default function HomePage() {
   const navigate = useNavigate();
   const toast = useToast();
-  const transactions = getTransactions();
-  const goals = getGoals();
+  const transactions = useStore(state => state.transactions);
+  const goals = useStore(state => state.goals);
   const ecoData = calculateEcoScore(transactions);
   const prediction = calculatePrediction(transactions);
 
@@ -292,7 +292,7 @@ export default function HomePage() {
   const [range, setRange] = useState('1Y');
 
   const handleKaydet = (form) => {
-    saveTransaction(form);
+    useStore.getState().addTransaction(form);
     setSeciliIslem(null);
   };
 

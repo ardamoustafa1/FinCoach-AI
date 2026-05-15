@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Plus, Tag, Mic, Loader2, Fingerprint, ShieldAlert } from 'lucide-react';
 import { TUM_KATEGORILER } from '../utils/categories';
-import { suggestCategory } from '../utils/storage';
+import useStore from '../store/useStore';
 import { authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 
@@ -56,6 +56,8 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const [showImpulseBlock, setShowImpulseBlock] = useState(false);
   const [webAuthnLoading, setWebAuthnLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+  const triggerShake = () => { setShake(false); setTimeout(() => setShake(true), 10); setTimeout(() => setShake(false), 400); };
   const magazaDebRef = useRef(null);
 
   const startVoiceRecording = () => {
@@ -98,7 +100,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
   useEffect(() => {
     clearTimeout(magazaDebRef.current);
     magazaDebRef.current = setTimeout(() => {
-      const oneri = suggestCategory(form.magaza);
+      const oneri = useStore.getState().suggestCategory(form.magaza);
       setKategoriOneri(oneri && oneri !== form.kategori ? oneri : null);
     }, 400);
   }, [form.magaza, form.kategori]);
@@ -114,7 +116,9 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
     if (!form.tutar || Number(form.tutar) <= 0) h.tutar = 'Geçerli bir tutar girin';
     if (!form.aciklama.trim()) h.aciklama = 'Açıklama zorunlu';
     setHatalar(h);
-    return Object.keys(h).length === 0;
+    const isValid = Object.keys(h).length === 0;
+    if (!isValid) triggerShake();
+    return isValid;
   };
 
   const executeSave = () => {
@@ -169,18 +173,19 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
       position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
     }} onClick={e => e.target === e.currentTarget && onKapat()}>
-      <div style={{
+      <div className={shake ? 'shake' : ''} style={{
         width: '100%', maxWidth: 460, background: P.bg2, border: `1px solid ${P.border}`,
         borderRadius: 22, display: 'flex', flexDirection: 'column', maxHeight: '90vh',
         boxShadow: '0 32px 80px rgba(0,0,0,0.7)', animation: 'fadeUp 0.3s ease',
       }}>
+        <style>{`@keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } } .shake { animation: shake 0.4s ease-in-out !important; }`}</style>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1 }}>
             {islem ? 'İşlemi Düzenle' : 'Yeni İşlem'}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button onClick={startVoiceRecording} disabled={isListening || isProcessingVoice} style={{
+            <button aria-label="Sesli komut ile doldur" onClick={startVoiceRecording} disabled={isListening || isProcessingVoice} style={{
               width: 32, height: 32, borderRadius: 10, background: isListening ? '#10B981' : isProcessingVoice ? '#F59E0B' : 'rgba(124,58,237,0.15)',
               border: `1px solid ${isListening ? '#10B981' : isProcessingVoice ? '#F59E0B' : 'rgba(124,58,237,0.3)'}`, color: (isListening || isProcessingVoice) ? '#fff' : P.purpleLight, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', animation: isListening ? 'pulse 1.5s infinite' : 'none'
@@ -188,7 +193,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
               <style>{`@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }`}</style>
               {isProcessingVoice ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Mic size={16} />}
             </button>
-            <button onClick={onKapat} style={{
+            <button aria-label="Kapat" onClick={onKapat} style={{
               width: 32, height: 32, borderRadius: 10, background: P.bg4, border: `1px solid ${P.border}`,
               color: P.text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -202,14 +207,14 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
           <div style={{ display: 'flex', gap: 16 }}>
             <div style={{ flex: 1 }}>
               {alan('Tarih *', hatalar.tarih,
-                <input type="date" value={form.tarih} onChange={e => set('tarih', e.target.value)} style={inputStyle('tarih')} />
+                <input type="date" aria-label="Tarih" value={form.tarih} onChange={e => set('tarih', e.target.value)} style={inputStyle('tarih')} />
               )}
             </div>
             <div style={{ flex: 1 }}>
               {alan('Tutar *', hatalar.tutar,
                 <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: P.text2, fontWeight: 700, fontSize: 14 }}>₺</span>
-                  <input type="number" min="0" step="0.01" value={form.tutar}
+                  <input type="number" aria-label="Tutar" min="0" step="0.01" value={form.tutar}
                     onChange={e => set('tutar', e.target.value.replace(/-/, ''))}
                     placeholder="0" style={{ ...inputStyle('tutar'), paddingLeft: 28 }} />
                 </div>
@@ -218,7 +223,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
           </div>
 
           {alan('Mağaza', null,
-            <input type="text" value={form.magaza} onChange={e => set('magaza', e.target.value)}
+            <input type="text" aria-label="Mağaza" value={form.magaza} onChange={e => set('magaza', e.target.value)}
               placeholder="Örn: Migros, Netflix…" style={inputStyle('magaza')} />
           )}
 
@@ -227,24 +232,24 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
               <span>💡 Öneri: <strong>{kategoriOneri}</strong></span>
               <button onClick={() => { set('kategori', kategoriOneri); setKategoriOneri(null); }}
                 style={{ marginLeft: 'auto', fontWeight: 700, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', textDecoration: 'underline' }}>Uygula</button>
-              <button onClick={() => setKategoriOneri(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}><X size={12} /></button>
+              <button aria-label="Öneriyi Kapat" onClick={() => setKategoriOneri(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}><X size={12} /></button>
             </div>
           )}
 
           {alan('Açıklama *', hatalar.aciklama,
-            <input type="text" value={form.aciklama} onChange={e => set('aciklama', e.target.value)}
+            <input type="text" aria-label="Açıklama" value={form.aciklama} onChange={e => set('aciklama', e.target.value)}
               placeholder="Örn: Haftalık market alışverişi" style={inputStyle('aciklama')} />
           )}
 
           {alan('Kategori', null,
-            <select value={form.kategori} onChange={e => set('kategori', e.target.value)} style={inputStyle('kategori')}>
+            <select aria-label="Kategori" value={form.kategori} onChange={e => set('kategori', e.target.value)} style={inputStyle('kategori')}>
               <option value="">Kategori seçin…</option>
               {TUM_KATEGORILER.map(k => <option key={k} value={k}>{k}</option>)}
             </select>
           )}
 
           {alan('Not (opsiyonel)', null,
-            <textarea value={form.not} onChange={e => set('not', e.target.value)}
+            <textarea aria-label="Not" value={form.not} onChange={e => set('not', e.target.value)}
               rows={2} placeholder="Eklemek istediğiniz bir not…"
               style={{ ...inputStyle('not'), resize: 'none' }} />
           )}
@@ -254,11 +259,11 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
               Etiketler <span style={{ fontWeight: 400, opacity: 0.7 }}>(virgülle ayırın)</span>
             </label>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input type="text" value={etiketInput} onChange={e => setEtiketInput(e.target.value)}
+              <input type="text" aria-label="Etiket" value={etiketInput} onChange={e => setEtiketInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleEtiketEkle()}
                 placeholder="iş yemeği, geri ödenecek…"
                 style={{ ...inputStyle(''), flex: 1 }} />
-              <button onClick={handleEtiketEkle} style={{
+              <button aria-label="Etiket Ekle" onClick={handleEtiketEkle} style={{
                 padding: '0 14px', borderRadius: 12, background: P.purpleDim, border: `1px solid rgba(124,58,237,0.3)`,
                 color: P.purpleLight, cursor: 'pointer',
               }}>
@@ -274,7 +279,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
                     border: `1px solid ${P.border}`
                   }}>
                     <Tag size={10} color={P.text3} /> {e}
-                    <button onClick={() => set('etiketler', form.etiketler.filter(t => t !== e))}
+                    <button aria-label="Etiketi Sil" onClick={() => set('etiketler', form.etiketler.filter(t => t !== e))}
                       style={{ background: 'none', border: 'none', color: P.text3, cursor: 'pointer', marginLeft: 2, padding: 0 }}>
                       <X size={10} />
                     </button>
@@ -287,7 +292,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
 
         {/* Footer */}
         <div style={{ display: 'flex', gap: 10, padding: '16px 24px', borderTop: `1px solid ${P.border}`, background: P.bg1, borderRadius: '0 0 22px 22px' }}>
-          <button onClick={onKapat} style={{
+          <button aria-label="Kapat" onClick={onKapat} style={{
             flex: 1, padding: '12px 0', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg3,
             color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
           }}>

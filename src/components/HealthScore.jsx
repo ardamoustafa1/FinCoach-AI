@@ -4,7 +4,7 @@ import {
   Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { aySkoru, skorGecmisi } from '../utils/healthScore';
-import { getBudgetLimits } from '../utils/storage';
+import useStore from '../store/useStore';
 
 /* ─── Helpers ─── */
 function skorRenk(s) {
@@ -104,7 +104,7 @@ function SkorTooltip({ active, payload }) {
 /* ─── Main Component ─── */
 export default function HealthScore({ islemler, gelirler }) {
   const { skor100, metrikler, gecmis } = useMemo(() => {
-    const limitler = getBudgetLimits();
+    const limitler = useStore.getState().budgetLimits;
     const { toplam, metrikler } = aySkoru(islemler, gelirler, 2025, 5, limitler);
     const gecmis = skorGecmisi(islemler, gelirler);
     return { skor100: toplam, metrikler, gecmis };

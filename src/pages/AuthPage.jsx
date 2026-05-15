@@ -124,6 +124,7 @@ function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, ri
     }}>
       {Icon && <Icon size={17} color="rgba(167,139,250,0.7)" style={{ flexShrink: 0 }} />}
       <input
+        aria-label={placeholder}
         type={type}
         placeholder={placeholder}
         value={value}
@@ -158,9 +159,11 @@ export default function AuthPage({ onAuth }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+  const triggerShake = () => { setShake(false); setTimeout(() => setShake(true), 10); setTimeout(() => setShake(false), 400); };
 
   const eyeBtn = (show, toggle) => (
-    <button onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,255,255,0.3)' }}>
+    <button aria-label={show ? 'Şifreyi gizle' : 'Şifreyi göster'} onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,255,255,0.3)' }}>
       {show ? <EyeOff size={17} /> : <Eye size={17} />}
     </button>
   );
@@ -170,7 +173,8 @@ export default function AuthPage({ onAuth }) {
     const loginPassword = credentials.password ?? password;
 
     setError('');
-    if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.'); return; }
+    if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.');
+    if (!'Lütfen tüm alanları doldurun.'.startsWith('✅')) triggerShake(); return; }
     
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -179,7 +183,7 @@ export default function AuthPage({ onAuth }) {
     });
 
     if (authError) {
-      setError(authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message);
+      setError(authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message); if (authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message && !String(authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message).startsWith('✅')) triggerShake();
       setLoading(false);
       return;
     }
@@ -225,21 +229,26 @@ export default function AuthPage({ onAuth }) {
 
   const handleRegister = async () => {
     setError('');
-    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); return; }
+    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.');
+    if (!'Lütfen tüm alanları doldurun.'.startsWith('✅')) triggerShake(); return; }
     
     // Telefon kontrolü (10 hane + maske karakterleri)
     const purePhone = phone.replace(/\D/g, '');
     if (purePhone.length < 10) {
       setError('Lütfen geçerli bir telefon numarası girin.');
+    if (!'Lütfen geçerli bir telefon numarası girin.'.startsWith('✅')) triggerShake();
       return;
     }
     if (!purePhone.startsWith('05') && !purePhone.startsWith('5')) {
       setError('Telefon numarası 5 ile başlamalıdır.');
+    if (!'Telefon numarası 5 ile başlamalıdır.'.startsWith('✅')) triggerShake();
       return;
     }
 
-    if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.'); return; }
-    if (password !== confirm) { setError('Şifreler eşleşmiyor.'); return; }
+    if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.');
+    if (!'Şifre en az 6 karakter olmalıdır.'.startsWith('✅')) triggerShake(); return; }
+    if (password !== confirm) { setError('Şifreler eşleşmiyor.');
+    if (!'Şifreler eşleşmiyor.'.startsWith('✅')) triggerShake(); return; }
     
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signUp({
@@ -252,12 +261,15 @@ export default function AuthPage({ onAuth }) {
       const errMsg = authError.message;
       if (errMsg.includes('email sending') || errMsg.includes('rate limit') || errMsg.includes('sending limit')) {
         setError('E-posta gönderim limiti aşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin veya farklı bir e-posta kullanın.');
+    if (!'E-posta gönderim limiti aşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin veya farklı bir e-posta kullanın.'.startsWith('✅')) triggerShake();
       } else if (errMsg.includes('already registered') || errMsg.includes('User already registered')) {
         setError('Bu e-posta zaten kayıtlı. Giriş Yap sekmesini deneyin.');
+    if (!'Bu e-posta zaten kayıtlı. Giriş Yap sekmesini deneyin.'.startsWith('✅')) triggerShake();
       } else if (errMsg.includes('Password')) {
         setError('Şifre en az 6 karakter olmalıdır.');
+    if (!'Şifre en az 6 karakter olmalıdır.'.startsWith('✅')) triggerShake();
       } else {
-        setError(errMsg);
+        setError(errMsg); if (errMsg && !String(errMsg).startsWith('✅')) triggerShake();
       }
       setLoading(false);
       return;
@@ -269,6 +281,7 @@ export default function AuthPage({ onAuth }) {
       ]).select();
       if (profileError) {
         setError('Profil oluşturulamadı. Supabase RLS profil ekleme iznini kontrol edin.');
+    if (!'Profil oluşturulamadı. Supabase RLS profil ekleme iznini kontrol edin.'.startsWith('✅')) triggerShake();
         setLoading(false);
         return;
       }
@@ -283,6 +296,7 @@ export default function AuthPage({ onAuth }) {
         return;
       }
       setError('✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.');
+    if (!'✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.'.startsWith('✅')) triggerShake();
     }
     setLoading(false);
   };
@@ -307,10 +321,12 @@ export default function AuthPage({ onAuth }) {
         }} />
       </div>
 
-      <div style={{ position: 'relative', width: '100%', maxWidth: 460, zIndex: 10, animation: 'fadeSlideUp 0.4s ease' }}>
+      <div className={shake ? 'shake' : ''} style={{ position: 'relative', width: '100%', maxWidth: 460, zIndex: 10, animation: 'fadeSlideUp 0.4s ease' }}>
         <style>{`
           @keyframes fadeSlideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
           @keyframes gradShift { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+          @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+          .shake { animation: shake 0.4s ease-in-out !important; }
           .auth-submit:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
           .auth-tab-active { background: rgba(124,58,237,0.18) !important; color: #a78bfa !important; border-color: rgba(124,58,237,0.4) !important; }
         `}</style>
@@ -355,6 +371,7 @@ export default function AuthPage({ onAuth }) {
                 </div>
                 <button
                   type="button"
+                  aria-label="Demo hesabı ile giriş yap"
                   onClick={handleDemoLogin}
                   disabled={loading}
                   style={{

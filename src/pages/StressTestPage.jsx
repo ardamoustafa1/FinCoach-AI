@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Globe, AlertTriangle, TrendingDown, ArrowRightLeft, Briefcase, Zap } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -68,7 +68,7 @@ export default function StressTestPage() {
     // Simulate AI model calculation delay
     const timer = setTimeout(() => {
       if (!isMounted) return;
-      const tx = getTransactions();
+      const tx = useStore.getState().transactions;
       
       // Calculate base metrics
       const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;

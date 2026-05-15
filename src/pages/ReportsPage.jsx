@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
-import { getBudgetLimits, getGoals, getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 import { authFetch } from '../utils/api';
 
@@ -24,7 +24,7 @@ const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','A
 const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
 function normalizeTransactions() {
-  const giderler = getTransactions().map((tx) => ({
+  const giderler = useStore.getState().transactions.map((tx) => ({
     id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
     kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
@@ -131,7 +131,7 @@ export default function ReportsPage() {
             ozet: { toplamGelir: selectedSummary.gelir, toplamGider: selectedSummary.gider, netBakiye: selectedSummary.net, tasarrufOrani: Number(selectedSummary.tasarrufOrani.toFixed(1)) },
             kategoriKarsilastirma: rows, islemler: selectedSummary.aylik,
           },
-          limitler: getBudgetLimits(), hedefler: getGoals(),
+          limitler: useStore.getState().budgetLimits, hedefler: useStore.getState().goals,
         }),
       });
       if (!res.ok) throw new Error('Analiz servisi yanıt vermedi.');

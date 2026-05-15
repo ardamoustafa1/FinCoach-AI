@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import AuthPage from './pages/AuthPage';
-import { saveTheme } from './utils/storage';
+import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
 import { supabase } from './utils/supabase';
 
@@ -56,8 +56,8 @@ class ErrorBoundary extends Component {
       return (
         <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center', padding: 20 }}>
           <div>
-            <h2 style={{ fontSize: 32, fontWeight: 900, marginBottom: 16 }}>Hoppala! Bir Şeyler Yanlış Gitti.</h2>
-            <p style={{ color: '#94A3B8', marginBottom: 24 }}>Uygulama beklenmedik bir hata ile karşılaştı. Lütfen sayfayı yenileyin.</p>
+            <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 16 }}>Beklenmedik Bir Hata Oluştu</h2>
+            <p style={{ color: '#94A3B8', marginBottom: 24 }}>Sistem geçici bir sorunla karşılaştı. Verileriniz güvende, lütfen sayfayı yenileyin.</p>
             <button 
               onClick={() => window.location.reload()} 
               style={{ padding: '12px 24px', borderRadius: 12, background: '#7c3aed', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}
@@ -74,10 +74,55 @@ class ErrorBoundary extends Component {
 
 function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', gap: 20 }}>
-      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', animation: 'spin 1s linear infinite' }} />
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.05em' }}>{label}</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', color: '#fff', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes shimmer { 
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        .skeleton-box {
+          background: #1e293b;
+          background-image: linear-gradient(90deg, #1e293b 0px, #334155 40px, #1e293b 80px);
+          background-size: 1000px 100%;
+          animation: shimmer 2s infinite linear;
+          border-radius: 12px;
+        }
+      `}</style>
+      
+      {/* Sidebar Skeleton */}
+      <div style={{ width: 260, borderRight: '1px solid #1e293b', padding: 24, display: 'flex', flexDirection: 'column', gap: 24, flexShrink: 0, '@media (max-width: 768px)': { display: 'none' } }}>
+        <div className="skeleton-box" style={{ height: 40, width: '80%', borderRadius: 8 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
+          {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton-box" style={{ height: 24, width: '90%', borderRadius: 6 }} />)}
+        </div>
+      </div>
+
+      {/* Main Content Skeleton */}
+      <div style={{ flex: 1, padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="skeleton-box" style={{ height: 32, width: 200 }} />
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div className="skeleton-box" style={{ height: 40, width: 40, borderRadius: '50%' }} />
+            <div className="skeleton-box" style={{ height: 40, width: 40, borderRadius: '50%' }} />
+          </div>
+        </div>
+        
+        {/* Widgets Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+          {[1,2,3].map(i => <div key={i} className="skeleton-box" style={{ height: 120 }} />)}
+        </div>
+
+        {/* Big Chart Area */}
+        <div className="skeleton-box" style={{ height: 300, width: '100%' }} />
+        
+        {/* Status Text */}
+        <div style={{ textAlign: 'center', marginTop: 'auto', paddingTop: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#64748b', letterSpacing: '0.05em' }} aria-live="polite">
+            {label}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -139,7 +184,7 @@ export default function App() {
           tur: t.tur,
           createdAt: t.created_at
         }));
-        localStorage.setItem('fincoach_transactions', JSON.stringify(formattedTx));
+        useStore.getState().setTransactions(formattedTx);
       }
 
       if (gl.data) {
@@ -153,13 +198,13 @@ export default function App() {
           color: g.renk,
           createdAt: g.created_at
         }));
-        localStorage.setItem('fincoach_goals', JSON.stringify(formattedGl));
+        useStore.getState().setGoals(formattedGl);
       }
 
       if (lm.data) {
         const limits = {};
         lm.data.forEach(l => { limits[l.category] = Number(l.limit_amount); });
-        localStorage.setItem('fincoach_budget_limits', JSON.stringify(limits));
+        useStore.getState().setBudgetLimits(limits);
       }
 
     } catch (err) {
@@ -199,7 +244,7 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    saveTheme(theme);
+    localStorage.setItem('fincoach_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

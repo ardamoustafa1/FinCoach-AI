@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Coins, TrendingUp, PiggyBank, Sparkles, ArrowRight, Apple, Bitcoin } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -17,7 +17,7 @@ export default function MicroInvestPage() {
 
   useEffect(() => {
     setTimeout(() => {
-      const tx = getTransactions().filter(t => t.tur === 'gider').slice(0, 50); // Get recent 50 expenses
+      const tx = useStore.getState().transactions.filter(t => t.tur === 'gider').slice(0, 50); // Get recent 50 expenses
       
       let totalSpareChange = 0;
       const recentRounds = [];

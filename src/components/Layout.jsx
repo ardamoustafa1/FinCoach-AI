@@ -7,7 +7,7 @@ import ThemeToggle from './ThemeToggle';
 import DemoQRCodeModal from './DemoQRCodeModal';
 import { useToast } from '../hooks/useToast';
 import { fmt } from '../utils/categories';
-import { getBudgetLimits } from '../utils/storage';
+import useStore from '../store/useStore';
 import {
   markWeeklySummarySeen,
   shouldShowWeeklySummary,
@@ -17,7 +17,6 @@ import {
 import { trackPageView } from '../utils/analytics';
 import { Mic } from 'lucide-react';
 import { authFetch } from '../utils/api';
-import { saveTransaction } from '../utils/storage';
 
 const P = {
   purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -33,7 +32,7 @@ export default function Layout({ theme, onToggleTheme }) {
   const [showQrModal, setShowQrModal] = useState(false);
   const toast = useToast();
   const location = useLocation();
-  const haftalik = useMemo(() => weeklySummary(getBudgetLimits()), []);
+  const haftalik = useMemo(() => weeklySummary(useStore.getState().budgetLimits), []);
 
   useEffect(() => {
     trackPageView(location.pathname);
@@ -76,7 +75,7 @@ export default function Layout({ theme, onToggleTheme }) {
            toast.warning(`Tutar tam anlaşılamadı. Lütfen manuel ekleyin.`); 
            return; 
         }
-        await saveTransaction(yeniIslem);
+        await useStore.getState().addTransaction(yeniIslem);
         toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
         window.dispatchEvent(new Event('transaction_added'));
       } catch(err) { toast.error(`Analiz hatası: ${err.message}`); }

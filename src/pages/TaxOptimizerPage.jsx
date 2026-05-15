@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calculator, Download, CheckCircle2, Receipt, Search, Building2, Car, Coffee, Info, Loader2 } from 'lucide-react';
-import { getTransactions } from '../utils/storage';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
 const P = {
@@ -22,7 +22,7 @@ export default function TaxOptimizerPage() {
 
   useEffect(() => {
     setTimeout(() => {
-      const tx = getTransactions();
+      const tx = useStore.getState().transactions;
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
       
       const monthlyTx = tx.filter(t => t.tur === 'gider' && t.tarih.startsWith(currentMonth));
