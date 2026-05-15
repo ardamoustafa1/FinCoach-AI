@@ -93,7 +93,7 @@ export default function DebtSnowballPage() {
         </PageHeader>
 
         {/* METRICS */}
-        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Toplam Borç Yükü</p>
             <p style={{ fontSize: 28, fontWeight: 900, color: P.text1, margin: 0 }}>{fmt(plan.totalBalance)}</p>
@@ -109,10 +109,10 @@ export default function DebtSnowballPage() {
         </div>
 
         {/* AI ADVICE BANNER */}
-        <div className="animate-enter" style={{
+        <div style={{
           background: plan.extraPayment < 0 ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.1)',
           border: `1px solid ${plan.extraPayment < 0 ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}`,
-          borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start', animationDelay: '0.2s', opacity: 0
+          borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start'
         }}>
           <div style={{ width: 48, height: 48, borderRadius: 16, background: plan.extraPayment < 0 ? P.red : P.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {plan.extraPayment < 0 ? <AlertTriangle size={24} color="#fff" /> : <Calculator size={24} color="#fff" />}
@@ -124,7 +124,7 @@ export default function DebtSnowballPage() {
         </div>
 
         {/* EXECUTION ROADMAP */}
-        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.3s', opacity: 0 }}>
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32 }}>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 32px' }}>Aylık Ödeme Dağılımı (Sıralı Hedef)</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
