@@ -5,12 +5,21 @@
  *     title="Vergi Asistanı" subtitle="Yasal kesintilerinizi hesaplayın" badge="AI Powered" />
  */
 
+import { useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
+
 const P = {
   text1: 'var(--text-primary)', text2: 'var(--text-secondary)',
   bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
 };
 
 export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, badge, children }) {
+  const [hov, setHov] = useState(false);
+
+  const openTour = () => {
+    window.dispatchEvent(new CustomEvent('fincoach:open-tour'));
+  };
+
   return (
     <div style={{
       padding: '32px 0 28px',
@@ -22,6 +31,10 @@ export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, b
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes tourPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.35); }
+          50%       { box-shadow: 0 0 0 8px rgba(124,58,237,0); }
+        }
       `}</style>
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
@@ -33,7 +46,6 @@ export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, b
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: `0 0 20px ${color}20`,
           }}>
-            {/* Clone icon with correct color */}
             <span style={{ color }}>{icon}</span>
           </div>
           <div>
@@ -59,12 +71,35 @@ export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, b
           </div>
         </div>
 
-        {/* Right: optional action buttons */}
-        {children && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            {children}
-          </div>
-        )}
+        {/* Right: action buttons + tour button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {children}
+          <button
+            onClick={openTour}
+            onMouseEnter={() => setHov(true)}
+            onMouseLeave={() => setHov(false)}
+            title="Tanıtımı tekrar göster"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: hov ? '8px 14px' : '8px 10px',
+              borderRadius: 99,
+              background: hov ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.08)',
+              border: `1px solid ${hov ? 'rgba(124,58,237,0.45)' : 'rgba(124,58,237,0.2)'}`,
+              color: '#A78BFA',
+              fontSize: 12, fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+              animation: 'tourPulse 3s ease-in-out infinite',
+              whiteSpace: 'nowrap', overflow: 'hidden',
+              maxWidth: hov ? 140 : 36,
+            }}
+          >
+            <Sparkles size={14} style={{ flexShrink: 0 }} />
+            <span style={{ opacity: hov ? 1 : 0, transition: 'opacity 0.2s', maxWidth: hov ? 100 : 0 }}>
+              Tanıtım
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Divider with color accent */}

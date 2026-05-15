@@ -132,6 +132,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   const checkUserStatus = useCallback(async (user) => {
     try {
@@ -247,6 +248,13 @@ export default function App() {
     localStorage.setItem('fincoach_theme', theme);
   }, [theme]);
 
+  // Tour replay listener — fired by PageHeader's sparkles button
+  useEffect(() => {
+    const handler = () => setShowTour(true);
+    window.addEventListener('fincoach:open-tour', handler);
+    return () => window.removeEventListener('fincoach:open-tour', handler);
+  }, []);
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -289,6 +297,12 @@ export default function App() {
     <ToastProvider>
       <BrowserRouter>
         <ScrollToTop />
+        {/* Tour overlay — shown when sparkles button clicked */}
+        {showTour && (
+          <Onboarding onComplete={async () => {
+            setShowTour(false);
+          }} />
+        )}
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
             <Route element={
