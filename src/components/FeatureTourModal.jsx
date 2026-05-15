@@ -9,86 +9,86 @@ const P = {
 
 const TOUR_CONTENT = {
   '/escrow': {
-    title: 'Voice-to-Smart Contract 🎙️',
-    subtitle: 'Dünyanın En Kolay Web3 Entegrasyonu',
-    desc: "Siz sadece 'Ali'ye 500 TL gönder ama projeyi yarın teslim ederse' diyorsunuz; FinCoach AI bunu algılayıp arka planda Ethereum ağında otonom bir akıllı sözleşme (Smart Contract) oluşturuyor. Şart gerçekleşene kadar paranız güvendedir.",
+    title: 'Sesli Akıllı Kilit 🎙️',
+    subtitle: 'Konuş, Şartını Koy, Paran Güvende Kalsın',
+    desc: "Birine para göndermek istiyorsun ama bir şartın mı var? Mesela: \"Ali'ye 1.000 TL gönder ama ancak projeyi teslim ederse parayı alsın.\" Bunu telefona söylemen yeterli. FinCoach senin sözünü anlıyor, parayı dijital bir kasaya kilitleriyor ve şart yerine gelene kadar kimse o paraya dokunamıyor. Tam bir güven sistemi.",
     icon: <Lock size={32} color={P.purple} />,
     color: P.purple
   },
   '/micro-invest': {
-    title: 'Autonomous Yield Routing 🌾',
-    subtitle: 'Yatan Para (Idle Money) Devri Bitti',
-    desc: "Harcamalarınızdan arta kalan küsüratlar pasif olarak beklemez. Saniyeler içinde Aave ve Compound gibi DeFi havuzlarına aktarılarak sizin için saniyelik getiri üretir.",
+    title: 'Küsürat Kumbarası 🌾',
+    subtitle: 'Bozuk Paralarınız Bile Sizin İçin Çalışsın',
+    desc: "45 TL kahve aldın, 55 TL küsürat kaldı. Normalde o para cebinde unutulur. Ama FinCoach onu anında yatırım havuzlarına yönlendirir ve her saniye sana küçük küçük kazanç sağlar. Ekranda paranızın gerçek zamanlı büyüdüğünü izleyebilirsiniz. Hiçbir kuruşunuz boşta durmaz.",
     icon: <Layers size={32} color={P.green} />,
     color: P.green
   },
   '/time-machine': {
-    title: 'Paralel Evren Simülatörü 🦋',
-    subtitle: 'Kelebek Etkisi Motoru',
-    desc: "Hedge fonlarının kullandığı Monte Carlo algoritmalarıyla bugün yapacağınız sıradan bir harcamanın, 10 yıl sonra hayatınızı nasıl ikiye böldüğünü (Harcama vs Otonom Fon) görün.",
+    title: 'Ya Alsam Ya Almasam? 🦋',
+    subtitle: 'Bugünkü Kararın 10 Yıl Sonra Seni Nereye Götürür?',
+    desc: "Diyelim ki 80.000 TL'ye yeni telefon almayı düşünüyorsun. Peki ya o parayı harcamasan ve yatırıma yönlendirsen? Bu ekran tam olarak bunu gösteriyor: Bir tarafta telefonu aldığın evren (10 yıl sonra elinde 0 TL), diğer tarafta yatırım yaptığın evren (10 yıl sonra milyonlar). İki farklı geleceğini yan yana koy ve kararını öyle ver.",
     icon: <Dices size={32} color={P.blue} />,
     color: P.blue
   },
   '/stress-test': {
-    title: 'Kıyamet Senaryosu & Dijital İkiz 🌪️',
-    subtitle: 'Makroekonomik Stres Testi',
-    desc: "Finansal kriz, hiperenflasyon ve işsizlik durumlarında portföyünüzün ne kadar dayanacağını test edin. Yapay zeka, hayatta kalma sürenizi (Survival Runway) hesaplar.",
+    title: 'En Kötüsüne Hazır mısın? 🌪️',
+    subtitle: 'Ekonomik Kriz Gelirse Kaç Gün Dayanırsın?',
+    desc: "Düşün ki yarın işini kaybettin, enflasyon patladı, kiran arttı. Peki elindeki parayla kaç gün hayatta kalabilirsin? Bu ekran tam olarak bunu hesaplıyor. Binlerce farklı senaryo çalıştırarak sana gerçekçi bir \"dayanma süresi\" gösteriyor. Korkutucu ama bilmen gereken bir gerçek — ve önlem almak için en iyi zaman şimdi.",
     icon: <Brain size={32} color={P.amber} />,
     color: P.amber
   },
   '/anomaly': {
-    title: 'Dopamine Lock & Fraud AI 🛑',
-    subtitle: 'Duygusal Biyometri Kalkanı',
-    desc: "Sistem sizin stresli veya dürtüsel bir şekilde (gece 3'te alışveriş) para harcadığınızı tespit ederse işleminizi durdurur. 24 saatlik soğuma süresine kilitler.",
+    title: 'Duygusal Harcama Freni 🛑',
+    subtitle: 'Stresli Anlarında Paranı Korur',
+    desc: "Gece 2'de, stresli bir günün sonunda, anlık bir kararla büyük bir alışveriş mi yapmak üzeresin? FinCoach bunu fark eder ve sana \"Dur bir dakika, yarın da istiyorsan alırsın\" der. Paranı 24 saat kilitler ki sabah kafan soğuyunca karar veresin. Pişman olacağın harcamaların önüne geçen akıllı bir koruma kalkanı.",
     icon: <ScanFace size={32} color={P.red} />,
     color: P.red
   },
-  '/federated-learning': {
-    title: 'Federated AI & Mahremiyet 🛡️',
-    subtitle: 'Sıfır Veri Sızıntısı',
-    desc: "Banka verileriniz asla cihazınızdan çıkmaz. FinCoach AI, Apple tarzı Federated Learning ile verilerinizi cihazınızda eğitir. Merkezi sunuculara sadece anonim şifreli ağırlıklar gider.",
+  '/federated': {
+    title: 'Gizlilik ve Güvenlik 🛡️',
+    subtitle: 'Verileriniz Sadece Sizde Kalır',
+    desc: "Finansal verileriniz en hassas bilgilerinizdir. FinCoach, Apple'ın kullandığı güvenlik yaklaşımıyla çalışır: Verileriniz hiçbir zaman dışarı çıkmaz, her şey sizin cihazınızda işlenir. Yapay zeka sizi tanır ama kimse sizin verilerinize erişemez. Bankacılık düzeyinde mahremiyet, sıfır veri sızıntısı.",
     icon: <FileText size={32} color="#8B5CF6" />,
     color: "#8B5CF6"
   },
   '/tax': {
-    title: 'Vergi Optimizasyon AI 🧾',
-    subtitle: 'Yasal Olarak Paranızı Geri Alın',
-    desc: "Maaşınızdan ne kadar kesinti yapıldığını analiz eder. Freelance gelirlerinizi ve giderlerinizi tarayarak kanuni çerçevede (vergi indirimleri, istisnalar) maksimum iade almanızı sağlayan asistan.",
+    title: 'Vergi Asistanınız 🧾',
+    subtitle: 'Devletten Geri Alacağınız Parayı Bulun',
+    desc: "Maaşınızdan her ay ne kadar vergi kesiliyor biliyor musunuz? Belki de hak ettiğiniz indirimlerden faydalanmıyorsunuzdur. Bu ekran gelirlerinizi ve giderlerinizi tarar, size yasal olarak geri alabileceğiniz tutarı gösterir. Freelance çalışanlar için özellikle çok faydalı — vergiden kaçmak değil, vergiyi akıllıca yönetmek.",
     icon: <Calculator size={32} color="#EC4899" />,
     color: "#EC4899"
   },
   '/graph-analysis': {
-    title: 'Market Basket Neural Net 🕸️',
-    subtitle: 'Harcama Tetikleyicilerini Bul',
-    desc: "Apriori algoritması kullanarak harcamalarınızı bir Nöral Ağ olarak çizer. Hangi harcamaların birbirini tetiklediğini (örneğin: Kahve aldıktan sonra genelde Sinemaya gidersiniz) bulur ve zayıf noktalarınızı ortaya çıkarır.",
+    title: 'Harcama Haritanız 🕸️',
+    subtitle: 'Paranız Nereye Gidiyor, Neden Gidiyor?',
+    desc: "Hiç fark ettiniz mi? Her kahve aldığınızda peşinden tatlı da alıyorsunuz. Ya da market alışverişinden sonra hep online sipariş veriyorsunuz. Bu ekran harcamalarınız arasındaki gizli bağlantıları ortaya çıkarıyor. Hangi alışkanlıkların birbirini tetiklediğini görünce, gereksiz harcamaların kökünü kesebilirsiniz.",
     icon: <Network size={32} color="#06B6D4" />,
     color: "#06B6D4"
   },
   '/debt-snowball': {
-    title: 'Borç Yıkım Stratejisti ❄️',
-    subtitle: 'Çığ Etkisi Algoritması (Snowball/Avalanche)',
-    desc: "Tüm kredi ve kart borçlarınızı faiz oranlarına göre dizer. Matematiksel olarak en hızlı ve en az faiz ödeyerek kurtulacağınız otonom bir ödeme planı (Avalanche) oluşturur.",
+    title: 'Borçtan Kurtulma Planı ❄️',
+    subtitle: 'En Az Faiz Ödeyerek En Hızlı Çıkış Yolu',
+    desc: "Kredi kartı, ihtiyaç kredisi, taksitler... Hangisini önce ödemeliyim? Bu ekran tüm borçlarınızı analiz eder ve size en az faiz ödeyeceğiniz sıralamayı gösterir. Ayda ne kadar ayırırsanız ne zaman tamamen borçsuz olacağınızı hesaplar. Borç artık kontrol altında.",
     icon: <Target size={32} color={P.red} />,
     color: P.red
   },
   '/real-estate': {
-    title: 'Ev & Kredi Radar AI 🏠',
-    subtitle: 'Gayrimenkul ve Faiz Analisti',
-    desc: "Almak istediğiniz evin değerine ve piyasadaki anlık kredi faizlerine göre otonom analiz yapar. Peşinat biriktirme hızınızı ve kredinin gerçek maliyetini ortaya koyar.",
+    title: 'Ev Alma Rehberiniz 🏠',
+    subtitle: 'Ev Almaya Ne Kadar Yakınsınız?',
+    desc: "Ev almak herkesin hayali ama rakamlar korkutucu olabiliyor. Bu ekran size net cevaplar veriyor: Peşinat için ne kadar biriktirmeniz lazım, kredi çekseniz toplamda ne kadar geri ödersiniz, aylık taksitiniz ne olur? Hayalinizdeki eve giden yolu adım adım planlayın.",
     icon: <Building size={32} color="#14B8A6" />,
     color: "#14B8A6"
   },
   '/league': {
-    title: 'Global Tasarruf Ligi 🏆',
-    subtitle: 'Finansal Oyunlaştırma',
-    desc: "Tasarruf oranlarınıza ve hedeflerinize ulaşma hızınıza göre diğer anonim kullanıcılarla global bir ligde yarışın. Finansal okuryazarlığı bir e-spor haline getirin.",
+    title: 'Tasarruf Yarışması 🏆',
+    subtitle: 'Diğer Kullanıcılarla Yarışın, Motivasyonunuzu Artırın',
+    desc: "Para biriktirmek bazen sıkıcı olabiliyor. Ama ya bir yarışma olsa? Bu ekranda diğer FinCoach kullanıcılarıyla tasarruf oranlarınız üzerinden yarışıyorsunuz. Ne kadar çok biriktirirseniz ligde o kadar yükselirsiniz. Finansı bir oyuna çevirin — hem eğlenin hem biriktirin.",
     icon: <Trophy size={32} color={P.amber} />,
     color: P.amber
   },
   '/freelancer-smoother': {
-    title: 'Freelancer Income Smoother 🌊',
-    subtitle: 'Düzensiz Geliri Sabitle',
-    desc: "Düzensiz gelirleriniz varsa stres yapmayın. Algoritma, yüksek aylardan rezerv alıp düşük aylara dağıtarak size 'Düzenli Bir Kurumsal Maaş' simülasyonu sunar.",
+    title: 'Gelir Dengeleyici 🌊',
+    subtitle: 'Düzensiz Kazancınızı Düzenli Maaşa Çevirin',
+    desc: "Serbest çalışıyorsanız bilirsiniz: Bir ay çok kazanırsınız, bir ay hiç para gelmez. Bu ekran yüksek kazançlı aylarınızdan otomatik olarak kenara koyar ve düşük aylarda size düzenli bir gelir akışı sağlar. Sanki her ay aynı maaşı alıyormuşsunuz gibi hissedersiniz. Strese son.",
     icon: <ShieldAlert size={32} color="#8B5CF6" />,
     color: "#8B5CF6"
   }
