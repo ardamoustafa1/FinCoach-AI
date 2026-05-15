@@ -10,6 +10,7 @@ import { TUM_KATEGORILER, fmt } from '../utils/categories';
 import { TableVirtuoso, VirtuosoGrid } from 'react-virtuoso';
 import useStore from '../store/useStore';
 import TransactionModal from '../components/TransactionModal';
+import AntiImpulseModal from '../components/AntiImpulseModal';
 import CsvUploader from '../components/CsvUploader';
 import SubscriptionsTab from '../components/SubscriptionsTab';
 import OpenBankingModal from '../components/OpenBankingModal';
@@ -527,6 +528,7 @@ export default function TransactionsPage() {
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [taslakIslem, setTaslakIslem] = useState(null);
   const [silinecek, setSilinecek] = useState(null);
+  const [impulseTx, setImpulseTx] = useState(null);
   const [alisilmadik, setAlisilmadik] = useState(null);
   const [csvAcik, setCsvAcik] = useState(false);
   const [openBankingAcik, setOpenBankingAcik] = useState(false);
@@ -587,7 +589,7 @@ export default function TransactionsPage() {
     recognition.start();
   };
 
-    const handleKaydet = async (form) => {
+    const forceKaydet = async (form) => {
     const yeniIslemMi = !duzenlenen;
     let kaydedilen;
     if (yeniIslemMi) {
@@ -598,6 +600,19 @@ export default function TransactionsPage() {
     }
     if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
     setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
+  };
+
+  const handleKaydet = async (form) => {
+    const isNew = !duzenlenen;
+    const m = (form.magaza || '').toLowerCase();
+    const isImpulseBrand = ['trendyol', 'amazon', 'zara', 'apple', 'beymen', 'hepsiburada'].some(b => m.includes(b));
+    
+    // Anti-Impulse Dopamine Lock Trigger: Gece/Yüksek Tutar/E-ticaret
+    if (isNew && form.tur === 'gider' && Number(form.tutar) >= 2000 && isImpulseBrand) {
+      setImpulseTx(form);
+      return;
+    }
+    await forceKaydet(form);
   };
 
   const handleFisSonucu = (ocr) => {
@@ -926,6 +941,14 @@ export default function TransactionsPage() {
 
           {/* ── MODALS ── */}
           {modalAcik && <TransactionModal islem={duzenlenen} initialValues={taslakIslem} onKaydet={handleKaydet} onKapat={() => { setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null); }} />}
+          {impulseTx && (
+            <AntiImpulseModal
+              tx={impulseTx}
+              onCancel={() => setImpulseTx(null)}
+              onConfirm={() => { forceKaydet(impulseTx); setImpulseTx(null); }}
+              onCoolOff={() => { toast.success('Harika karar! Para 24 saatliğine Soğuma Kasasında güvende.', { icon: '🛡️' }); setImpulseTx(null); setModalAcik(false); setTaslakIslem(null); }}
+            />
+          )}
           {fisModalAcik && <FisTaraModal onSonuc={handleFisSonucu} onApiError={() => { toast.error('Fiş okuma çalışmıyor, manuel ekle'); setFisModalAcik(false); setModalAcik(true); }} onKapat={() => setFisModalAcik(false)} />}
           {silinecek && <SilOnay islem={silinecek} onOnayla={handleSil} onIptal={() => setSilinecek(null)} />}
           {alisilmadik && <AlisilmadikHarcamaModal alert={alisilmadik} onNormal={() => handleAlisilmadikSecim('false_alarm')} onReview={() => handleAlisilmadikSecim('review')} />}
