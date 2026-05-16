@@ -71,7 +71,7 @@ export default function MobileNav() {
 
   // Close drawer on navigation
   useEffect(() => {
-    setOpen(false);
+    setTimeout(() => setOpen(false), 0);
   }, [pathname]);
 
   // Lock body scroll when drawer is open

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, Swords, Crown, TrendingUp, Sparkles, AlertCircle, Medal, Zap, ShieldCheck } from 'lucide-react';
+import { Trophy, Swords, Crown, TrendingUp, AlertCircle, Medal, Zap, ShieldCheck } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import PageHeader from '../components/PageHeader';
 

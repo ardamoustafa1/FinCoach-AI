@@ -5,7 +5,7 @@
  *     title="Vergi Asistanı" subtitle="Yasal kesintilerinizi hesaplayın" badge="AI Powered" />
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 
 const P = {

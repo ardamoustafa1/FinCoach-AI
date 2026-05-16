@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, Snowflake, Calculator, AlertTriangle } from 'lucide-react';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 import PageHeader, { PageLoader } from '../components/PageHeader';
 
@@ -19,8 +20,6 @@ export default function DebtSnowballPage() {
   const [loading, setLoading] = useState(true);
   const [strategy, setStrategy] = useState('snowball'); // 'snowball' (lowest balance first) or 'avalanche' (highest interest first)
   const [plan, setPlan] = useState(null);
-
-  const totalMonthlyBudget = 25000; // Kullanıcının borçlara ayırabildiği toplam para
 
   useEffect(() => {
     let isMounted = true;

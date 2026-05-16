@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Activity, Zap, Building2, RefreshCw, ShoppingCart, Bitcoin, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Zap, Building2, RefreshCw, ShoppingCart, Bitcoin, Users } from 'lucide-react';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import TrendLineChart from '../components/charts/TrendLineChart';
 import HeatmapCalendar from '../components/charts/HeatmapCalendar';
@@ -89,7 +89,6 @@ export default function DashboardPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { transactions, limits, loading } = useSupabaseData();
-  const headerVis = true;
   const [bankingSyncing, setBankingSyncing] = useState(false);
 
   const handleBankSync = () => {
@@ -99,10 +98,6 @@ export default function DashboardPage() {
       toast.success('Son 30 günlük Akbank ve Garanti hesap hareketleriniz FinCoach AI ile otonom olarak senkronize edildi! 🎉');
       setBankingSyncing(false);
     }, 3500);
-  };
-
-  const handleAddToWallet = () => {
-    toast.success('FinCoach AI Kartı Apple Wallet\'a eklendi! (Simülasyon)');
   };
 
   const stats = useMemo(() => {

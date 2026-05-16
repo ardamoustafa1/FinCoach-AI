@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw, ArrowRight, Smartphone, TrendingUp, TrendingDown, Clock, Sparkles } from 'lucide-react';
+import { RefreshCw, ArrowRight, Smartphone, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { fmt } from '../utils/categories';
 import PageHeader from '../components/PageHeader';

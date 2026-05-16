@@ -3,6 +3,7 @@ import {
   ShieldAlert, Bot, CheckCircle2, Loader2, PlayCircle, Video, Music, Dumbbell
 } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
+import useStore from '../store/useStore';
 import PageHeader from '../components/PageHeader';
 
 /* ─── Palette ─── */
@@ -62,7 +63,9 @@ export default function SubscriptionsPage() {
       realSubs = Object.values(subMap);
     }
 
-    setSubs(realSubs.length > 0 ? realSubs : MOCK_SUBSCRIPTIONS);
+    setTimeout(() => {
+      setSubs(realSubs.length > 0 ? realSubs : MOCK_SUBSCRIPTIONS);
+    }, 0);
   }, []);
 
   const handleCancel = (sub) => {
