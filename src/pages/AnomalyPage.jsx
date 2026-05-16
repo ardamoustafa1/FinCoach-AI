@@ -75,8 +75,6 @@ export default function AnomalyPage() {
   return (
     <>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .pulse-red { animation: pulseRed 2s infinite; }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
       `}</style>
@@ -118,7 +116,7 @@ export default function AnomalyPage() {
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
           {/* ISOLATION FOREST SCATTER CHART */}
-          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.1s', opacity: 0 }}>
+          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.1s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div>
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Harcama Paternleri Kümelemesi</h3>
@@ -154,7 +152,7 @@ export default function AnomalyPage() {
           </div>
 
           {/* DETECTED ANOMALIES LIST */}
-          <div className="animate-enter" style={{ flex: '1 1 350px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.2s', opacity: 0 }}>
+          <div className="animate-enter" style={{ flex: '1 1 350px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.2s' }}>
             <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, flex: 1 }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px', display: 'flex', alignItems: 'center', gap: 8 }}>
                  <Search size={20} color={P.red} /> Şüpheli İşlemler ({anomalies.length})

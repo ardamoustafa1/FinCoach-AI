@@ -54,10 +54,38 @@ function TourOverlay() {
   );
 }
 
-function ScrollToTop() {
+function RouteHandler() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    const titleMap = {
+      '/': 'Ana Sayfa',
+      '/dashboard': 'Dashboard',
+      '/transactions': 'İşlemler',
+      '/wealth': 'Varlık Yönetimi',
+      '/micro-invest': 'Küsürat Yatırımı',
+      '/debt-snowball': 'Borç Yapılandırma',
+      '/freelancer-smoother': 'Freelancer Dengeleyici',
+      '/tax': 'Vergi Asistanı',
+      '/real-estate': 'Ev & Kredi AI',
+      '/anomaly': 'Anomali AI',
+      '/graph-analysis': 'Market Basket Graph',
+      '/system-monitor': 'Sistem Mimarisi',
+      '/federated': 'Federated AI',
+      '/escrow': 'Web3 Escrow',
+      '/goals': 'Hedefler',
+      '/league': 'Tasarruf Ligi',
+      '/cashflow': 'Nakit Akışı',
+      '/stress-test': 'Stres Testi',
+      '/time-machine': 'Zaman Makinesi',
+      '/subscriptions': 'Abonelikler',
+      '/chat': 'AI Koç',
+      '/reports': 'Raporlar',
+      '/settings': 'Ayarlar',
+      '/shop-sim': 'Harcama Simülatörü'
+    };
+    const currentTitle = titleMap[pathname] || 'Finansal Koçunuz';
+    document.title = `${currentTitle} | FinCoach AI`;
   }, [pathname]);
   return null;
 }
@@ -310,7 +338,7 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
-        <ScrollToTop />
+        <RouteHandler />
         <TourOverlay />
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>

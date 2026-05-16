@@ -22,10 +22,48 @@ const MOCK_SUBSCRIPTIONS = [
 
 export default function SubscriptionsPage() {
   const toast = useToast();
-  const [subs, setSubs] = useState(MOCK_SUBSCRIPTIONS);
+  const [subs, setSubs] = useState([]);
   const [cancelingId, setCancelingId] = useState(null);
   const [agentStep, setAgentStep] = useState(0); // 0: off, 1-5: steps
   const [agentLogs, setAgentLogs] = useState([]);
+
+  useEffect(() => {
+    // 1. Identify subscriptions from real transactions
+    const tx = useStore.getState().transactions;
+    const subTransactions = tx.filter(t => 
+      t.tur === 'gider' && 
+      (t.kategori === 'Abonelik' || t.kategori === 'Dijital' || t.aciklama?.toLowerCase().includes('abonelik'))
+    );
+
+    let realSubs = [];
+    if (subTransactions.length > 0) {
+      const subMap = {};
+      subTransactions.forEach(t => {
+        const name = t.magaza || t.aciklama || 'Bilinmeyen Abonelik';
+        if (!subMap[name]) {
+          let icon = PlayCircle;
+          let color = P.purple;
+          if (name.toLowerCase().includes('netflix')) { icon = Video; color = '#E50914'; }
+          else if (name.toLowerCase().includes('spotify')) { icon = Music; color = '#1DB954'; }
+          else if (name.toLowerCase().includes('macfit') || name.toLowerCase().includes('spor')) { icon = Dumbbell; color = '#F59E0B'; }
+          else if (name.toLowerCase().includes('youtube')) { icon = PlayCircle; color = '#FF0000'; }
+
+          subMap[name] = {
+            id: `sub_${name.replace(/\s+/g, '')}`,
+            name,
+            price: Number(t.tutar),
+            cycle: 'Aylık',
+            icon,
+            color,
+            category: t.kategori || 'Diğer'
+          };
+        }
+      });
+      realSubs = Object.values(subMap);
+    }
+
+    setSubs(realSubs.length > 0 ? realSubs : MOCK_SUBSCRIPTIONS);
+  }, []);
 
   const handleCancel = (sub) => {
     setCancelingId(sub.id);

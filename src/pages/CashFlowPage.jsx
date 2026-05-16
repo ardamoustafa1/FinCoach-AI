@@ -186,7 +186,7 @@ export default function CashFlowPage() {
         </PageHeader>
 
         {/* ── METRICS GRID ── */}
-        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
+        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s' }}>
           {[
             { label: 'Mevcut Bakiye', value: fmt(metrics.startingBalance), icon: ArrowUpRight, color: P.text1 },
             { label: '12 Ay Sonra Tahmini Bakiye', value: fmt(metrics.finalBalance), icon: BarChart4, color: metrics.finalBalance < 0 ? P.red : P.blue },
@@ -204,7 +204,7 @@ export default function CashFlowPage() {
         </div>
 
         {/* ── TIME SERIES CHART ── */}
-        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0 }}>
+        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Monte Carlo Projeksiyonu (500 İterasyon)</h3>

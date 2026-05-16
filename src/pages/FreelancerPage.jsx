@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Waves, Lock, TrendingUp, RefreshCw, CheckCircle2 } from 'lucide-react';
+import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 import PageHeader, { PageLoader } from '../components/PageHeader';
 
@@ -10,8 +11,10 @@ const P = {
   border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
 };
 
-// Mock volatile income data for the last 6 months + next 6 months projection
-const VOLATILE_INCOME = [
+const MONTH_NAMES = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+
+// Demo fallback when user has no income transactions
+const DEMO_INCOME = [
   { month: 'Oca', gercekGelir: 120000 },
   { month: 'Şub', gercekGelir: 15000 },
   { month: 'Mar', gercekGelir: 85000 },
@@ -30,15 +33,40 @@ export default function FreelancerPage() {
     let isMounted = true;
     setTimeout(() => {
       if (!isMounted) return;
+
+      // Derive monthly income from real transactions
+      const tx = useStore.getState().transactions;
+      const incomeTx = tx.filter(t => t.tur === 'gelir');
+
+      let monthlyIncome;
+
+      if (incomeTx.length >= 3) {
+        // Group by YYYY-MM, take last 6 months
+        const grouped = {};
+        incomeTx.forEach(t => {
+          const ym = (t.tarih || '').slice(0, 7); // YYYY-MM
+          if (ym) grouped[ym] = (grouped[ym] || 0) + Number(t.tutar);
+        });
+
+        const sortedMonths = Object.keys(grouped).sort().slice(-6);
+        monthlyIncome = sortedMonths.map(ym => {
+          const monthIdx = parseInt(ym.split('-')[1], 10) - 1;
+          return { month: MONTH_NAMES[monthIdx] || ym, gercekGelir: Math.round(grouped[ym]) };
+        });
+      } else {
+        // Not enough real data — use demo
+        monthlyIncome = DEMO_INCOME;
+      }
+
       // AI calculates the "Safe Salary" (average of last 6 months with a 15% safety buffer)
-      const totalIncome = VOLATILE_INCOME.reduce((a, b) => a + b.gercekGelir, 0);
-      const avgIncome = totalIncome / VOLATILE_INCOME.length;
+      const totalIncome = monthlyIncome.reduce((a, b) => a + b.gercekGelir, 0);
+      const avgIncome = totalIncome / monthlyIncome.length;
       const safeSalary = avgIncome * 0.85; // 85% of average to build buffer
       
       let vaultBalance = 0;
-      const history = VOLATILE_INCOME.map(v => {
+      const history = monthlyIncome.map(v => {
         const excess = v.gercekGelir - safeSalary;
-        vaultBalance += excess; // Add excess to vault, or withdraw if negative
+        vaultBalance += excess;
         return {
           ...v,
           sabitMaas: Math.round(safeSalary),
@@ -87,7 +115,7 @@ export default function FreelancerPage() {
         </PageHeader>
 
         {/* METRICS */}
-        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
+        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, animationDelay: '0.1s' }}>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>6 Aylık Ortalama Gelir</p>
             <p style={{ fontSize: 24, fontWeight: 900, color: P.text1, margin: 0 }}>{fmt(data.avgIncome)}</p>
@@ -111,7 +139,7 @@ export default function FreelancerPage() {
         </div>
 
         {/* VISUALIZATION CHART */}
-        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0 }}>
+        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Stresli Grafikten Huzurlu Maaşa Geçiş</h3>

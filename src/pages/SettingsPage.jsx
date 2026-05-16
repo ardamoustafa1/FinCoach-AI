@@ -83,6 +83,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [limits, setLimits] = useState(() => useStore.getState().budgetLimits);
   const [isSaved, setIsSaved] = useState(false);
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('fincoach_roast_mode') === 'true');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem('fincoach_notifications') !== 'false');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [whatsappStatus, setWhatsappStatus] = useState(null);
@@ -217,6 +218,12 @@ export default function SettingsPage({ theme, onToggleTheme }) {
       return;
     }
     setTimeout(() => setVerificationSent(false), 3000);
+  };
+
+  const toggleNotifications = () => {
+    const next = !notificationsEnabled;
+    setNotificationsEnabled(next);
+    localStorage.setItem('fincoach_notifications', next ? 'true' : 'false');
   };
 
   const toggleRoastMode = () => {
@@ -572,8 +579,15 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             icon={Bell}
             iconColor={P.amber}
             title="Bildirimler"
-            subtitle="Hatırlatıcılar ve uyarılar"
-            action={<span style={{ padding: '6px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>Aktif</span>}
+            subtitle={notificationsEnabled ? 'Hatırlatıcılar ve uyarılar aktif' : 'Bildirimler kapalı'}
+            action={
+              <ActionButton
+                onClick={toggleNotifications}
+                label={notificationsEnabled ? 'Kapat' : 'Aç'}
+                color={notificationsEnabled ? P.text3 : P.amber}
+                variant={notificationsEnabled ? 'ghost' : 'fill'}
+              />
+            }
           />
 
           <SettingRow

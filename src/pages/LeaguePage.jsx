@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Trophy, Swords, Crown, TrendingUp, Sparkles, AlertCircle, Medal, Zap, ShieldCheck } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
@@ -50,48 +51,29 @@ export default function LeaguePage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 900, margin: '0 auto', paddingBottom: 40 }}>
       <style>{`@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
       
-      {/* Header Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1C2038 0%, #141728 100%)',
-        border: `1px solid ${P.purpleGlow}`, borderRadius: 24, padding: '40px 32px',
-        position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.5)', flexWrap: 'wrap', gap: 24
-      }}>
-        <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: P.purple, filter: 'blur(100px)', opacity: 0.15 }} />
-        
-        <div style={{ zIndex: 1, maxWidth: 500 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{ background: 'rgba(245, 158, 11, 0.2)', padding: '6px 12px', borderRadius: 999, border: '1px solid rgba(245, 158, 11, 0.4)' }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: P.amber, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Sezon 1: Bahar Dönemi</span>
-            </div>
-            <Sparkles size={16} color={P.amber} />
-          </div>
-          <h1 style={{ fontSize: 36, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 12, lineHeight: 1.1 }}>
-            Finansal Düello & Tasarruf Ligi ⚔️
-          </h1>
-          <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, margin: 0 }}>
-            Arkadaşlarına meydan oku! Bu ay kim daha yüksek tasarruf oranına ulaşacak? Gereksiz harcamaları azalt, puanları topla ve liderlik tablosunda zirveye yerleş.
-          </p>
-        </div>
-
-        <div style={{ zIndex: 1 }}>
-          <button
-            onClick={handleInvite}
-            disabled={inviting}
-            style={{
-              padding: '16px 24px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
-              border: 'none', color: '#fff', fontWeight: 800, fontSize: 15, cursor: inviting ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 8px 24px rgba(124,58,237,0.4)',
-              transition: 'transform 0.2s', opacity: inviting ? 0.7 : 1
-            }}
-            onMouseEnter={e => { if(!inviting) e.currentTarget.style.transform = 'scale(1.05)' }}
-            onMouseLeave={e => { if(!inviting) e.currentTarget.style.transform = 'scale(1)' }}
-          >
-            <Swords size={20} />
-            {inviting ? 'Davet Hazırlanıyor...' : 'Meydan Oku (Davet Et)'}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Trophy size={24} />}
+        color={P.amber}
+        title="Finansal Düello & Tasarruf Ligi ⚔️"
+        subtitle="Arkadaşlarına meydan oku! Bu ay kim daha yüksek tasarruf oranına ulaşacak? Gereksiz harcamaları azalt, puanları topla ve zirveye yerleş."
+        badge="Sezon 1"
+      >
+        <button
+          onClick={handleInvite}
+          disabled={inviting}
+          style={{
+            padding: '12px 20px', borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+            border: 'none', color: '#fff', fontWeight: 800, fontSize: 13, cursor: inviting ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 20px rgba(124,58,237,0.3)',
+            transition: 'transform 0.2s', opacity: inviting ? 0.7 : 1
+          }}
+          onMouseEnter={e => { if(!inviting) e.currentTarget.style.transform = 'scale(1.05)' }}
+          onMouseLeave={e => { if(!inviting) e.currentTarget.style.transform = 'scale(1)' }}
+        >
+          <Swords size={16} />
+          {inviting ? 'Davet Hazırlanıyor...' : 'Meydan Oku'}
+        </button>
+      </PageHeader>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
         

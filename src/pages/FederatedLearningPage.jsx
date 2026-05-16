@@ -79,9 +79,6 @@ export default function FederatedLearningPage() {
   return (
     <>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
         .flow-up { animation: flowUp 1.5s linear infinite; }
         @keyframes flowUp { 0% { transform: translateY(100%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-100%); opacity: 0; } }
 
@@ -119,7 +116,7 @@ export default function FederatedLearningPage() {
         </PageHeader>
 
         {/* VISUALIZATION TOPOLOGY */}
-        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 40, animationDelay: '0.1s', opacity: 0 }}>
+        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 40, animationDelay: '0.1s' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
             
@@ -220,7 +217,7 @@ export default function FederatedLearningPage() {
         </div>
 
         {/* TERMINAL LOGS */}
-        <div className="animate-enter" style={{ background: '#020617', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0, minHeight: 280 }}>
+        <div className="animate-enter" style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', minHeight: 280 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Terminal size={18} color="#94a3b8" />
             <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>FEDERATED AI EĞİTİM LOGLARI</span>

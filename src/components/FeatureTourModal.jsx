@@ -8,6 +8,13 @@ const P = {
 };
 
 const TOUR_CONTENT = {
+  '/': {
+    title: 'FinCoach AI\'ye Hoş Geldiniz 🚀',
+    subtitle: 'Yapay Zeka Destekli Finansal Koçunuz',
+    desc: "FinCoach AI, gelir ve giderlerinizi takip eden, harcama alışkanlıklarınızı analiz eden ve size kişiselleştirilmiş finansal tavsiyeler sunan akıllı bir platformdur. Sol menüden tüm modüllere erişebilir, sesli komutla işlem ekleyebilir ve yapay zeka koçunuza her türlü finansal sorunuzu sorabilirsiniz. Her sayfadaki ✨ butonuna tıklayarak o modülün detaylı tanıtımını görebilirsiniz.",
+    icon: <LayoutDashboard size={32} color={P.purple} />,
+    color: P.purple
+  },
   '/escrow': {
     title: 'Sesli Akıllı Kilit 🎙️',
     subtitle: 'Konuş, Şartını Koy, Paran Güvende Kalsın',

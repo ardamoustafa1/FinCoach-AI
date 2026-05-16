@@ -70,9 +70,6 @@ export default function SystemMonitorPage() {
   return (
     <>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
         .pulse-active { animation: pulseActive 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulseActive { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
         
@@ -96,7 +93,7 @@ export default function SystemMonitorPage() {
         </PageHeader>
 
         {/* TOPOLOGY GRAPH */}
-        <div className="animate-enter" style={{ background: '#0f172a', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 40, animationDelay: '0.1s', opacity: 0, position: 'relative', overflow: 'hidden' }}>
+        <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 40, animationDelay: '0.1s', position: 'relative', overflow: 'hidden' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
             
@@ -188,7 +185,7 @@ export default function SystemMonitorPage() {
         {/* LIVE TERMINAL LOGS & SECURITY PANELS */}
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
-          <div className="animate-enter" style={{ background: '#020617', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0, flex: '1 1 500px', minHeight: 300 }}>
+          <div className="animate-enter" style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', flex: '1 1 500px', minHeight: 300 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
               <Terminal size={18} color="#94a3b8" />
               <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>SİSTEM LOGLARI (CANLI)</span>
@@ -207,7 +204,7 @@ export default function SystemMonitorPage() {
             </div>
           </div>
 
-          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: '1 1 350px', animationDelay: '0.3s', opacity: 0 }}>
+          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: '1 1 350px', animationDelay: '0.3s' }}>
             
             {/* Zero Trust Panel */}
             <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.05), transparent)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 24, padding: 24 }}>
@@ -219,10 +216,10 @@ export default function SystemMonitorPage() {
                  Uygulama genelinde AES-256 (E2EE) şifreleme ve veritabanı katmanında Row-Level Security aktiftir. Kurucu CTO dahi kullanıcı verilerine erişemez.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0f172a', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg2, padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
                    <Key size={14} color={P.text3} /> <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>AES-256</span>
                  </div>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0f172a', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg2, padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
                    <Database size={14} color={P.text3} /> <span style={{ fontSize: 12, color: P.text2, fontWeight: 600 }}>PostgreSQL RLS</span>
                  </div>
                </div>
@@ -237,7 +234,7 @@ export default function SystemMonitorPage() {
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
                  Markowitz optimizasyonu ve AI çıkarımları merkezi sunucularda değil, size en yakın Cloudflare Worker (Edge Node) üzerinde hesaplanır.
                </p>
-               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0f172a', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                    <Wifi size={16} color={P.green} />
                    <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Aktif Edge: IST-1 (İstanbul)</span>
@@ -255,7 +252,7 @@ export default function SystemMonitorPage() {
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
                  Milyonlarca ham işlem verisi Snowflake Veri Gölü'ne dökülür ve <strong>dbt (data build tool)</strong> ile temizlenerek (ETL) yapay zeka modellerimizin eğitim setine (Training Set) dönüştürülür.
                </p>
-               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0f172a', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                    <Filter size={16} color={P.purple} />
                    <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Son ETL Senkronizasyonu:</span>

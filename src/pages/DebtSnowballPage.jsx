@@ -26,37 +26,72 @@ export default function DebtSnowballPage() {
     let isMounted = true;
     setTimeout(() => {
       if (!isMounted) return;
-      // Sort debts based on strategy
-      let sortedDebts = [...MOCK_DEBTS];
-      if (strategy === 'snowball') {
-        sortedDebts.sort((a, b) => a.balance - b.balance);
-      } else {
-        sortedDebts.sort((a, b) => b.interestRate - a.interestRate);
+
+      const tx = useStore.getState().transactions;
+      
+      // Try to find debt-related transactions to build real data
+      const debtPayments = tx.filter(t => 
+        t.tur === 'gider' && 
+        (t.kategori?.toLowerCase().includes('kredi') || t.kategori?.toLowerCase().includes('borç'))
+      );
+
+      let workingDebts = [...MOCK_DEBTS];
+
+      // If user has real debt payments, construct a real debt profile
+      if (debtPayments.length > 0) {
+        // Group by store name
+        const debtMap = {};
+        debtPayments.forEach(p => {
+          const name = p.magaza || p.aciklama || 'Bilinmeyen Kredi';
+          if (!debtMap[name]) {
+             debtMap[name] = { id: name, name, type: 'loan', balance: 0, interestRate: 3.5, minPayment: 0, color: P.blue };
+          }
+          debtMap[name].minPayment += Number(p.tutar);
+          // Estimate balance as 12x min payment
+          debtMap[name].balance += Number(p.tutar) * 12; 
+        });
+        
+        workingDebts = Object.values(debtMap).map((d, i) => ({
+          ...d,
+          color: [P.red, P.amber, P.blue, P.purple][i % 4]
+        }));
       }
 
-      const totalBalance = MOCK_DEBTS.reduce((a, b) => a + b.balance, 0);
-      const totalMinPayment = MOCK_DEBTS.reduce((a, b) => a + b.minPayment, 0);
-      const extraPayment = totalMonthlyBudget - totalMinPayment; // Kartopu etkisi için kullanılacak fazlalık
+      // Calculate monthly budget (Total Income - 80% of expenses, roughly)
+      const incomes = tx.filter(t => t.tur === 'gelir').reduce((a,b) => a + Number(b.tutar), 0) || 50000;
+      const expenses = tx.filter(t => t.tur === 'gider' && !t.kategori?.toLowerCase().includes('kredi')).reduce((a,b) => a + Number(b.tutar), 0) || 25000;
+      const calculatedBudget = Math.max(5000, incomes - expenses); // At least 5000 budget
+
+      // Sort debts based on strategy
+      if (strategy === 'snowball') {
+        workingDebts.sort((a, b) => a.balance - b.balance);
+      } else {
+        workingDebts.sort((a, b) => b.interestRate - a.interestRate);
+      }
+
+      const totalBalance = workingDebts.reduce((a, b) => a + b.balance, 0);
+      const totalMinPayment = workingDebts.reduce((a, b) => a + b.minPayment, 0);
+      const extraPayment = calculatedBudget - totalMinPayment; // Kartopu etkisi için kullanılacak fazlalık
 
       // Simple AI Advice
       let aiAdvice;
       if (extraPayment < 0) {
-         aiAdvice = `ALARM: Asgari ödemeleriniz (₺${totalMinPayment}), bütçenizi (₺${totalMonthlyBudget}) aşıyor. Acilen harcamaları kısmalı veya borç yapılandırması (konsolidasyon) yapmalısınız.`;
+         aiAdvice = `ALARM: Asgari ödemeleriniz (₺${fmt(totalMinPayment)}), bütçenizi (₺${fmt(calculatedBudget)}) aşıyor. Acilen harcamaları kısmalı veya borç yapılandırması (konsolidasyon) yapmalısınız.`;
       } else {
-         const target = sortedDebts[0];
+         const target = workingDebts[0];
          if (strategy === 'snowball') {
-           aiAdvice = `Karar: Kartopu Stratejisi. Psikolojik zafer için önce en küçük borç olan '${target.name}' kapatılacak. Asgarileri ödedikten sonra kalan ₺${extraPayment} tutarındaki fazlalığı tamamen bu karta yatırın.`;
+           aiAdvice = `Karar: Kartopu Stratejisi. Psikolojik zafer için önce en küçük borç olan '${target.name}' kapatılacak. Asgarileri ödedikten sonra kalan ₺${fmt(extraPayment)} tutarındaki fazlalığı tamamen bu karta yatırın.`;
          } else {
-           aiAdvice = `Karar: Çığ Stratejisi. Matematiksel olarak en az faizi ödemek için önce %${target.interestRate} faizli '${target.name}' kapatılacak. Fazla paranızın (₺${extraPayment}) tamamını buraya aktarın.`;
+           aiAdvice = `Karar: Çığ Stratejisi. Matematiksel olarak en az faizi ödemek için önce %${target.interestRate} faizli '${target.name}' kapatılacak. Fazla paranızın (₺${fmt(extraPayment)}) tamamını buraya aktarın.`;
          }
       }
-
 
       setPlan({
         totalBalance,
         totalMinPayment,
         extraPayment,
-        sortedDebts,
+        budget: calculatedBudget,
+        sortedDebts: workingDebts,
         aiAdvice
       });
       setLoading(false);
@@ -100,7 +135,7 @@ export default function DebtSnowballPage() {
           </div>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Aylık Borç Bütçesi</p>
-            <p style={{ fontSize: 28, fontWeight: 900, color: P.text1, margin: 0 }}>{fmt(totalMonthlyBudget)}</p>
+            <p style={{ fontSize: 28, fontWeight: 900, color: P.text1, margin: 0 }}>{fmt(plan.budget)}</p>
           </div>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Kartopu Gücü (Fazlalık)</p>

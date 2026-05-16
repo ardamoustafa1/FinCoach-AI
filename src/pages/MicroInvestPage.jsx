@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { Sparkles, ArrowRight, Zap, RefreshCw, Layers, Terminal, Activity } from 'lucide-react';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -63,7 +64,8 @@ export default function MicroInvestPage() {
       if (isMounted) {
         setData({ totalSpareChange, recentRounds, monthlySpareChange, annualProjection, investedValue });
         setChartData(projectionSeries);
-        setLiveYield(totalSpareChange); // Start base
+        const saved = localStorage.getItem('fincoach_live_yield');
+        setLiveYield(saved && Number(saved) > totalSpareChange ? Number(saved) : totalSpareChange);
         setLoading(false);
       }
     }, 800);
@@ -77,7 +79,11 @@ export default function MicroInvestPage() {
     
     // Increment balance slightly every 50ms to simulate live DeFi yields
     const yieldInterval = setInterval(() => {
-      setLiveYield(prev => prev + 0.000134); 
+      setLiveYield(prev => {
+        const next = prev + 0.000134;
+        localStorage.setItem('fincoach_live_yield', next.toString());
+        return next;
+      }); 
     }, 50);
 
     return () => clearInterval(yieldInterval);
@@ -130,9 +136,6 @@ export default function MicroInvestPage() {
   return (
     <>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
         .matrix-bg {
           background-image: radial-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px);
           background-size: 32px 32px;
@@ -147,29 +150,16 @@ export default function MicroInvestPage() {
         }
       `}</style>
 
-      <div className="pt-24 pb-32 px-6 max-w-5xl mx-auto matrix-bg" style={{ minHeight: '100vh' }}>
-        
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
+
         {/* HEADER */}
-        <div className="animate-enter" style={{
-          background: `linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(59,130,246,0.05) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px', marginBottom: 32,
-          position: 'relative', overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '40%', background: 'linear-gradient(to bottom, rgba(16,185,129,0.1), transparent)', opacity: 0.5, animation: 'dataStream 10s linear infinite', backgroundSize: '100% 200%' }} />
-          
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Layers size={20} color={P.green} />
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: P.green }}>DeFi Yield Farming</span>
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Autonomous Yield Routing
-            </h1>
-            <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 650, lineHeight: 1.6 }}>
-              "Yatan Para" devri bitti. FinCoach AI, harcamalarınızdan arta kalan küsüratları anında Ethereum ağına gönderir. Saniyeler içinde Aave ve Compound gibi havuzlarda en yüksek getiri oranını bularak otonom çiftçilik yapar.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          icon={<Layers size={24} />}
+          color={P.green}
+          title="Küsürat Kumbarası"
+          subtitle="Her harcamanızdan arta kalan küsüratlar otomatik olarak DeFi havuzlarında değerlendirilir."
+          badge="DeFi Yield"
+        />
 
         {/* LIVE YIELD DASHBOARD */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24, animationDelay: '0.1s' }}>

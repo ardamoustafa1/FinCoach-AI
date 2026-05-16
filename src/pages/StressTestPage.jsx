@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { AlertTriangle, ArrowRightLeft, Briefcase, Zap, Cpu, Activity, ShieldAlert, Skull } from 'lucide-react';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
+import PageHeader from '../components/PageHeader';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -150,28 +151,13 @@ export default function StressTestPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, animation: 'fadeSlideUp 0.5s ease', maxWidth: 1000, margin: '0 auto' }}>
         
         {/* HEADER */}
-        <div style={{
-          background: `linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)`,
-          border: `1px solid ${P.border}`, borderRadius: 24, padding: '32px',
-          position: 'relative', overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 1, background: `linear-gradient(90deg, transparent, ${activeScenario.color}, transparent)` }} />
-          <div style={{ position: 'absolute', top: -100, right: -100, width: 300, height: 300, background: `${activeScenario.color}15`, filter: 'blur(80px)', pointerEvents: 'none' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, position: 'relative', zIndex: 1 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${activeScenario.color}20`, border: `1px solid ${activeScenario.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Cpu size={24} color={activeScenario.color} />
-            </div>
-            <div>
-              <h1 style={{ fontSize: 26, fontWeight: 900, color: P.text1, margin: 0, letterSpacing: '-0.02em' }}>Macro-Economic Digital Twin</h1>
-              <p style={{ fontSize: 13, color: P.text3, margin: '2px 0 0 0', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Finansal İkiziniz & Monte Carlo Motoru</p>
-            </div>
-          </div>
-          <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 700, lineHeight: 1.6, position: 'relative', zIndex: 1 }}>
-            Bu modül, bankaların kullandığı risk analiz (Monte Carlo) algoritmalarını bireysel bütçenize uygular. 
-            <strong> Finansal Dijital İkiziniz</strong> farklı kriz senaryolarında hayatta kalma sürenizi (Survival Runway) hesaplar.
-          </p>
-        </div>
+        <PageHeader
+          icon={<Cpu size={24} />}
+          color={activeScenario.color}
+          title="Makroekonomik Stres Testi"
+          subtitle="Monte Carlo algoritmasıyla farklı kriz senaryolarında hayatta kalma sürenizi hesaplayın."
+          badge="Digital Twin"
+        />
 
         {/* SCENARIO SELECTOR */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>

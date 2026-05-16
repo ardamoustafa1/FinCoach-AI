@@ -15,6 +15,7 @@ const navItems = [
   { to: '/tax', label: 'Vergi Asistanı', icon: Calculator },
   { to: '/real-estate', label: 'Ev & Kredi AI', icon: Home },
   { to: '/anomaly', label: 'Anomali & Fraud AI', icon: Lock },
+  { to: '/shop-sim', label: 'Harcama Simülatörü', icon: Target },
   { to: '/graph-analysis', label: 'Market Basket Graph', icon: Network },
   { to: '/system-monitor', label: 'Sistem Mimarisi', icon: Server },
   { to: '/federated', label: 'Federated AI', icon: ShieldCheck },

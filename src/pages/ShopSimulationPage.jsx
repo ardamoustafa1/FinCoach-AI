@@ -66,8 +66,6 @@ export default function ShopSimulationPage() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#fff', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', overflowY: 'auto' }}>
       <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes pulseBorder { 0%, 100% { border-color: rgba(124,58,237,0.3); } 50% { border-color: rgba(124,58,237,0.8); } }
       `}</style>
       

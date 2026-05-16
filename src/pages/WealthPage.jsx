@@ -112,10 +112,6 @@ export default function WealthPage() {
 
   return (
     <>
-      <style>{`
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      `}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Cpu size={24} />}
@@ -126,7 +122,7 @@ export default function WealthPage() {
         />
 
         {/* RISK ANALYSIS RESULTS */}
-        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.1s', opacity: 0 }}>
+        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.1s' }}>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>Algoritmik Risk Skoru</span>
@@ -170,7 +166,7 @@ export default function WealthPage() {
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
           {/* EFFICIENT FRONTIER SCATTER CHART */}
-          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', opacity: 0 }}>
+          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div>
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Etkin Sınır (Efficient Frontier)</h3>
@@ -203,7 +199,7 @@ export default function WealthPage() {
           </div>
 
           {/* OPTIMAL ALLOCATION */}
-          <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.3s', opacity: 0 }}>
+          <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.3s' }}>
             <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 24, padding: 32, flex: 1 }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>Optimal Dağılımınız</h3>
               
