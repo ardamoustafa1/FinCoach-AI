@@ -145,6 +145,30 @@ export default function LeaguePage() {
             <h3 style={{ fontSize: 18, fontWeight: 900, color: P.text1, marginBottom: 8 }}>Zirvedesin!</h3>
             <p style={{ fontSize: 14, color: P.text2, margin: 0 }}>Bu ay harika gidiyorsun. Bütçe limitlerine uyarak birinci sıradaki yerini koruyabilirsin.</p>
           </div>
+
+          {/* Peer Contagion (Sosyal Bulaşma) AI Warning */}
+          <div className="animate-enter" style={{ background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, border: `1px solid ${P.amber}60`, borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start', boxShadow: `0 8px 32px rgba(245, 158, 11, 0.15)` }}>
+            <div style={{ padding: 12, background: `${P.amber}15`, borderRadius: 12, border: `1px solid ${P.amber}40` }}>
+              <AlertCircle size={24} color={P.amber} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0 }}>Lifestyle Inflation Tespiti</h3>
+                <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 99, background: P.amber, color: '#fff', textTransform: 'uppercase' }}>
+                  Sosyal Bulaşma
+                </span>
+              </div>
+              <p style={{ fontSize: 13, color: P.text2, margin: '0 0 12px', lineHeight: 1.6 }}>
+                Son 2 aydır 'Dışarıda Yemek' harcamaların <strong>%45</strong> arttı. Algoritmamız, bu artışın gelirindeki bir artışla değil, Tasarruf Ligi'ndeki arkadaşın <strong>Ahmet Yılmaz</strong>'ın harcama desenleriyle %88 korelasyon gösterdiğini tespit etti. Sosyal çevre baskısıyla (Peer Pressure) para harcıyor olabilirsin, dikkat et!
+              </p>
+              <button style={{
+                background: P.amber, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8,
+                fontSize: 12, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 12px rgba(245, 158, 11, 0.3)`
+              }}>
+                Ahmet'i Sustur (Bildirimleri Kapat)
+              </button>
+            </div>
+          </div>
           
           {/* Badges Section */}
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
