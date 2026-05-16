@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { Target, TrendingUp, Cpu, Gauge, Globe2 } from 'lucide-react';
+import { Target, TrendingUp, Cpu, Gauge, Globe2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import useStore from '../store/useStore';
 import PageHeader, { PageLoader } from '../components/PageHeader';
+import { fmt } from '../utils/categories';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -10,7 +11,7 @@ const P = {
   border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
 };
 
-// Simulated Assets (Expected Return, Volatility/Risk)
+// Simulated Assets (Expected Annual Return %, Volatility/Risk %)
 const ASSETS = [
   { name: 'Teknoloji Hisse', eR: 35, vol: 25 },
   { name: 'Kripto', eR: 70, vol: 50 },
@@ -18,19 +19,14 @@ const ASSETS = [
   { name: 'Tahvil', eR: 10, vol: 5 }
 ];
 
-// Generates 500 random portfolios to build the "Efficient Frontier" cloud
 function generatePortfolios() {
   const portfolios = [];
   for (let i = 0; i < 500; i++) {
-    // Random weights sum to 1
     let w = [Math.random(), Math.random(), Math.random(), Math.random()];
     const sum = w.reduce((a, b) => a + b, 0);
     w = w.map(val => val / sum);
 
-    // Calculate Return
     const expReturn = w[0]*ASSETS[0].eR + w[1]*ASSETS[1].eR + w[2]*ASSETS[2].eR + w[3]*ASSETS[3].eR;
-    
-    // Calculate Risk (Simplified covariance simulation - diversification dampens risk)
     const rawRisk = w[0]*ASSETS[0].vol + w[1]*ASSETS[1].vol + w[2]*ASSETS[2].vol + w[3]*ASSETS[3].vol;
     const divFactor = 1 - (0.2 * (1 - Math.max(...w))); // Diversification benefit
     const risk = rawRisk * divFactor;
@@ -50,65 +46,113 @@ export default function WealthPage() {
   const [metrics, setMetrics] = useState(null);
   const [cloud, setCloud] = useState([]);
   const [optimalPoint, setOptimalPoint] = useState(null);
+  const [goalAnalysis, setGoalAnalysis] = useState(null);
 
   useEffect(() => {
     const tx = useStore.getState().transactions;
+    const goals = useStore.getState().goals;
     
     setTimeout(() => {
-      // 1. Analyze User Volatility (Mock)
+      // 1. Calculate Monthly Cashflow (Savings Capacity)
       const expenses = tx.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
       const avgExpense = expenses.reduce((a, b) => a + b, 0) / (expenses.length || 1);
-      const variance = expenses.reduce((a, b) => a + Math.pow(b - avgExpense, 2), 0) / (expenses.length || 1);
-      const userVolatility = Math.sqrt(variance) / (avgExpense || 1);
       
       const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       const totalExpense = avgExpense * (expenses.length || 1) || 30000;
-      const savingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
-      const emergencyFund = 120000;
+      const monthlySavings = Math.max(1000, (totalIncome - totalExpense));
 
-      // 2. Risk Score Calculation
-      let riskScore = 50;
-      if (savingsRate > 25) riskScore += 20;
-      if (emergencyFund > totalExpense * 6) riskScore += 15;
-      if (userVolatility > 0.8) riskScore -= 20;
-      riskScore = Math.round(Math.min(100, Math.max(0, riskScore)));
+      // 2. Goal Analysis (Robo-Advisor Logic)
+      let activeGoal = null;
+      let targetReturn = 20; // Default baseline return
+      let goalMsg = '';
+      let riskLevel = 'normal';
+      let requiredValueGap = 0;
+      
+      if (goals && goals.length > 0) {
+        // Find the most ambitious goal with a deadline
+        activeGoal = [...goals].sort((a,b) => b.targetAmount - a.targetAmount)[0];
+        
+        if (activeGoal && activeGoal.deadline) {
+          const deadlineDate = new Date(activeGoal.deadline);
+          const now = new Date();
+          const monthsLeft = Math.max(1, (deadlineDate.getFullYear() - now.getFullYear()) * 12 + (deadlineDate.getMonth() - now.getMonth()));
+          
+          const pv = activeGoal.currentAmount || 0;
+          const fvTarget = activeGoal.targetAmount;
+          const expectedWithoutReturn = pv + (monthlySavings * monthsLeft);
+          
+          if (expectedWithoutReturn < fvTarget) {
+            requiredValueGap = fvTarget - expectedWithoutReturn;
+            // Simplified Annualized Required Return approximation
+            const yearsLeft = monthsLeft / 12;
+            const requiredAnnualReturn = ((requiredValueGap / expectedWithoutReturn) / yearsLeft) * 100;
+            targetReturn = Math.min(80, Math.max(10, requiredAnnualReturn)); // Cap between 10% and 80%
+            
+            if (targetReturn > 40) {
+              riskLevel = 'high';
+              goalMsg = `Ev/Hedef alma hedefine ulaşamama riskin çok yüksek (%85+). ${fmt(requiredValueGap)} açık var. Algoritmamız hedefi kurtarmak için seni agresif bir portföye yönlendiriyor.`;
+            } else {
+              riskLevel = 'medium';
+              goalMsg = `Hedefine güvenli adımlarla ilerliyorsun. Gerekli yıllık getiri %${targetReturn.toFixed(1)}. Portföyün buna göre optimize edildi.`;
+            }
+          } else {
+            riskLevel = 'low';
+            targetReturn = 15; // Safe harbor
+            goalMsg = `Mevcut tasarruf hızınla hedefine ulaşmayı zaten garantiledin. Algoritma en düşük riskli varlıkları seçti.`;
+          }
+        }
+      }
 
-      // 3. Markowitz Efficient Frontier Generation
+      // 3. Generate Portfolios & Find Optimal Point
       const pts = generatePortfolios();
       
-      // Target Risk based on Score (Score 0 -> Risk 5%, Score 100 -> Risk 40%)
-      const targetRisk = 5 + (riskScore / 100) * 35;
-      
-      // Find the optimal portfolio (Highest return for the target risk tolerance)
       let bestPoint = null;
-      let maxReturnForRisk = -1;
+      let minRiskForTarget = 999;
       
       pts.forEach(p => {
-        // Accept portfolios within +/- 2% of target risk
-        if (Math.abs(p.risk - targetRisk) < 2) {
-          if (p.return > maxReturnForRisk) {
-            maxReturnForRisk = p.return;
+        // Accept portfolios that meet or exceed target return by a small margin
+        if (p.return >= targetReturn && p.return < targetReturn + 5) {
+          if (p.risk < minRiskForTarget) {
+            minRiskForTarget = p.risk;
             bestPoint = p;
           }
         }
       });
       
-      if (!bestPoint) bestPoint = pts[Math.floor(Math.random() * pts.length)]; // fallback
+      // If target return is too high and unachievable, pick the max return portfolio
+      if (!bestPoint) {
+        pts.forEach(p => {
+          if (!bestPoint || p.return > bestPoint.return) bestPoint = p;
+        });
+        if (activeGoal) {
+          riskLevel = 'critical';
+          goalMsg = `UYARI: Hedefine ulaşmak için %${targetReturn.toFixed(1)} getiri gerekiyor ancak mevcut piyasa şartlarında bu imkansız. Algoritma risk alabileceğin maksimum getiriyi (%${bestPoint.return}) hesapladı. Tasarruf miktarınızı artırmalısınız.`;
+        }
+      }
+      
       bestPoint.isOptimal = true;
 
-      setMetrics({
-        riskScore,
-        userVolatility: (userVolatility * 100).toFixed(1),
-        savingsRate: savingsRate.toFixed(1),
-      });
-      
+      setMetrics({ targetReturn: targetReturn.toFixed(1), activeGoal });
+      setGoalAnalysis({ msg: goalMsg, level: riskLevel, gap: requiredValueGap });
       setCloud(pts);
       setOptimalPoint(bestPoint);
       setLoading(false);
     }, 800);
   }, []);
 
-  if (loading || !optimalPoint) return <PageLoader message="Kovaryans matrisi ve etkin sınır hesaplanıyor..." />;
+  if (loading || !optimalPoint) return <PageLoader message="Hedeflerinize göre Markowitz portföy matrisi hesaplanıyor..." />;
+
+  const getAlertColor = (level) => {
+    if (level === 'critical') return P.red;
+    if (level === 'high') return P.amber;
+    if (level === 'low') return P.green;
+    return P.purple;
+  };
+
+  const getAlertIcon = (level) => {
+    if (level === 'critical' || level === 'high') return <AlertTriangle size={20} color={getAlertColor(level)} />;
+    return <ShieldCheck size={20} color={getAlertColor(level)} />;
+  };
 
   return (
     <>
@@ -116,29 +160,46 @@ export default function WealthPage() {
         <PageHeader
           icon={<Cpu size={24} />}
           color={P.purple}
-          title="Etkin Sınır Optimizasyonu"
-          subtitle="Markowitz Portföy Teorisi ile risk skorunuza göre matematiksel olarak en iyi portföyü bulun."
-          badge="Nobel Alımlı Algoritma"
+          title="Hedef Odaklı Robo-Danışman"
+          subtitle="Modern Portföy Teorisi (Markowitz) ile hedeflerinize ulaşmanız için gereken optimal dağılımı matematiksel olarak bulur."
+          badge="Algoritmik Optimizasyon"
         />
 
+        {/* AI GOAL ANALYSIS BANNER */}
+        {goalAnalysis && goalAnalysis.msg && (
+          <div className="animate-enter" style={{ background: `${getAlertColor(goalAnalysis.level)}10`, border: `1px solid ${getAlertColor(goalAnalysis.level)}40`, borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start', animationDelay: '0.1s' }}>
+            <div style={{ padding: 12, background: P.bg0, borderRadius: 16, border: `1px solid ${P.border}` }}>
+              {getAlertIcon(goalAnalysis.level)}
+            </div>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>
+                {metrics.activeGoal ? `'${metrics.activeGoal.baslik || metrics.activeGoal.name}' Hedefi Analizi` : 'Genel Portföy Analizi'}
+              </h3>
+              <p style={{ fontSize: 14, color: P.text2, margin: 0, lineHeight: 1.6 }}>
+                {goalAnalysis.msg}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* RISK ANALYSIS RESULTS */}
-        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.1s' }}>
+        <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, animationDelay: '0.2s' }}>
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>Algoritmik Risk Skoru</span>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>Gereken Hedef Getiri</span>
               <Target size={18} color={P.purple} />
             </div>
-            <p style={{ fontSize: 24, fontWeight: 900, color: P.purple, margin: '0 0 4px', letterSpacing: '-0.02em' }}>{metrics.riskScore} / 100</p>
-            <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>Tasarruf & Volatilite bazlı</p>
+            <p style={{ fontSize: 24, fontWeight: 900, color: P.purple, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{metrics.targetReturn}</p>
+            <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>Zaman çizelgesine göre (Yıllık)</p>
           </div>
           
           <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.2)`, borderRadius: 20, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.green, textTransform: 'uppercase' }}>Beklenen Max. Getiri</span>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.green, textTransform: 'uppercase' }}>Optimize Edilen Getiri</span>
               <TrendingUp size={18} color={P.green} />
             </div>
             <p style={{ fontSize: 24, fontWeight: 900, color: P.green, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{optimalPoint.return}</p>
-            <p style={{ fontSize: 11, color: P.text2, margin: 0 }}>Hedef riske karşılık en yüksek getiri</p>
+            <p style={{ fontSize: 11, color: P.text2, margin: 0 }}>Gereken getiriye karşılık en düşük risk</p>
           </div>
 
           {/* MACRO-ECONOMIC NLP SENTIMENT */}
@@ -166,11 +227,11 @@ export default function WealthPage() {
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           
           {/* EFFICIENT FRONTIER SCATTER CHART */}
-          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s' }}>
+          <div className="animate-enter" style={{ flex: '1 1 500px', background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.3s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div>
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>Etkin Sınır (Efficient Frontier)</h3>
-                <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Her nokta rastgele bir portföydür. Kırmızı nokta sizin için en iyi seçenektir.</p>
+                <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Her nokta rastgele bir portföydür. Kırmızı nokta hedefinizi en düşük riskle sağlayan optimum portföydür.</p>
               </div>
             </div>
             
@@ -199,9 +260,9 @@ export default function WealthPage() {
           </div>
 
           {/* OPTIMAL ALLOCATION */}
-          <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.3s' }}>
+          <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.4s' }}>
             <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 24, padding: 32, flex: 1 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>Optimal Dağılımınız</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>Robotik Yeniden Dengeleme Önerisi</h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {[
@@ -224,7 +285,7 @@ export default function WealthPage() {
 
               <div style={{ marginTop: 32, padding: '16px', background: P.bg2, borderRadius: 16, border: `1px solid ${P.border}` }}>
                 <p style={{ fontSize: 12, color: P.text3, margin: 0, lineHeight: 1.6 }}>
-                  Sistemin hesapladığı <strong>%{optimalPoint.risk} risk</strong> seviyesinde elde edilebilecek en yüksek matematiksel getiri budur. Bu dağılım dışındaki her portföy, Markowitz teorisine göre "Verimsiz (Sub-optimal)" kabul edilir.
+                  Sistemin hesapladığı <strong>%{optimalPoint.risk} risk</strong> seviyesinde elde edilebilecek en yüksek matematiksel getiri budur. Hedefinize ulaşmak için portföyünüzü bu ağırlıklara göre rebalance (yeniden dengeleme) yapmanız önerilir.
                 </p>
               </div>
             </div>
