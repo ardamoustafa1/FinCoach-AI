@@ -163,3 +163,50 @@ export function kisilikTipiBelirle(islemler) {
 
   return TIPLER[enYakinId] || TIPLER.dengeli;
 }
+
+// ─── Cognitive Biases (Bilişsel Önyargılar) Tespit Motoru ───────────
+export function detectCognitiveBiases(islemler) {
+  const biases = [];
+  if (!islemler || islemler.length < 5) return biases;
+
+  const giderler = islemler.filter(i => i.tur === 'gider' && i.tutar > 0);
+
+  // 1. Sunk Cost Fallacy (Batık Maliyet Yanılgısı) Tespiti
+  // Mantık: Sürekli tamir/bakım gerektiren bir varlığa (ör: eski araba, telefon) yenisini alma maliyetinden fazla veya ona yakın para harcamak.
+  const tamirKelimeleri = ['servis', 'sanayi', 'tamir', 'bakım', 'onar', 'oto', 'garaj'];
+  
+  const tamirHarcamalari = giderler.filter(i => {
+    const aciklama = (i.aciklama || '').toLowerCase();
+    const magaza = (i.magaza || '').toLowerCase();
+    const kategori = (i.kategori || '').toLowerCase();
+    return tamirKelimeleri.some(k => aciklama.includes(k) || magaza.includes(k) || kategori.includes(k));
+  });
+
+  const magazaSayaci = {};
+  tamirHarcamalari.forEach(t => {
+    const isim = t.magaza || t.kategori || 'Bilinmeyen Servis';
+    if (!magazaSayaci[isim]) magazaSayaci[isim] = { toplam: 0, adet: 0 };
+    magazaSayaci[isim].toplam += Number(t.tutar);
+    magazaSayaci[isim].adet += 1;
+  });
+
+  for (const [magaza, data] of Object.entries(magazaSayaci)) {
+    // Eğer aynı servise/kategoriye birden fazla kez gidilmiş ve toplam yüksek bir meblağ ödenmişse:
+    if (data.adet >= 2 && data.toplam > 8000) {
+      biases.push({
+        id: 'sunk_cost',
+        name: 'Batık Maliyet Yanılgısı (Sunk Cost Fallacy)',
+        severity: 'high',
+        trigger: magaza,
+        totalWasted: data.toplam,
+        message: `Son dönemde '${magaza}' tarafına tamir/bakım için toplam ${Math.round(data.toplam).toLocaleString('tr-TR')}₺ ödemişsiniz. Algoritmamız burada bir "Batık Maliyet Yanılgısı" tespit etti. Eski varlığınızı elden çıkarıp yenisini almanız, bu sürekli kanamayı durdurarak sizi uzun vadede kâra geçirebilir.`
+      });
+    }
+  }
+
+  // 2. Diderot Effect (Diderot Etkisi) Tespiti
+  // Mantık: Lüks/pahalı bir eşya alındıktan hemen sonra birbirini tetikleyen aksesuar/tamamlayıcı alışverişleri.
+  // Bu Hackathon için Sunk Cost yeterli ama altyapı olarak eklenebilir.
+
+  return biases;
+}

@@ -7,6 +7,7 @@ import BudgetBars from '../components/BudgetBars';
 import LimitBanner from '../components/LimitBanner';
 import HealthScore from '../components/HealthScore';
 import PersonalityCard from '../components/PersonalityCard';
+import { detectCognitiveBiases } from '../utils/spendingPersonality';
 import { useToast } from '../hooks/useToast';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -138,6 +139,8 @@ export default function DashboardPage() {
     });
   }, [limits, stats.harcamaMap, loading, toast]);
 
+  const cognitiveBiases = useMemo(() => detectCognitiveBiases(transactions), [transactions]);
+
   if (loading) return null;
 
   const asimlar = Object.entries(limits)
@@ -190,6 +193,41 @@ export default function DashboardPage() {
             </button>
           </div>
         </PageHeader>
+
+        {cognitiveBiases.length > 0 && (
+          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {cognitiveBiases.map(b => (
+              <div key={b.id} style={{ 
+                background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, 
+                border: `1px solid ${P.red}50`, 
+                borderRadius: 16, padding: 20, 
+                display: 'flex', gap: 16, alignItems: 'flex-start',
+                boxShadow: `0 8px 32px rgba(239, 68, 68, 0.1)`
+              }}>
+                <div style={{ padding: 12, background: `${P.red}15`, borderRadius: 12, border: `1px solid ${P.red}40` }}>
+                  <Zap size={24} color={P.red} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0 }}>{b.name}</h3>
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 99, background: P.red, color: '#fff', textTransform: 'uppercase' }}>
+                      Davranışsal Anomali
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 14, color: P.text2, margin: '0 0 12px', lineHeight: 1.5 }}>
+                    {b.message}
+                  </p>
+                  <button style={{
+                    background: P.red, color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer'
+                  }}>
+                    Varlığı Sat / İlan Ver
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <LimitBanner asimlar={asimlar} persistent />
         <HealthScore islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
