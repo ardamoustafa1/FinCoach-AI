@@ -309,6 +309,85 @@ body {
   to   { transform: rotate(360deg); }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   SKELETON LOADER — Shimmer animasyonu
+   Kullanım: className="skeleton-shimmer"
+   ───────────────────────────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-soft) 25%,
+    var(--bg-surface)      50%,
+    var(--bg-surface-soft) 75%
+  );
+  background-size: 1200px 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TOUCH TARGET — WCAG 2.5.5 AA (minimum 48×48 dp)
+   Tüm interaktif elemanların mobilde en az 48px dokunma alanı alması.
+   ───────────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  /* Butonlar ve bağlantılar için minimum dokunma yüksekliği */
+  button,
+  [role="button"],
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* İkon butonları için çevreleyen dokunma alanı genişletici */
+  button:has(svg:only-child) {
+    padding: 12px;
+  }
+
+  /* Recharts grafik aktif nokta yüzey alanını artır */
+  .recharts-dot,
+  .recharts-active-dot {
+    r: 8 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   MOBİL DUYARLILIK — Yoğun grafik sayfaları için özel kurallar
+   ───────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Grafik panellerinde horizontal scroll yerine stack düzeni */
+  .chart-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sayfa içi padding azalt */
+  .page-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Tablo ve uzun listeler yatay kaydırılabilir olsun */
+  .mobile-scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Kategori/filtre buton çubukları wrap etsin */
+  .filter-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   REDUCED MOTION — Erişilebilirlik (WCAG 2.3.3)
+   ───────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -317,6 +396,12 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Skeleton loader'ı sabit arka plana döndür */
+  .skeleton-shimmer {
+    animation: none !important;
+    background: var(--bg-surface-soft) !important;
   }
 }
 

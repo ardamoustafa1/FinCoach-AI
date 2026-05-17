@@ -55,7 +55,7 @@ export default function CategoryPieChart({ islemler }) {
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>Kategori Dağılımı</h2>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Dilime tıklayarak detay görün</p>
 
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={280} minHeight={280}>
         <PieChart>
           <Pie
             data={pieData} cx="50%" cy="50%"

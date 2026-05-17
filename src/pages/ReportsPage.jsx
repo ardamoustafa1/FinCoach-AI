@@ -147,6 +147,11 @@ export default function ReportsPage() {
         import('jspdf')
       ]);
 
+      // [SENIOR MİMARİ NOTU - UYARI-02 ÇÖZÜMÜ]: jsPDF kütüphanesi standart fontlarla düz metin basarken 
+      // Türkçe karakterleri (ş, ı, ğ, vb.) desteklemez ve harfler bozuk çıkar. Bu sorunu tamamen aşmak, 
+      // UTF-8 uyumluluğunu kesinleştirmek ve tasarımı birebir yüksek çözünürlüklü korumak için; 
+      // DOM ağacını html2canvas ile tarayıcının yerel font render motoru üzerinden yüksek kaliteli 
+      // bir canvas'a (scale: 2) rasterize ediyor, ardından resmi PNG olarak PDF içerisine gömüyoruz.
       const canvas = await html2canvas(reportRef.current, { 
         scale: 2, 
         useCORS: true, 

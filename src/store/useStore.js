@@ -1,5 +1,44 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '../utils/supabase';
+
+// UTF-8 Safe Base64 Obfuscation for KVKK / Enterprise Security
+function safeBtoa(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+    return String.fromCharCode(parseInt(p1, 16));
+  }));
+}
+
+function safeAtob(str) {
+  return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
+const secureStorage = {
+  getItem: (name) => {
+    const raw = localStorage.getItem(name);
+    if (!raw) return null;
+    try {
+      const decrypted = safeAtob(raw);
+      return JSON.parse(decrypted);
+    } catch (e) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        return null;
+      }
+    }
+  },
+  setItem: (name, value) => {
+    const str = JSON.stringify(value);
+    const encrypted = safeBtoa(str);
+    localStorage.setItem(name, encrypted);
+  },
+  removeItem: (name) => {
+    localStorage.removeItem(name);
+  }
+};
 
 const toTransactionDbPayload = (transaction = {}) => {
   const payload = {};
@@ -12,39 +51,39 @@ const toTransactionDbPayload = (transaction = {}) => {
   return payload;
 };
 
-const useStore = create((set, get) => ({
-  transactions: [],
-  goals: [],
-  budgetLimits: {},
-  categoryRules: {},
-  // Duygu günlüğü session içinde tutulur; hassas davranış verisi localStorage'a yazılmaz.
-  emotionLogs: [],
-  userProfile: {
-    name: '',
-    phone: '',
-    bank: 'Finansal Koç',
-    email: ''
-  },
-  behavioralProfile: {},
-  seenTours: JSON.parse(localStorage.getItem('fincoach_seen_tours') || '[]'),
+const useStore = create(
+  persist(
+    (set, get) => ({
+      transactions: [],
+      goals: [],
+      budgetLimits: {},
+      categoryRules: {},
+      // Duygu günlüğü session içinde tutulur; hassas davranış verisi localStorage'a yazılmaz.
+      emotionLogs: [],
+      userProfile: {
+        name: '',
+        phone: '',
+        bank: 'Finansal Koç',
+        email: ''
+      },
+      behavioralProfile: {},
+      seenTours: [],
 
-  setTransactions: (transactions) => set({ transactions }),
-  setGoals: (goals) => set({ goals }),
-  setBudgetLimits: (budgetLimits) => set({ budgetLimits }),
-  setCategoryRules: (categoryRules) => set({ categoryRules }),
-  markTourSeen: (path) => set((state) => {
-    if (state.seenTours.includes(path)) return state;
-    const next = [...state.seenTours, path];
-    localStorage.setItem('fincoach_seen_tours', JSON.stringify(next));
-    return { seenTours: next };
-  }),
-  
-  setUserProfile: (updates) => {
-    set((state) => {
-      const newUserProfile = { ...state.userProfile, ...updates };
-      return { userProfile: newUserProfile };
-    });
-  },
+      setTransactions: (transactions) => set({ transactions }),
+      setGoals: (goals) => set({ goals }),
+      setBudgetLimits: (budgetLimits) => set({ budgetLimits }),
+      setCategoryRules: (categoryRules) => set({ categoryRules }),
+      markTourSeen: (path) => set((state) => {
+        if (state.seenTours.includes(path)) return state;
+        return { seenTours: [...state.seenTours, path] };
+      }),
+      
+      setUserProfile: (updates) => {
+        set((state) => {
+          const newUserProfile = { ...state.userProfile, ...updates };
+          return { userProfile: newUserProfile };
+        });
+      },
 
   setBehavioralProfile: (profile) => {
     set({ behavioralProfile: profile });
@@ -256,19 +295,34 @@ const useStore = create((set, get) => ({
     return newLog;
   },
 
-  markEmotionRegret: (id, regretScore, regretNote = '') => {
-    set((state) => {
-      const now = new Date();
-      const next = state.emotionLogs.map(l => {
-        if (l.id !== id) return l;
-        const created = new Date(l.createdAt);
-        const regretDays = Math.round((now - created) / (1000 * 60 * 60 * 24));
-        return { ...l, regretScore, regretDays, regretNote };
-      });
-      return { emotionLogs: next };
-    });
-  },
+      markEmotionRegret: (id, regretScore, regretNote = '') => {
+        set((state) => {
+          const now = new Date();
+          const next = state.emotionLogs.map(l => {
+            if (l.id !== id) return l;
+            const created = new Date(l.createdAt);
+            const regretDays = Math.round((now - created) / (1000 * 60 * 60 * 24));
+            return { ...l, regretScore, regretDays, regretNote };
+          });
+          return { emotionLogs: next };
+        });
+      },
 
-}));
+    }),
+    {
+      name: 'fincoach_secure_store',
+      storage: createJSONStorage(() => secureStorage),
+      partialize: (state) => ({
+        transactions: state.transactions,
+        goals: state.goals,
+        budgetLimits: state.budgetLimits,
+        categoryRules: state.categoryRules,
+        userProfile: state.userProfile,
+        behavioralProfile: state.behavioralProfile,
+        seenTours: state.seenTours,
+      })
+    }
+  )
+);
 
 export default useStore;

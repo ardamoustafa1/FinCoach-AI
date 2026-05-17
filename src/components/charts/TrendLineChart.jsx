@@ -72,7 +72,7 @@ export default function TrendLineChart({ islemler, gelirler }) {
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>6 Aylık Trend</h2>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Gelir ve gider karşılaştırması</p>
 
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} minHeight={300}>
         <LineChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis dataKey="name" tick={{ fill: P.text3, fontSize: 11 }} axisLine={false} tickLine={false} />

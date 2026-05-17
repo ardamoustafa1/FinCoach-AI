@@ -30,21 +30,37 @@ export default function FinancialICUPage() {
     hasTrained.current = true;
     setStep(1); // Scanning state
 
-    // Build a real sequential model for Linear Regression
+    // Build or load a real sequential model for Linear Regression
     const tf = await import('@tensorflow/tfjs');
-    const model = tf.sequential();
-    model.add(tf.layers.dense({units: 1, inputShape: [1]}));
-    model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
+    let model;
+    let predictions;
 
-    // Training Data: X = Month (1 to 4), Y = Liquidity
-    const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
-    const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
+    try {
+      // Try loading existing trained model from IndexedDB
+      model = await tf.loadLayersModel('indexeddb://icu-model');
+      predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+    } catch (e) {
+      // Model not trained yet, build and compile a new sequential network
+      model = tf.sequential();
+      model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+      model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
 
-    // Train
-    await model.fit(xs, ys, { epochs: 200 });
+      // Training Data: X = Month (1 to 4), Y = Liquidity
+      const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
+      const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
 
-    // Predict month 5 and 6
-    const predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+      // Train neural network client-side
+      await model.fit(xs, ys, { epochs: 200 });
+
+      // Save trained weights into browser IndexedDB for subsequent zero-overhead runs
+      try {
+        await model.save('indexeddb://icu-model');
+      } catch (saveErr) {
+        console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
+      }
+
+      predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+    }
     
     setDynamicChartData([
       { month: 'Şub', liquidity: 45000, threshold: 0 },

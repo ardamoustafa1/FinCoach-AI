@@ -13,6 +13,8 @@ import { useSupabaseData } from '../hooks/useSupabaseData';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { GlassCard } from '../components/dashboard';
 
 /* ─── Palette ─── */
 const P = {
@@ -141,7 +143,34 @@ export default function DashboardPage() {
 
   const cognitiveBiases = useMemo(() => detectCognitiveBiases(transactions), [transactions]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
+        <PageHeader
+          icon={<Zap size={24} />}
+          color={P.purple}
+          title="Komuta Merkezi"
+          subtitle="Finansal hayatınızın gerçek zamanlı özeti ve yapay zeka analizleri."
+          badge={new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}
+        />
+        
+        {/* KPI Cards Skeleton */}
+        <SkeletonLoader.CardGrid count={4} />
+
+        {/* Charts Row Skeleton */}
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Pie size={160} /></GlassCard>
+          <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={200} /></GlassCard>
+        </div>
+
+        {/* Calendar and Geo Map Row Skeleton */}
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={160} /></GlassCard>
+          <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={160} /></GlassCard>
+        </div>
+      </div>
+    );
+  }
 
   const asimlar = Object.entries(limits)
     .filter(([kat, limit]) => (stats.harcamaMap[kat] || 0) > limit)

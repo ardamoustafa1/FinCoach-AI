@@ -6,6 +6,7 @@ import MobileNav from './MobileNav';
 import ThemeToggle from './ThemeToggle';
 import DemoQRCodeModal from './DemoQRCodeModal';
 import FeatureTourModal from './FeatureTourModal';
+import OfflineBanner from './OfflineBanner';
 import { useToast } from '../hooks/useToast';
 import { fmt } from '../utils/categories';
 import useStore from '../store/useStore';
@@ -88,6 +89,9 @@ export default function Layout({ theme, onToggleTheme }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-main)', transition: 'background-color 0.3s' }}>
+      {/* Çevrimdışı Mod Bildirimi — tüm sayfalarda otomatik görünür */}
+      <OfflineBanner />
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0 transition-all duration-300" style={{ width: collapsed ? 80 : 260 }}>
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />

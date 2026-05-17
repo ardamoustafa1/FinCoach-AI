@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis,
+  BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Wallet, Target,
-  Leaf, Zap, ArrowUpRight, ArrowDownRight,
+  Leaf, Zap,
   Sparkles, Activity, ChevronRight, Clock,
   ShieldCheck, Flame, Trophy, Users
 } from 'lucide-react';
@@ -15,7 +15,18 @@ import useStore from '../store/useStore';
 import { calculateEcoScore } from '../utils/ecoScore';
 import { calculatePrediction } from '../utils/predictive';
 import TransactionModal from '../components/TransactionModal';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useToast } from '../hooks/useToast';
+// ── Atomik Dashboard Bileşenleri (src/components/dashboard/) ──
+import {
+  GlowOrb,
+  GlassCard,
+  StatCard,
+  TransactionRow,
+  GoalProgressCard,
+  ChartTooltip,
+  BalanceTrendChart,
+} from '../components/dashboard';
 
 /* ─── Palette ─── */
 const P = {
@@ -56,43 +67,7 @@ const WHATSAPP_BOT_NUMBER = (import.meta.env.VITE_WHATSAPP_BOT_NUMBER || '905070
 const WHATSAPP_TEST_TEXT = 'Merhaba FinCoach AI, Migros harcamamı test için 125 TL olarak kaydet.';
 const WHATSAPP_TEST_URL = `https://wa.me/${WHATSAPP_BOT_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEST_TEXT)}`;
 
-/* ─── Micro-components ─── */
-function GlowOrb({ color = P.purple, size = 320, top, left, right, bottom, opacity = 0.18 }) {
-  return (
-    <div style={{
-      position: 'absolute',
-      width: size, height: size,
-      borderRadius: '50%',
-      background: color,
-      filter: `blur(${size * 0.38}px)`,
-      opacity,
-      top, left, right, bottom,
-      pointerEvents: 'none',
-      zIndex: 0,
-    }} />
-  );
-}
-
-function AnimNumber({ value, prefix = '', suffix = '', duration = 1200 }) {
-  const [display, setDisplay] = useState(0);
-  const rafRef = useRef(null);
-
-  useEffect(() => {
-    const target = Number(value) || 0;
-    const start = performance.now();
-    const animate = (now) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 4);
-      setDisplay(Math.round(target * ease));
-      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [value, duration]);
-
-  return <span>{prefix}{display.toLocaleString('tr-TR')}{suffix}</span>;
-}
+/* ─── Yerel Yardımcı Bileşenler (HomePage'e özgü, dashboard/ klasörüne taşınamayan) ─── */
 
 function Pill({ children, color = P.purple, bg }) {
   return (
@@ -117,165 +92,8 @@ function PulsingDot({ color = P.green }) {
         background: color, opacity: 0.4,
         animation: 'ping 1.5s ease-out infinite',
       }} />
-      <span style={{
-        position: 'absolute', inset: 1, borderRadius: '50%',
-        background: color,
-      }} />
+      <span style={{ position: 'absolute', inset: 1, borderRadius: '50%', background: color }} />
     </span>
-  );
-}
-
-function GlassCard({ children, style = {}, hover = true, glow = false }) {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        background: isHovered && hover ? P.bg3 : P.bg2,
-        border: `1px solid ${isHovered && hover ? P.borderHover : P.border}`,
-        borderRadius: 20,
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isHovered && hover ? 'translateY(-2px)' : 'none',
-        boxShadow: isHovered && glow ? `0 0 32px ${P.purpleGlow}` : '0 4px 24px rgba(0,0,0,0.4)',
-        position: 'relative',
-        overflow: 'hidden',
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* ─── Custom Tooltip ─── */
-function CustomTooltip({ active, payload, label, formatter }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{
-      background: P.bg3, border: `1px solid ${P.border}`,
-      borderRadius: 12, padding: '10px 14px', fontSize: 12,
-    }}>
-      <p style={{ color: P.text2, marginBottom: 6, fontWeight: 700, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color, margin: '2px 0', fontWeight: 600 }}>
-          {p.name}: {formatter ? formatter(p.value) : p.value}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-/* ─── Stat Card ─── */
-function StatCard({ label, value, icon: Icon, color, change, isCurrency = true, delay = 0 }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  const isPositive = change > 0;
-  const numVal = Number(value) || 0;
-
-  return (
-    <GlassCard glow style={{
-      padding: '22px 24px',
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'none' : 'translateY(16px)',
-      transition: `opacity 0.5s ease ${delay}ms, transform 0.5s ease ${delay}ms, background 0.3s, border 0.3s, box-shadow 0.3s`,
-    }}>
-      {/* Background gradient */}
-      <div style={{
-        position: 'absolute', top: -30, right: -30,
-        width: 100, height: 100, borderRadius: '50%',
-        background: color, opacity: 0.08, filter: 'blur(30px)',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
-            {label}
-          </p>
-          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8 }}>
-            {isCurrency ? (
-              <><span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>
-                <AnimNumber value={numVal} /></>
-            ) : (
-              <AnimNumber value={numVal} />
-            )}
-          </p>
-          {change !== undefined && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              {isPositive
-                ? <ArrowUpRight size={12} color={P.green} />
-                : <ArrowDownRight size={12} color={P.red} />}
-              <span style={{ fontSize: 12, color: isPositive ? P.green : P.red, fontWeight: 600 }}>
-                {Math.abs(change)}% bu ay
-              </span>
-            </div>
-          )}
-        </div>
-        <div style={{
-          width: 46, height: 46, borderRadius: 14,
-          background: `${color}22`,
-          border: `1px solid ${color}33`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Icon size={20} color={color} />
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
-
-/* ─── Transaction Row ─── */
-function TxRow({ tx, index, onClick }) {
-  const isIncome = tx.type === 'income' || tx.tur === 'gelir';
-  const amount = Math.abs(Number(tx.amount || tx.tutar || 0));
-  const color = isIncome ? P.green : P.red;
-  const [vis, setVis] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVis(true), index * 80); return () => clearTimeout(t); }, [index]);
-
-  return (
-    <div onClick={() => onClick && onClick(tx)} style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '12px 16px', borderRadius: 14,
-      background: vis ? P.bg3 : 'transparent',
-      border: `1px solid ${vis ? P.border : 'transparent'}`,
-      opacity: vis ? 1 : 0,
-      transform: vis ? 'none' : 'translateX(-12px)',
-      transition: `all 0.4s ease ${index * 80}ms`,
-      cursor: 'pointer',
-    }}
-      onMouseEnter={e => {
-        e.currentTarget.style.background = `${color}0D`;
-        e.currentTarget.style.borderColor = `${color}33`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.background = P.bg3;
-        e.currentTarget.style.borderColor = P.border;
-      }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 12,
-          background: `${color}18`, border: `1px solid ${color}30`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18,
-        }}>
-          {isIncome ? '📈' : '📉'}
-        </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: P.text1, marginBottom: 2 }}>{tx.title || tx.baslik || 'İşlem'}</p>
-          <p style={{ fontSize: 12, color: P.text3 }}>
-            {tx.category || tx.kategori || 'Genel'} · {tx.date || tx.tarih || '—'}
-          </p>
-        </div>
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <p style={{ fontSize: 15, fontWeight: 700, color }}>{isIncome ? '+' : '-'}{fmt(amount)}</p>
-      </div>
-    </div>
   );
 }
 
@@ -289,7 +107,14 @@ export default function HomePage() {
   const prediction = calculatePrediction(transactions);
 
   const [seciliIslem, setSeciliIslem] = useState(null);
-  const [range, setRange] = useState('1Y');
+  // range state artık BalanceTrendChart bileşeninin içinde yönetiliyor
+
+  // ── Sayfa ilk mount'ta 600ms skeleton göster (Recharts layoutunu bekle) ──
+  const [chartsReady, setChartsReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setChartsReady(true), 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleKaydet = (form) => {
     useStore.getState().addTransaction(form);
@@ -348,13 +173,6 @@ export default function HomePage() {
     { month: 'Eyl', bakiye: 12100 }, { month: 'Eki', bakiye: 15800 },
     { month: 'Kas', bakiye: 14200 }, { month: 'Ara', bakiye: 18600 },
   ];
-
-  const filteredAreaData = (() => {
-    if (range === '1A') return areaData.slice(-1);
-    if (range === '3A') return areaData.slice(-3);
-    if (range === '6A') return areaData.slice(-6);
-    return areaData;
-  })();
 
   const userName = useStore(state => state.userProfile.name) || 'Kullanıcı';
   const hour = new Date().getHours();
@@ -526,9 +344,13 @@ export default function HomePage() {
             gap: 16,
             marginBottom: 24,
           }}>
-            {stats.map((s, i) => (
-              <StatCard key={s.label} {...s} delay={200 + i * 80} />
-            ))}
+            {!chartsReady ? (
+              <SkeletonLoader.CardGrid count={4} />
+            ) : (
+              stats.map((s, i) => (
+                <StatCard key={s.label} {...s} delay={200 + i * 80} />
+              ))
+            )}
           </div>
 
           {/* ── AI BANNERS ROW ── */}
@@ -648,122 +470,98 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* ── BALANCE AREA CHART ── */}
-          <GlassCard style={{ padding: '28px 32px', marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>Bakiye Trendi</h2>
-                <p style={{ fontSize: 13, color: P.text3 }}>Son 12 aylık bakiye gelişimi</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {['1A', '3A', '6A', '1Y'].map((t) => (
-                  <button 
-                    key={t} 
-                    onClick={() => setRange(t)}
-                    style={{
-                      padding: '6px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                      border: `1px solid ${range === t ? P.purple : P.border}`,
-                      background: range === t ? P.purpleDim : 'transparent',
-                      color: range === t ? P.purpleLight : P.text3,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={filteredAreaData} margin={{ top: 5, right: 5, bottom: 0, left: 10 }}>
-                <defs>
-                  <linearGradient id="balanceGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={P.purple} stopOpacity={0.4} />
-                    <stop offset="100%" stopColor={P.purple} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: P.text3, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: P.text3, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
-                <Tooltip content={<CustomTooltip formatter={fmt} />} />
-                <Area type="monotone" dataKey="bakiye" stroke={P.purple} strokeWidth={2.5}
-                  fill="url(#balanceGrad)" dot={false}
-                  activeDot={{ r: 5, fill: P.purple, strokeWidth: 0 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </GlassCard>
+          {/* ── BALANCE AREA CHART — BalanceTrendChart atomik bileşeni ── */}
+          {!chartsReady ? (
+            <GlassCard style={{ padding: '28px 32px', marginBottom: 24 }}>
+              <SkeletonLoader.Chart height={220} />
+            </GlassCard>
+          ) : (
+            <BalanceTrendChart data={areaData} />
+          )}
 
           {/* ── CHARTS ROW ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
+          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
 
             {/* Bar Chart */}
             <GlassCard style={{ padding: '28px 32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>Haftalık Gelir / Gider</h2>
-                  <p style={{ fontSize: 13, color: P.text3 }}>Bu haftaki finansal akış</p>
-                </div>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  {[{ color: P.purple, label: 'Gelir' }, { color: P.red, label: 'Gider' }].map(({ color, label }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
-                      <span style={{ fontSize: 12, color: P.text3, fontWeight: 600 }}>{label}</span>
+              {!chartsReady ? (
+                <SkeletonLoader.Chart height={240} />
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                    <div>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>Haftalık Gelir / Gider</h2>
+                      <p style={{ fontSize: 13, color: P.text3 }}>Bu haftaki finansal akış</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={barData} barGap={6} margin={{ top: 0, right: 0, bottom: 0, left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="day" tick={{ fill: P.text3, fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: P.text3, fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
-                  <Tooltip content={<CustomTooltip formatter={fmt} />} />
-                  <Bar dataKey="gelir" name="Gelir" fill={P.purple} radius={[6, 6, 0, 0]} maxBarSize={32} />
-                  <Bar dataKey="gider" name="Gider" fill={P.red} radius={[6, 6, 0, 0]} maxBarSize={32} />
-                </BarChart>
-              </ResponsiveContainer>
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      {[{ color: P.purple, label: 'Gelir' }, { color: P.red, label: 'Gider' }].map(({ color, label }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
+                          <span style={{ fontSize: 12, color: P.text3, fontWeight: 600 }}>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={240} minHeight={240}>
+                    <BarChart data={barData} barGap={6} margin={{ top: 0, right: 0, bottom: 0, left: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fill: P.text3, fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: P.text3, fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
+                      <Tooltip content={<ChartTooltip formatter={fmt} />} />
+                      <Bar dataKey="gelir" name="Gelir" fill={P.purple} radius={[6, 6, 0, 0]} maxBarSize={32} />
+                      <Bar dataKey="gider" name="Gider" fill={P.red} radius={[6, 6, 0, 0]} maxBarSize={32} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </>
+              )}
             </GlassCard>
 
             {/* Donut Pie */}
             <GlassCard style={{ padding: '28px 24px' }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>Harcama Dağılımı</h2>
-              <p style={{ fontSize: 13, color: P.text3, marginBottom: 20 }}>Kategoriye göre</p>
-
-              {pieData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
-                        paddingAngle={4} dataKey="value" strokeWidth={0}>
-                        {pieData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip formatter={fmt} />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                    {pieData.slice(0, 4).map((entry, i) => (
-                      <div key={entry.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                          <span style={{ fontSize: 12, color: P.text2 }}>{entry.name}</span>
-                        </div>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: P.text1 }}>{fmt(entry.value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+              {!chartsReady ? (
+                <SkeletonLoader.Pie size={160} />
               ) : (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: P.text3, fontSize: 13 }}>
-                  Henüz harcama verisi yok.<br />İşlem ekleyerek başla.
-                </div>
+                <>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>Harcama Dağılımı</h2>
+                  <p style={{ fontSize: 13, color: P.text3, marginBottom: 20 }}>Kategoriye göre</p>
+
+                  {pieData.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={180} minHeight={180}>
+                        <PieChart>
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={52} outerRadius={78}
+                            paddingAngle={4} dataKey="value" strokeWidth={0}>
+                            {pieData.map((_, i) => (
+                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<ChartTooltip formatter={fmt} />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                        {pieData.slice(0, 4).map((entry, i) => (
+                          <div key={entry.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              <span style={{ fontSize: 12, color: P.text2 }}>{entry.name}</span>
+                            </div>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: P.text1 }}>{fmt(entry.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: P.text3, fontSize: 13 }}>
+                      Henüz harcama verisi yok.<br />İşlem ekleyerek başla.
+                    </div>
+                  )}
+                </>
               )}
             </GlassCard>
           </div>
 
           {/* ── GOALS PROGRESS + TRANSACTIONS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 16, marginBottom: 32 }}>
+          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 16, marginBottom: 32 }}>
 
             {/* Goals */}
             <GlassCard style={{ padding: '28px 28px' }}>
@@ -772,34 +570,21 @@ export default function HomePage() {
                 <Pill color={P.amber}><Flame size={8} /> {goals.length} Aktif</Pill>
               </div>
 
-              {goals.length > 0 ? (
+              {!chartsReady ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {goals.slice(0, 4).map((g, i) => {
-                    const current = Number(g.current || g.mevcut || 0);
-                    const target = Number(g.target || g.hedef || 1);
-                    const pct = Math.min((current / target) * 100, 100);
-                    const goalColors = [P.purple, P.green, P.amber, P.blue];
-                    const gc = goalColors[i % goalColors.length];
-                    return (
-                      <div key={g.id || i}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: P.text1 }}>{g.title || g.baslik || `Hedef ${i + 1}`}</span>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: gc }}>{Math.round(pct)}%</span>
-                        </div>
-                        <div style={{ background: P.bg3, borderRadius: 999, height: 6, overflow: 'hidden' }}>
-                          <div style={{
-                            height: '100%', borderRadius: 999, background: gc,
-                            width: `${pct}%`, transition: 'width 1s cubic-bezier(0.4,0,0.2,1)',
-                            boxShadow: `0 0 8px ${gc}60`,
-                          }} />
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                          <span style={{ fontSize: 11, color: P.text3 }}>{fmt(current)}</span>
-                          <span style={{ fontSize: 11, color: P.text3 }}>{fmt(target)}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {[1, 2, 3].map(i => (
+                    <div key={i}>
+                      <SkeletonLoader.Text width="40%" height={14} style={{ marginBottom: 8 }} />
+                      <SkeletonLoader width="100%" height={6} borderRadius={999} />
+                    </div>
+                  ))}
+                </div>
+              ) : goals.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {/* GoalProgressCard atomik bileşeni — GoalProgressCard.jsx */}
+                  {goals.slice(0, 4).map((g, i) => (
+                    <GoalProgressCard key={g.id || i} goal={g} colorIndex={i} />
+                  ))}
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '32px 0', color: P.text3 }}>
@@ -825,10 +610,13 @@ export default function HomePage() {
                 </button>
               </div>
 
-              {transactions.length > 0 ? (
+              {!chartsReady ? (
+                <SkeletonLoader.Row count={4} />
+              ) : transactions.length > 0 ? (
                 <div className="butce-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 300, overflowY: 'auto' }}>
+                  {/* TransactionRow atomik bileşeni — TransactionRow.jsx */}
                   {transactions.slice(0, 6).map((tx, i) => (
-                    <TxRow key={tx.id || i} tx={tx} index={i} onClick={setSeciliIslem} />
+                    <TransactionRow key={tx.id || i} tx={tx} index={i} onClick={setSeciliIslem} />
                   ))}
                 </div>
               ) : (
