@@ -25,44 +25,42 @@ export default function FinancialICUPage() {
   const hasTrained = useRef(false);
   // 0: Scanning/Predicting, 1: NPL Detected (Red Alert), 2: ICU Activating, 3: Stabilized
   
-  useEffect(() => {
-    if (step === 0 && !hasTrained.current) {
-      hasTrained.current = true;
-      const trainModel = async () => {
-        // Build a real sequential model for Linear Regression
-        const tf = await import('@tensorflow/tfjs');
-        const model = tf.sequential();
-        model.add(tf.layers.dense({units: 1, inputShape: [1]}));
-        model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
+  const startAnalysis = async () => {
+    if (hasTrained.current) return;
+    hasTrained.current = true;
+    setStep(1); // Scanning state
 
-        // Training Data: X = Month (1 to 4), Y = Liquidity
-        const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
-        const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
+    // Build a real sequential model for Linear Regression
+    const tf = await import('@tensorflow/tfjs');
+    const model = tf.sequential();
+    model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+    model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
 
-        // Train
-        await model.fit(xs, ys, { epochs: 200 });
+    // Training Data: X = Month (1 to 4), Y = Liquidity
+    const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
+    const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
 
-        // Predict month 5 and 6
-        const predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
-        
-        setDynamicChartData([
-          { month: 'Şub', liquidity: 45000, threshold: 0 },
-          { month: 'Mar', liquidity: 32000, threshold: 0 },
-          { month: 'Nis', liquidity: 18000, threshold: 0 },
-          { month: 'May', liquidity: 5000, threshold: 0 },
-          { month: 'Haz', liquidity: Math.round(predictions[0]), threshold: 0 },
-          { month: 'Tem', liquidity: Math.round(predictions[1]), threshold: 0 },
-        ]);
-        
-        setStep(1);
-      };
-      
-      // Add slight delay for UX
-      setTimeout(trainModel, 1000);
-    }
+    // Train
+    await model.fit(xs, ys, { epochs: 200 });
+
+    // Predict month 5 and 6
+    const predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
     
-    if (step === 2) {
-      const timer = setTimeout(() => setStep(3), 3000);
+    setDynamicChartData([
+      { month: 'Şub', liquidity: 45000, threshold: 0 },
+      { month: 'Mar', liquidity: 32000, threshold: 0 },
+      { month: 'Nis', liquidity: 18000, threshold: 0 },
+      { month: 'May', liquidity: 5000, threshold: 0 },
+      { month: 'Haz', liquidity: Math.round(predictions[0]), threshold: 0 },
+      { month: 'Tem', liquidity: Math.round(predictions[1]), threshold: 0 },
+    ]);
+    
+    setStep(2); // NPL Detected state
+  };
+
+  useEffect(() => {
+    if (step === 3) {
+      const timer = setTimeout(() => setStep(4), 3000);
       return () => clearTimeout(timer);
     }
   }, [step]);
@@ -108,9 +106,10 @@ export default function FinancialICUPage() {
                 <TrendingDown size={20} color={step === 1 ? P.red : P.text3} /> 
                 Lineer Regresyon Projeksiyonu (TF.js Demo, Prophet değil)
               </h3>
-              {step === 0 && <span className="secure-text" style={{ color: P.text3 }}>Analiz Ediliyor...</span>}
-              {step === 1 && <span className="distress-text" style={{ animation: 'pulse 1s infinite' }}>NPL RİSKİ: %94</span>}
-              {step === 3 && <span className="secure-text">RİSK İZOLE EDİLDİ</span>}
+              {step === 0 && <span className="secure-text" style={{ color: P.text3 }}>Beklemede</span>}
+              {step === 1 && <span className="secure-text" style={{ color: P.blue }}>Analiz Ediliyor...</span>}
+              {step === 2 && <span className="distress-text" style={{ animation: 'pulse 1s infinite' }}>NPL RİSKİ: %94</span>}
+              {step === 4 && <span className="secure-text">RİSK İZOLE EDİLDİ</span>}
             </div>
 
             <div style={{ height: 280, width: '100%' }}>
@@ -123,7 +122,7 @@ export default function FinancialICUPage() {
                   <Line 
                     type="monotone" 
                     dataKey="liquidity" 
-                    stroke={step >= 3 ? P.green : P.red} 
+                    stroke={step >= 4 ? P.green : P.red} 
                     strokeWidth={4} 
                     dot={{ fill: P.bg2, strokeWidth: 2, r: 4 }} 
                     activeDot={{ r: 8 }}
@@ -141,13 +140,27 @@ export default function FinancialICUPage() {
               
               {step === 0 && (
                 <div style={{ textAlign: 'center' }}>
-                  <Activity size={48} color={P.text3} style={{ marginBottom: 16, opacity: 0.5 }} className="pulse" />
+                  <Activity size={48} color={P.text3} style={{ marginBottom: 16 }} />
+                  <h2 style={{ fontSize: 20, color: P.text2, margin: '0 0 8px' }}>Sistem Hazır</h2>
+                  <p style={{ fontSize: 13, color: P.text3, margin: '0 0 16px' }}>TensorFlow.js modülünü tarayıcıda çalıştırıp geleceği tahmin etmek için analizi başlatın.</p>
+                  <button 
+                    onClick={startAnalysis}
+                    style={{ padding: '12px 24px', borderRadius: 12, background: P.blue, border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <Activity size={16} /> Analizi Başlat (TF.js İndirilecek)
+                  </button>
+                </div>
+              )}
+
+              {step === 1 && (
+                <div style={{ textAlign: 'center' }}>
+                  <Activity size={48} color={P.blue} style={{ marginBottom: 16 }} className="pulse" />
                   <h2 style={{ fontSize: 20, color: P.text2, margin: '0 0 8px' }}>TensorFlow.js Eğitiliyor...</h2>
                   <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>İstemci tarayıcısında gerçek zamanlı Lineer Regresyon modeli çalışıyor.</p>
                 </div>
               )}
 
-              {step === 1 && (
+              {step === 2 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                     <AlertTriangle size={32} color={P.red} />
@@ -158,7 +171,7 @@ export default function FinancialICUPage() {
                   </p>
                   
                   <button 
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(3)}
                     style={{ width: '100%', padding: '16px', borderRadius: 16, background: P.red, border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(239,68,68,0.4)' }}
                   >
                     <HeartPulse size={18} /> Yoğun Bakım (ICU) Modunu Başlat
@@ -166,7 +179,7 @@ export default function FinancialICUPage() {
                 </>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <div style={{ textAlign: 'center' }}>
                   <Radio size={48} color={P.red} className="spin" style={{ marginBottom: 16 }} />
                   <h2 style={{ fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Protokoller Devreye Giriyor...</h2>
@@ -174,7 +187,7 @@ export default function FinancialICUPage() {
                 </div>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                     <ShieldAlert size={32} color={P.green} />
@@ -187,8 +200,8 @@ export default function FinancialICUPage() {
               )}
             </div>
 
-            {/* ACTION LOGS (Only visible when Step >= 2) */}
-            <div style={{ opacity: step >= 2 ? 1 : 0, transform: step >= 2 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', display: 'grid', gap: 12 }}>
+            {/* ACTION LOGS (Only visible when Step >= 3) */}
+            <div style={{ opacity: step >= 3 ? 1 : 0, transform: step >= 3 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', display: 'grid', gap: 12 }}>
               <div style={{ background: P.bg2, border: `1px solid ${P.border}`, padding: 16, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Lock size={20} color={P.red} />

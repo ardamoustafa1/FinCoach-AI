@@ -192,6 +192,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [syncError, setSyncError] = useState(null);
 
   const checkUserStatus = useCallback(async (user) => {
     try {
@@ -237,6 +238,13 @@ export default function App() {
         supabase.from('goals').select('*').eq('user_id', user.id),
         supabase.from('budget_limits').select('*').eq('user_id', user.id)
       ]);
+
+      if (tx.error || gl.error || lm.error) {
+        setSyncError('Veriler yüklenirken bir sorun oluştu. Çevrimdışı modda çalışıyor olabilirsiniz.');
+        console.error('Data Sync Error:', { tx: tx.error, gl: gl.error, lm: lm.error });
+      } else {
+        setSyncError(null);
+      }
 
       if (tx.data) {
         const formattedTx = tx.data.map(t => ({
@@ -357,6 +365,13 @@ export default function App() {
       <BrowserRouter>
         <RouteHandler />
         <TourOverlay />
+        {syncError && (
+          <div style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', padding: '12px 24px', borderRadius: 12, boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500, animation: 'fadeSlideDown 0.3s ease-out' }}>
+            <span style={{ fontSize: 18 }}>⚠️</span>
+            {syncError}
+            <button onClick={() => setSyncError(null)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 4, marginLeft: 8, opacity: 0.8 }}>✕</button>
+          </div>
+        )}
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>
           <Routes>
             <Route element={

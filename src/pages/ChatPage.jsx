@@ -11,6 +11,7 @@ import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 import ChatChart from '../components/chat/ChatChart';
 import AgentSimulation from '../components/chat/AgentSimulation';
+import EmotionCheckinModal from '../components/chat/EmotionCheckinModal';
 
 /* ─── Palette ─── */
 const P = {
@@ -48,91 +49,7 @@ const QUICK_QUESTIONS = [
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
 ];
 
-// ─── Duygu check-in formu ─────────────────────────────────────────────────────
-const VALENCE_OPTIONS = [
-  { value: 'pozitif',  label: '😊 Pozitif',  color: '#10B981' },
-  { value: 'sakin',   label: '😌 Sakin',    color: '#3B82F6' },
-  { value: 'negatif', label: '😟 Negatif',  color: '#F59E0B' },
-  { value: 'stresli', label: '😤 Stresli',  color: '#EF4444' },
-];
-const CATEGORIES_EC = ['Market', 'Yemek', 'Giyim', 'Eğlence', 'Ulaşım', 'Teknoloji', 'Sağlık', 'Diğer'];
 
-function EmotionCheckinModal({ onClose, onSubmit }) {
-  const [valence, setValence]   = useState('');
-  const [arousal, setArousal]   = useState(5);
-  const [amount, setAmount]     = useState('');
-  const [category, setCategory] = useState('');
-
-  const handleSubmit = () => {
-    if (!valence || !amount || !category) return;
-    onSubmit({ valence, arousal, amount: Number(amount), category, hour: new Date().getHours() });
-  };
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(5,7,20,0.92)', backdropFilter: 'blur(20px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
-    }}>
-      <div style={{
-        width: '100%', maxWidth: 440, background: '#0d0d1a',
-        border: '1px solid rgba(124,58,237,0.35)', borderRadius: 24, padding: 32,
-        boxShadow: '0 0 60px rgba(124,58,237,0.2)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <HeartPulse size={20} color="#ec4899" /> Duygu Check-in
-          </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Valence */}
-        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 10 }}>Şu an nasıl hissediyorsun?</label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
-          {VALENCE_OPTIONS.map(o => (
-            <button key={o.value} onClick={() => setValence(o.value)} style={{
-              padding: '10px', borderRadius: 12, border: `1px solid ${valence === o.value ? o.color : 'rgba(255,255,255,0.08)'}`,
-              background: valence === o.value ? `${o.color}20` : 'transparent',
-              color: valence === o.value ? o.color : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
-            }}>{o.label}</button>
-          ))}
-        </div>
-
-        {/* Arousal */}
-        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Uyarılmışlık: {arousal}/10</label>
-        <input type="range" min={1} max={10} value={arousal} onChange={e => setArousal(Number(e.target.value))}
-          style={{ width: '100%', marginBottom: 20, accentColor: '#7c3aed' }} />
-
-        {/* Amount */}
-        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Harcama tutarı (₺)</label>
-        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Örn: 450"
-          style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 15, marginBottom: 20, boxSizing: 'border-box' }} />
-
-        {/* Category */}
-        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Kategori</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-          {CATEGORIES_EC.map(c => (
-            <button key={c} onClick={() => setCategory(c)} style={{
-              padding: '6px 12px', borderRadius: 99, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-              border: `1px solid ${category === c ? '#7c3aed' : 'rgba(255,255,255,0.1)'}`,
-              background: category === c ? 'rgba(124,58,237,0.2)' : 'transparent',
-              color: category === c ? '#a78bfa' : '#64748b'
-            }}>{c}</button>
-          ))}
-        </div>
-
-        <button onClick={handleSubmit} disabled={!valence || !amount || !category} style={{
-          width: '100%', padding: '14px', borderRadius: 14,
-          background: (!valence || !amount || !category) ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #7c3aed, #ec4899)',
-          border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: (!valence || !amount || !category) ? 'not-allowed' : 'pointer',
-          boxShadow: (!valence || !amount || !category) ? 'none' : '0 8px 24px rgba(124,58,237,0.4)'
-        }}>Koçuma Sor</button>
-      </div>
-    </div>
-  );
-}
 
 function getUserContext() {
   try {
@@ -230,7 +147,8 @@ export default function ChatPage() {
   const [modalChart, setModalChart] = useState(null);
   const [showEmotionCheckin, setShowEmotionCheckin] = useState(false);
   const messagesEndRef = useRef(null);
-  const { emotionLogs, addEmotionLog } = useStore();
+  const emotionLogs = useStore(state => state.emotionLogs);
+  const addEmotionLog = useStore(state => state.addEmotionLog);
 
   const initialMsgHandled = useRef(false);
 

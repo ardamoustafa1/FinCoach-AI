@@ -32,3 +32,9 @@ server/.env
 server/node_modules
 server/dist
 .wwebjs_cache/
+
+# Playwright Test Artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
