@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, Activity, Lock, TrendingDown, Radio, ShieldAlert, HeartPulse, Building2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import * as tf from '@tensorflow/tfjs';
 import PageHeader from '../components/PageHeader';
 
 const P = {
@@ -21,13 +22,45 @@ const chartData = [
 
 export default function FinancialICUPage() {
   const [step, setStep] = useState(0); 
+  const [dynamicChartData, setDynamicChartData] = useState([]);
+  const hasTrained = useRef(false);
   // 0: Scanning/Predicting, 1: NPL Detected (Red Alert), 2: ICU Activating, 3: Stabilized
   
   useEffect(() => {
-    if (step === 0) {
-      const timer = setTimeout(() => setStep(1), 2500);
-      return () => clearTimeout(timer);
+    if (step === 0 && !hasTrained.current) {
+      hasTrained.current = true;
+      const trainModel = async () => {
+        // Build a real sequential model for Linear Regression
+        const model = tf.sequential();
+        model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+        model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
+
+        // Training Data: X = Month (1 to 4), Y = Liquidity
+        const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
+        const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
+
+        // Train
+        await model.fit(xs, ys, { epochs: 200 });
+
+        // Predict month 5 and 6
+        const predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+        
+        setDynamicChartData([
+          { month: 'Şub', liquidity: 45000, threshold: 0 },
+          { month: 'Mar', liquidity: 32000, threshold: 0 },
+          { month: 'Nis', liquidity: 18000, threshold: 0 },
+          { month: 'May', liquidity: 5000, threshold: 0 },
+          { month: 'Haz', liquidity: Math.round(predictions[0]), threshold: 0 },
+          { month: 'Tem', liquidity: Math.round(predictions[1]), threshold: 0 },
+        ]);
+        
+        setStep(1);
+      };
+      
+      // Add slight delay for UX
+      setTimeout(trainModel, 1000);
     }
+    
     if (step === 2) {
       const timer = setTimeout(() => setStep(3), 3000);
       return () => clearTimeout(timer);
@@ -82,9 +115,9 @@ export default function FinancialICUPage() {
 
             <div style={{ height: 280, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={dynamicChartData.length > 0 ? dynamicChartData : chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <XAxis dataKey="month" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} />
-                  <YAxis stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} tickFormatter={v => `₺${v/1000}k`} />
+                  <YAxis stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} tickFormatter={v => `₺${Math.round(v/1000)}k`} />
                   <Tooltip contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }} />
                   <ReferenceLine y={0} stroke={P.red} strokeDasharray="3 3" label={{ position: 'insideBottomRight', value: 'TEMERRÜT SINIRI', fill: P.red, fontSize: 10, fontWeight: 800 }} />
                   <Line 
@@ -109,8 +142,8 @@ export default function FinancialICUPage() {
               {step === 0 && (
                 <div style={{ textAlign: 'center' }}>
                   <Activity size={48} color={P.text3} style={{ marginBottom: 16, opacity: 0.5 }} className="pulse" />
-                  <h2 style={{ fontSize: 20, color: P.text2, margin: '0 0 8px' }}>Yapay Zeka Tarıyor...</h2>
-                  <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Son 24 aylık harcama vektörleri analiz ediliyor.</p>
+                  <h2 style={{ fontSize: 20, color: P.text2, margin: '0 0 8px' }}>TensorFlow.js Eğitiliyor...</h2>
+                  <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>İstemci tarayıcısında gerçek zamanlı Lineer Regresyon modeli çalışıyor.</p>
                 </div>
               )}
 
