@@ -32,14 +32,14 @@ export default function LeaguePage() {
 
   const handleInvite = () => {
     setInviting(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       setInviting(false);
       const text = 'Seni FinCoach AI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin;
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       window.open(whatsappUrl, '_blank');
       
       try {
-        navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(text);
         toast.success('Davet bağlantısı kopyalandı ve WhatsApp açılıyor.');
       } catch {
         // ignore clipboard error

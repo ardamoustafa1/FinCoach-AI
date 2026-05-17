@@ -296,14 +296,14 @@ export default function HomePage() {
     setSeciliIslem(null);
   };
 
-  const shareLeagueInvite = () => {
+  const shareLeagueInvite = async () => {
     const text = "Seni FinCoach Ligi'ne davet ediyorum! Kim daha çok tasarruf edecek görelim 🏆 #FinCoachAI";
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
     
     // Ayrıca kopyalayalım
     try {
-      navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(text);
       toast.success('Davet bağlantısı kopyalandı ve WhatsApp açılıyor.');
     } catch {
       // ignore clipboard error
