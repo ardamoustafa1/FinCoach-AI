@@ -3,12 +3,7 @@ import { ShoppingBag, ShieldAlert, ShieldCheck, Zap, Scale, BrainCircuit } from 
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
 
-const P = {
-  purple: '#7C3AED', red: '#EF4444', green: '#10B981', amber: '#F59E0B', cyan: '#06B6D4',
-  text1: '#f8fafc', text2: '#94a3b8', text3: '#64748b', 
-  bg0: '#020617', bg1: '#0f172a', bg2: '#1e293b', border: 'rgba(255,255,255,0.1)'
-};
-
+import { P } from '../styles/palette';
 // ─── DAVRANIŞSAL İKTİSAT MOTORU ───
 // Formül: V = A / (1 + kD)
 function calculateHyperbolicDiscounting(price) {

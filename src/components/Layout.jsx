@@ -21,13 +21,7 @@ import { trackPageView } from '../utils/analytics';
 import { Mic } from 'lucide-react';
 import { authFetch } from '../utils/api';
 
-const P = {
-  purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
-
+import { P } from '../styles/palette';
 export default function Layout({ theme, onToggleTheme }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isListening, setIsListening] = useState(false);

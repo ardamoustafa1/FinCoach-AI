@@ -16,14 +16,8 @@ import PageHeader from '../components/PageHeader';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { GlassCard } from '../components/dashboard';
 
+import { P } from '../styles/palette';
 /* ─── Palette ─── */
-const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6', pink: '#EC4899',
-  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 function useCountUp(target, duration = 1500) {
   const [val, setVal] = useState(0);

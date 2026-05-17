@@ -1,15 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { fmt } from '../../utils/categories';
 
-const P = {
-  red: '#EF4444',
-  border: 'var(--border-color)',
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-};
-
+import { P } from '../../styles/palette';
 export default function DeleteTransactionConfirm({ islem, onOnayla, onIptal }) {
   return (
     <div

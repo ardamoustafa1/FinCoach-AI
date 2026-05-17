@@ -13,15 +13,7 @@ import {
 import GlassCard from './GlassCard';
 import ChartTooltip from './ChartTooltip';
 
-const P = {
-  purple: '#7C3AED',
-  purpleLight: '#A78BFA',
-  purpleDim: 'rgba(124,58,237,0.15)',
-  text1: 'var(--text-primary)',
-  text3: 'var(--text-muted)',
-  border: 'var(--border-color)',
-};
-
+import { P } from '../../styles/palette';
 const fmt = (v) =>
   new Intl.NumberFormat('tr-TR', {
     style: 'currency',

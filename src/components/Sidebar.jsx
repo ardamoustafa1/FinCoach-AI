@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import useStore from '../store/useStore';
 
+import { P } from '../styles/palette';
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
@@ -35,15 +36,6 @@ const navItems = [
   { to: '/reports', label: 'Raporlar', icon: BarChart3 },
   { to: '/settings', label: 'Ayarlar', icon: Settings },
 ];
-
-const P = {
-  purple: '#7C3AED', 
-  bg2: 'var(--bg-surface)', 
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)', 
-  text2: 'var(--text-secondary)', 
-  text3: 'var(--text-muted)',
-};
 
 export default function Sidebar({ collapsed, onToggle }) {
   

@@ -1,12 +1,7 @@
 import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert, LayoutDashboard, ArrowRightLeft, Crosshair, BarChart3, Landmark, Bell, ShoppingBag, Cpu, MessageSquare, Settings } from 'lucide-react';
 import useStore from '../store/useStore';
 
-const P = {
-  purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
-  bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)'
-};
-
+import { P } from '../styles/palette';
 const TOUR_CONTENT = {
   '/': {
     title: 'FinCoach AI\'ye Hoş Geldiniz 🚀',

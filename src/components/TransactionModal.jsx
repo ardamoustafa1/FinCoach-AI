@@ -5,14 +5,7 @@ import useStore from '../store/useStore';
 import { authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 
-const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA', purpleDim: 'rgba(124,58,237,0.15)',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', bg4: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
-
+import { P } from '../styles/palette';
 const BOS_FORM = {
   tarih: new Date().toISOString().slice(0, 10),
   tutar: '',

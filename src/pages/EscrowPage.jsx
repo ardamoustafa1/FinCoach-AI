@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { Lock, ShieldCheck, Activity, ShieldAlert, Cpu, CheckCircle2, Mic, Code, Send, Check } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 const MOCK_TRANSCRIPT = "Can'a akşam yemeği için 1000 TL gönder, ama sadece yarın akşama kadar bana o projeyi teslim ederse parayı serbest bırak.";
 
 export default function EscrowPage() {

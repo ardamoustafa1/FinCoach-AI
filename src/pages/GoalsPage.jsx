@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 
+import { P } from '../styles/palette';
 const IKONLAR = ['✈️', '🚗', '🏠', '💍', '📱', '🎓', '💰', '🏖️', '🎮', '🛋️'];
 
 const RENKLER = [
@@ -32,13 +33,6 @@ const HAZIR_HEDEFLER = [
   { name: 'Tatil Birikimi', targetAmount: 60000, currentAmount: 0, deadline: '2026-08-15', icon: '✈️', color: '#10b981' },
   { name: 'Borç Kapatma', targetAmount: 40000, currentAmount: 0, deadline: '2026-07-01', icon: '✅', color: '#ef4444' },
 ];
-
-const P = {
-  purple: '#7C3AED', green: '#10B981', red: '#EF4444',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 const liraFmt = v => `${Math.round(v).toLocaleString('tr-TR')}₺`;
 const dayMs = 86_400_000;

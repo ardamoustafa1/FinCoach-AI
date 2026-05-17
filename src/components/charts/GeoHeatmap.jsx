@@ -1,9 +1,6 @@
 import { MapPin, AlertTriangle, Crosshair } from 'lucide-react';
 
-const P = {
-  purple: '#7C3AED', red: '#EF4444', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', bg2: 'var(--bg-surface)', border: 'var(--border-color)'
-};
-
+import { P } from '../../styles/palette';
 export default function GeoHeatmap() {
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 16 }}>

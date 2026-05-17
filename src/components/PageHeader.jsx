@@ -8,11 +8,7 @@
 import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 
-const P = {
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)',
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
-};
-
+import { P } from '../styles/palette';
 export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, badge, children }) {
   const [hov, setHov] = useState(false);
 

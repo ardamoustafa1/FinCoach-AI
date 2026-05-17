@@ -6,13 +6,8 @@ import { useToast } from '../hooks/useToast';
 import useStore from '../store/useStore';
 import PageHeader from '../components/PageHeader';
 
+import { P } from '../styles/palette';
 /* ─── Palette ─── */
-const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 const MOCK_SUBSCRIPTIONS = [
   { id: 'sub_1', name: 'Netflix', price: 229.99, cycle: 'Aylık', icon: Video, color: '#E50914', category: 'Eğlence' },

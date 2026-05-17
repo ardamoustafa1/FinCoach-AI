@@ -3,12 +3,7 @@ import { Network, Search, Link as LinkIcon, Zap } from 'lucide-react';
 import useStore from '../store/useStore';
 import PageHeader, { PageLoader } from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B', cyan: '#06B6D4',
-  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 // ─── APRIORI ALGORITHM (Market Basket Analysis) ───
 // Finds merchants or categories that are frequently bought together or sequentially within 48 hours.
 function runAprioriAnalysis(transactions) {
@@ -66,12 +61,11 @@ export default function GraphAnalysisPage() {
   const [selectedNode, setSelectedNode] = useState(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      const tx = useStore.getState().transactions;
-      const data = runAprioriAnalysis(tx);
-      setGraphData(data);
-      setLoading(false);
-    }, 1500); // Yapay Yükleme
+    // Apriori senkron ve hızlı — yapay gecikme olmadan doğrudan çalıştır
+    const tx = useStore.getState().transactions;
+    const data = runAprioriAnalysis(tx);
+    setGraphData(data);
+    setLoading(false);
   }, []);
 
   // ─── BASİT SVG FORCE LAYOUT SİMÜLASYONU ───
@@ -207,7 +201,9 @@ export default function GraphAnalysisPage() {
                               <LinkIcon size={14} color={P.purple} />
                               <span style={{ fontSize: 14, fontWeight: 700, color: P.text1 }}>{targetName}</span>
                             </div>
-                            <span style={{ fontSize: 12, fontWeight: 800, color: P.amber }}>%{Math.min(99, e.strength * 15 + 30)} İhtimal</span>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: P.amber }}>
+                              {e.strength} ortak işlem
+                            </span>
                           </div>
                         );
                       })

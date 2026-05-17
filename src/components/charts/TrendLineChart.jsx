@@ -1,15 +1,9 @@
 import { useMemo } from 'react';
+import { P } from '../../styles/palette';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, ReferenceArea,
 } from 'recharts';
-
-const P = {
-  purple: '#7C3AED', green: '#10B981', red: '#EF4444',
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 

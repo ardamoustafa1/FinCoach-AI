@@ -6,15 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 
-const P = {
-  bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)',
-  text3: 'var(--text-muted)',
-  green: '#10B981',
-  red: '#EF4444',
-};
-
+import { P } from '../../styles/palette';
 const fmt = (v) =>
   new Intl.NumberFormat('tr-TR', {
     style: 'currency',

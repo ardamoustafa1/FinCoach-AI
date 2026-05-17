@@ -1,16 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { fmt } from '../../utils/categories';
 
-const P = {
-  amber: '#F59E0B',
-  border: 'var(--border-color)',
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-  text3: 'var(--text-muted)',
-};
-
+import { P } from '../../styles/palette';
 export default function UnusualSpendingModal({ alert, onNormal, onReview }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>

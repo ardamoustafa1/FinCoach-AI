@@ -17,6 +17,7 @@ import { calculatePrediction } from '../utils/predictive';
 import TransactionModal from '../components/TransactionModal';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { useToast } from '../hooks/useToast';
+import { P } from '../styles/palette';
 // ── Atomik Dashboard Bileşenleri (src/components/dashboard/) ──
 import {
   GlowOrb,
@@ -29,28 +30,6 @@ import {
 } from '../components/dashboard';
 
 /* ─── Palette ─── */
-const P = {
-  purple: '#7C3AED',
-  purpleLight: '#A78BFA',
-  purpleDim: 'rgba(124,58,237,0.15)',
-  purpleGlow: 'rgba(124,58,237,0.35)',
-  green: '#10B981',
-  greenDim: 'rgba(16,185,129,0.15)',
-  red: '#EF4444',
-  redDim: 'rgba(239,68,68,0.15)',
-  amber: '#F59E0B',
-  amberDim: 'rgba(245,158,11,0.15)',
-  blue: '#3B82F6',
-  bg0: 'var(--bg-main)',
-  bg1: 'var(--bg-sidebar)',
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-  text3: 'var(--text-muted)',
-};
 
 const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
 

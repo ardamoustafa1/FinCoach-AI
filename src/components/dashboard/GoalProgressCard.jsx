@@ -1,14 +1,10 @@
+import { P } from '../../styles/palette';
 /**
  * GoalProgressCard — Hedef ilerleme kartı bileşeni.
  * Hedef başlığı, animasyonlu ilerleme çubuğu ve mevcut/hedef tutarlarını gösterir.
  *
  * @param {{ goal: import('../../types').Goal, colorIndex: number }} props
  */
-const P = {
-  bg3: 'var(--bg-surface-soft)',
-  text1: 'var(--text-primary)',
-  text3: 'var(--text-muted)',
-};
 
 const GOAL_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#3B82F6'];
 

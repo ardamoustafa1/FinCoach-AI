@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, ShoppingCart, UtensilsCrossed, Bus, Tv, Zap, ShoppingBag, Gamepad2, Heart } from 'lucide-react';
 
+import { P } from '../styles/palette';
 /* ─── Palette ─── */
-const P = {
-  purple: '#7C3AED', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 const KAT_IKONLARI = {
   Market: { icon: ShoppingCart, renk: '#10b981' },

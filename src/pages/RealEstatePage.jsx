@@ -5,12 +5,7 @@ import useStore from '../store/useStore';
 import { fmt } from '../utils/categories';
 import PageHeader from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 export default function RealEstatePage() {
   const [housePrice, setHousePrice] = useState(3000000);
   const [downPayment, setDownPayment] = useState(500000);

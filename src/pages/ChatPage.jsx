@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Send, Bot, User, Sparkles, Zap, Share2, Maximize2, X, Search, Loader2, Database, CheckCircle2, HeartPulse, BarChart2 } from 'lucide-react';
-import { sanitize } from '../utils/security';
+// sanitize() HTML encoding yapar; chat input için trimInput() kullanılıyor (bkz. KRİTİK-05)
+
 import ReactMarkdown from 'react-markdown';
 import useStore from '../store/useStore';
 import { aySkoru } from '../utils/healthScore';
@@ -14,24 +15,19 @@ import ChatChart from '../components/chat/ChatChart';
 import AgentSimulation from '../components/chat/AgentSimulation';
 import EmotionCheckinModal from '../components/chat/EmotionCheckinModal';
 
-/* ─── Palette ─── */
-const P = {
-  purple: '#7C3AED',
-  purpleLight: '#A78BFA',
-  purpleDim: 'rgba(124,58,237,0.15)',
-  green: '#10B981',
-  red: '#EF4444',
-  amber: '#F59E0B',
-  bg0: 'var(--bg-main)',
-  bg1: 'var(--bg-sidebar)',
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-  text3: 'var(--text-muted)',
-};
+import { P } from '../styles/palette';
+
+/**
+ * Chat için güvenli giriş temizleme:
+ * - HTML entity encoding YAPMAZ (sanitize'dan farklı) — çünkü Gemini promptuna
+ *   &amp; gibi encoded string'ler giderse halusinasyon riski artar.
+ * - React JSX render'i zaten XSS'e karşı korur (dangerouslySetInnerHTML kullanılmıyor).
+ */
+function trimInput(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text.trim().replace(/\s+/g, ' ');
+}
+
 
 const getInitialMessages = () => {
   const userName = useStore.getState().userProfile?.name || '';
@@ -177,8 +173,8 @@ export default function ChatPage() {
     const riskLevel = getRiskLevel(log.arousal, log.valence);
     const riskTag = riskLevel === 'high' ? '⚠️ Yüksek Risk' : riskLevel === 'medium' ? '⚡ Orta Risk' : '✅ Düşük Risk';
     const userMsg = `[Duygu Check-in — ${riskTag}]\nDuygu: ${log.valence} | Arousal: ${log.arousal}/10 | ${log.amount}₺ ${log.category}`;
-    const newMessages = [...messages, { role: 'user', content: userMsg }];
-    setMessages(newMessages);
+    // Fonksiyonel güncelleme: messages bağımlılığı kaldırıldı (UYARI-05)
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsLoading(true);
     setRagStep(0);
     authFetch('/api/chat', {
@@ -189,7 +185,8 @@ export default function ChatPage() {
     }).catch(() => {
       setMessages(prev => [...prev, { role: 'bot', content: 'Duygu koçuna bağlanılamadı.' }]);
     }).finally(() => { setIsLoading(false); setRagStep(0); });
-  }, [messages, emotionLogs, addEmotionLog]);
+  }, [emotionLogs, addEmotionLog]);
+
 
   const handleWeeklyReport = useCallback(() => {
     const last7 = emotionLogs.slice(0, 20).filter(l => {
@@ -216,49 +213,49 @@ export default function ChatPage() {
   }, [emotionLogs]);
 
   const handleSend = useCallback(async (text = input) => {
-    const cleanInput = sanitize(text);
+    const cleanInput = trimInput(text); // HTML entity encode etmeden temizle (KRİTİK-05)
     if (!cleanInput || isLoading) return;
 
-    // Real client-side Vector DB / Cosine Similarity semantic search
+    // Real client-side Cosine Similarity semantic search
     const txs = useStore.getState().transactions || [];
     const semanticMatches = calculateCosineSimilarity(cleanInput, txs);
     setRagMatches(semanticMatches);
 
     const userMsg = { role: 'user', content: cleanInput };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    // Fonksiyonel güncelleme: messages bağımlılığı kaldırıldı (UYARI-05)
+    let snapshotMessages;
+    setMessages(prev => {
+      snapshotMessages = [...prev, userMsg];
+      return snapshotMessages;
+    });
     setInput('');
     setIsLoading(true);
     setRagStep(0);
     try {
       const userContext = getUserContext();
-      
-      // Inject real semantic context directly into prompt userContext payload
-      userContext.ragContext = semanticMatches.map(m => 
+      userContext.ragContext = semanticMatches.map(m =>
         `[Cosine Similarity: %${Math.round(m.similarity * 100)}] Tarih: ${m.tx.tarih}, Mağaza: ${m.tx.magaza || 'Belirtilmedi'}, Kategori: ${m.tx.kategori}, Tutar: ${Math.abs(m.tx.tutar)} TL (${m.tx.tur === 'gelir' ? 'Gelir' : 'Gider'}) - Açıklama: ${m.tx.aciklama || ''}`
       ).join('\n');
 
       const response = await authFetch('/api/chat', {
         method: 'POST',
-        body: JSON.stringify({ messages: newMessages, userContext }),
+        body: JSON.stringify({ messages: snapshotMessages || [userMsg], userContext }),
       });
-      
+
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Sunucu hatası oluştu.');
-      }
-      
+      if (!response.ok) throw new Error(data.error || 'Sunucu hatası oluştu.');
+
       setMessages(prev => [...prev, { role: 'bot', content: data.response }]);
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'bot',
-        content: error.message.includes('Hata:') || error.message.includes('⚠️') 
-          ? error.message 
+        content: error.message.includes('Hata:') || error.message.includes('⚠️')
+          ? error.message
           : `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?\n\nDetay: ${error.message}`
       }]);
     } finally { setIsLoading(false); setRagStep(0); }
-  }, [input, isLoading, messages]);
+  }, [input, isLoading]);
+
 
   useEffect(() => {
     let t1, t2, t3;

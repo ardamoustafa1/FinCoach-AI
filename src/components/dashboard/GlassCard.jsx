@@ -6,14 +6,7 @@
  */
 import { useState } from 'react';
 
-const P = {
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  borderHover: 'var(--border-hover)',
-  purpleGlow: 'rgba(124,58,237,0.35)',
-};
-
+import { P } from '../../styles/palette';
 export default function GlassCard({ children, style = {}, hover = true, glow = false, onClick, className }) {
   const [isHovered, setIsHovered] = useState(false);
 

@@ -3,14 +3,7 @@ import { Trophy, Swords, Crown, TrendingUp, AlertCircle, Medal, Zap, ShieldCheck
 import { useToast } from '../hooks/useToast';
 import PageHeader from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA', purpleGlow: 'rgba(124,58,237,0.35)',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
-  bg0: 'var(--bg-main)', bg1: 'var(--bg-sidebar)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', borderHover: 'var(--border-hover)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
-
+import { P } from '../styles/palette';
 const MOCK_LEADERBOARD = [
   { id: 1, name: 'Sen (FinCoach AI)', savingsRate: 32, score: 950, isMe: true, avatar: '😎' },
   { id: 2, name: 'Ahmet Yılmaz', savingsRate: 28, score: 820, isMe: false, avatar: '🤠' },

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useCallback, Component } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
@@ -7,6 +7,7 @@ import AuthPage from './pages/AuthPage';
 import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
 import { supabase } from './utils/supabase';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -100,37 +101,7 @@ function RouteHandler() {
   return null;
 }
 
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error, errorInfo) {
-    console.error('[Global Error]:', error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center', padding: 20 }}>
-          <div>
-            <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 16 }}>Beklenmedik Bir Hata Oluştu</h2>
-            <p style={{ color: '#94A3B8', marginBottom: 24 }}>Sistem geçici bir sorunla karşılaştı. Verileriniz güvende, lütfen sayfayı yenileyin.</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              style={{ padding: '12px 24px', borderRadius: 12, background: '#7c3aed', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}
-            >
-              Sayfayı Yenile
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
+// ErrorBoundary: ./components/ErrorBoundary.jsx'den import ediliyor (KRİTİK-02 düzeltmesi)
 
 function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
   return (

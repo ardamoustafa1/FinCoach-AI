@@ -4,13 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { fmt } from '../utils/categories';
 import PageHeader from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', purpleLight: '#A78BFA',
-  green: '#10B981', red: '#EF4444', amber: '#F59E0B', blue: '#3B82F6',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
-
+import { P } from '../styles/palette';
 export default function TimeMachinePage() {
   const [purchaseName, setPurchaseName] = useState('iPhone 16 Pro Max');
   const [purchaseAmount, setPurchaseAmount] = useState(80000);

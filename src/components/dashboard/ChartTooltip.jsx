@@ -1,14 +1,10 @@
+import { P } from '../../styles/palette';
 /**
  * ChartTooltip — Tüm Recharts grafikleri için özelleştirilmiş tooltip bileşeni.
  * Uygulamanın tema sistemine uygun, koyu arka planlı ve tutarlı görünüm sağlar.
  *
  * @param {{ active?: boolean, payload?: Array<{color?: string, name?: string, value?: number|string}>, label?: string, formatter?: (v: any) => string }} props
  */
-const P = {
-  bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text2: 'var(--text-secondary)',
-};
 
 export default function ChartTooltip({ active, payload, label, formatter }) {
   if (!active || !payload?.length) return null;

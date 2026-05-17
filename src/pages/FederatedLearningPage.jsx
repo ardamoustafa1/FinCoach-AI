@@ -3,12 +3,7 @@ import { ShieldCheck, Smartphone, Lock, Cpu, Loader2, Terminal, Network } from '
 import PageHeader from '../components/PageHeader';
 import useStore from '../store/useStore';
 
-const P = {
-  purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 export default function FederatedLearningPage() {
   const [trainingState, setTrainingState] = useState('idle'); // idle, training, p2p_connecting, exchanging, done
   const [epoch, setEpoch] = useState(0);

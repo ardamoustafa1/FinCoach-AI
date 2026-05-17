@@ -10,14 +10,7 @@ import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import GlassCard from './GlassCard';
 import AnimNumber from './AnimNumber';
 
-const P = {
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-  text3: 'var(--text-muted)',
-  green: '#10B981',
-  red: '#EF4444',
-};
-
+import { P } from '../../styles/palette';
 export default function StatCard({ label, value, icon: Icon, color, change, isCurrency = true, delay = 0 }) {
   const [visible, setVisible] = useState(false);
 

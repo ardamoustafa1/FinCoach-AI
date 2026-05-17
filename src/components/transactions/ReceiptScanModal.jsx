@@ -2,18 +2,7 @@ import { useRef, useState } from 'react';
 import { Camera, ImagePlus, Loader2, X } from 'lucide-react';
 import { authFetch } from '../../utils/api';
 
-const P = {
-  green: '#10B981',
-  red: '#EF4444',
-  bg2: 'var(--bg-surface)',
-  bg3: 'var(--bg-surface-soft)',
-  bg4: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)',
-  text2: 'var(--text-secondary)',
-  text3: 'var(--text-muted)',
-};
-
+import { P } from '../../styles/palette';
 export default function ReceiptScanModal({ onSonuc, onApiError, onKapat }) {
   const [fileInfo, setFileInfo] = useState(null);
   const [compressed, setCompressed] = useState(null);

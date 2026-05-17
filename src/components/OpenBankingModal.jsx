@@ -2,12 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Landmark, Loader2, Sparkles, CheckCircle2, Server, ArrowRight, Upload } from 'lucide-react';
 import Papa from 'papaparse';
 
-const P = {
-  purple: '#7C3AED', green: '#10B981', blue: '#3B82F6', amber: '#F59E0B', red: '#EF4444',
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)', border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 const RAW_DATA = [
   { raw: "POS/MIGROS A.S. ISTANBUL", amount: 450.50, date: "2026-05-12" },
   { raw: "KART ISLEMI STARBUCKS COFFEE TR", amount: 125.00, date: "2026-05-11" },

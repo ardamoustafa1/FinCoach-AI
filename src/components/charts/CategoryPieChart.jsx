@@ -4,13 +4,8 @@ import {
 } from 'recharts';
 import { ChevronUp } from 'lucide-react';
 
+import { P } from '../../styles/palette';
 const RENKLER = ['#7C3AED', '#10b981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#14b8a6', '#f97316'];
-
-const P = {
-  bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)',
-  text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)',
-};
 
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 

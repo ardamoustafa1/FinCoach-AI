@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react';
 import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock, Terminal } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
-const P = {
-  purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
-  bg0: 'var(--bg-main)', bg2: 'var(--bg-surface)', bg3: 'var(--bg-surface-soft)',
-  border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
-};
-
+import { P } from '../styles/palette';
 const LOG_MESSAGES = [
   "[ORACLE] Pinging user activity logs... 180 days since last login.",
   "[ORACLE] Polling e-Devlet & National Health DB APIs...",
