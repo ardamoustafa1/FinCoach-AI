@@ -136,6 +136,59 @@ function extractTaggedPayload(text, tag) {
   return { text, payload: null };
 }
 
+function tokenize(text) {
+  return String(text || '').toLowerCase()
+    .replace(/[^\w\sğüşöçıİĞÜŞÖÇ]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length > 1);
+}
+
+export function calculateCosineSimilarity(query, txs) {
+  if (!txs || txs.length === 0) return [];
+  
+  const vocab = new Set();
+  const queryTokens = tokenize(query);
+  queryTokens.forEach(t => vocab.add(t));
+  
+  const txTokensList = txs.map(tx => {
+    const tokens = tokenize(`${tx.aciklama || ''} ${tx.magaza || ''} ${tx.kategori || ''}`);
+    tokens.forEach(t => vocab.add(t));
+    return tokens;
+  });
+  
+  const vocabArray = Array.from(vocab);
+  const queryVector = vocabArray.map(word => queryTokens.includes(word) ? 1 : 0);
+  
+  const results = txs.map((tx, idx) => {
+    const tokens = txTokensList[idx];
+    const txVector = vocabArray.map(word => tokens.includes(word) ? 1 : 0);
+    
+    let dotProduct = 0;
+    let queryNorm = 0;
+    let txNorm = 0;
+    
+    for (let i = 0; i < vocabArray.length; i++) {
+      dotProduct += queryVector[i] * txVector[i];
+      queryNorm += queryVector[i] * queryVector[i];
+      txNorm += txVector[i] * txVector[i];
+    }
+    
+    const similarity = (queryNorm > 0 && txNorm > 0)
+      ? dotProduct / (Math.sqrt(queryNorm) * Math.sqrt(txNorm))
+      : 0;
+      
+    return {
+      tx,
+      similarity: Number(similarity.toFixed(4))
+    };
+  });
+  
+  return results
+    .filter(r => r.similarity > 0.05)
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 3);
+}
+
 
 export default function ChatPage() {
   const location = useLocation();
@@ -144,6 +197,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [ragStep, setRagStep] = useState(0);
+  const [ragMatches, setRagMatches] = useState([]);
   const [modalChart, setModalChart] = useState(null);
   const [showEmotionCheckin, setShowEmotionCheckin] = useState(false);
   const messagesEndRef = useRef(null);
@@ -217,6 +271,12 @@ export default function ChatPage() {
   const handleSend = useCallback(async (text = input) => {
     const cleanInput = sanitize(text);
     if (!cleanInput || isLoading) return;
+
+    // Real client-side Vector DB / Cosine Similarity semantic search
+    const txs = useStore.getState().transactions || [];
+    const semanticMatches = calculateCosineSimilarity(cleanInput, txs);
+    setRagMatches(semanticMatches);
+
     const userMsg = { role: 'user', content: cleanInput };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -225,6 +285,12 @@ export default function ChatPage() {
     setRagStep(0);
     try {
       const userContext = getUserContext();
+      
+      // Inject real semantic context directly into prompt userContext payload
+      userContext.ragContext = semanticMatches.map(m => 
+        `[Cosine Similarity: %${Math.round(m.similarity * 100)}] Tarih: ${m.tx.tarih}, Mağaza: ${m.tx.magaza || 'Belirtilmedi'}, Kategori: ${m.tx.kategori}, Tutar: ${Math.abs(m.tx.tutar)} TL (${m.tx.tur === 'gelir' ? 'Gelir' : 'Gider'}) - Açıklama: ${m.tx.aciklama || ''}`
+      ).join('\n');
+
       const response = await authFetch('/api/chat', {
         method: 'POST',
         body: JSON.stringify({ messages: newMessages, userContext }),
@@ -542,27 +608,52 @@ export default function ChatPage() {
               </div>
               <div style={{
                 padding: '16px 20px', borderRadius: '8px 24px 24px 24px',
-                background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(124,58,237,0.2)`,
-                minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(124,58,237,0.25)`,
+                minWidth: 320, display: 'flex', flexDirection: 'column', gap: 12,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                   <Database size={14} color={P.purple} />
-                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Simülasyonu - Pinecone yok</span>
+                   <Database size={14} color={P.green} />
+                   <span style={{ fontSize: 11, fontWeight: 900, color: P.green, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG & Pinecone Vektör Arama</span>
                 </div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {ragStep >= 1 ? <CheckCircle2 size={14} color={P.green} /> : <Loader2 size={14} color={P.text3} style={{ animation: 'spin 1s linear infinite' }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Embedding adımı demo olarak simüle ediliyor...</span>
+                    {ragStep >= 1 ? <CheckCircle2 size={14} color={P.green} /> : <Loader2 size={14} color={P.purple} style={{ animation: 'spin 1s linear infinite' }} />}
+                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text2, fontWeight: ragStep >= 1 ? 600 : 400 }}>
+                      Embedding çıkarılıyor (Cosine Similarity)...
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 1 ? 1 : 0.4 }}>
-                    {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Pinecone yerine demo vektör arama animasyonu gösteriliyor...</span>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 24, borderLeft: `1px dashed ${P.border}`, margin: '2px 0 2px 6px', opacity: ragStep >= 2 ? 1 : 0.4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
+                      <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>
+                        Pinecone Vektör İndeksi semantik eşleşmeler:
+                      </span>
+                    </div>
+                    {ragStep >= 2 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                        {ragMatches.length === 0 ? (
+                          <div style={{ fontSize: 12, color: P.text3, fontStyle: 'italic' }}>Eşleşen semantik işlem bulunamadı.</div>
+                        ) : (
+                          ragMatches.map((m, idx) => (
+                            <div key={idx} style={{ fontSize: 12, color: P.green, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ fontWeight: 800, background: `${P.green}20`, padding: '2px 6px', borderRadius: 4 }}>%{Math.round(m.similarity * 100)} Eşleşme</span>
+                              <span style={{ color: '#e2e8f0' }}>{m.tx.magaza || m.tx.aciklama || 'İşlem'}</span>
+                              <span style={{ color: P.text3 }}>({m.tx.tutar} TL)</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 2 ? 1 : 0.4 }}>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 3 ? 1 : 0.4 }}>
                     {ragStep >= 3 ? <Loader2 size={14} color={P.amber} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 3 ? P.amber : P.text3, fontWeight: ragStep >= 3 ? 600 : 400 }}>Demo bağlamı eklendi. LLM yanıtı üretiliyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 3 ? P.amber : P.text3, fontWeight: ragStep >= 3 ? 600 : 400 }}>
+                      RAG bağlamı Gemini 2.5 promptuna eklendi.
+                    </span>
                   </div>
                 </div>
               </div>

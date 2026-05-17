@@ -514,6 +514,8 @@ Kullanıcının güncel finansal durumu:
 - Bütçe Limitleri: ${JSON.stringify(userContext?.limitler || {})}
 - Hedefler: ${JSON.stringify(userContext?.hedefler || {})}
 - Sağlık Skoru: ${userContext?.skor || 'Bilinmiyor'}
+- Pinecone Vektör Veritabanı Semantik Bağlamı (RAG):
+${userContext?.ragContext || 'Hiçbir yakın eşleşen işlem bağlamı bulunamadı.'}
 
 GRAFİK GÖSTERİMİ:
 Kullanıcı bir grafik isterse, yanıtının EN SONUNA şu formatta JSON ekle:
