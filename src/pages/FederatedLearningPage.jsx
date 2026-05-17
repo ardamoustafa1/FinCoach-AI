@@ -12,6 +12,7 @@ const P = {
 export default function FederatedLearningPage() {
   const [trainingState, setTrainingState] = useState('idle'); // idle, training, p2p_connecting, exchanging, done
   const [epoch, setEpoch] = useState(0);
+  const [selectedEpochs, setSelectedEpochs] = useState(5); // Default to 5 epochs (Balanced Profile)
   const [logs, setLogs] = useState([]);
   const channelRef = useRef(null);
 
@@ -74,12 +75,12 @@ export default function FederatedLearningPage() {
 
     // Fit model with epoch callbacks
     await model.fit(xs, ys, {
-      epochs: 10,
+      epochs: selectedEpochs,
       callbacks: {
         onEpochEnd: async (epochIndex, logs) => {
           setEpoch(epochIndex + 1);
-          addLog(`[TF.js] Epoch ${epochIndex + 1}/10 - Real Loss: ${logs.loss.toFixed(4)} - Device GPU/CPU active`, P.text2);
-          await tf.nextFrame(); // UI responsive lock protection
+          addLog(`[TF.js] Epoch ${epochIndex + 1}/${selectedEpochs} - Real Loss: ${logs.loss.toFixed(4)} - Device GPU/CPU active`, P.text2);
+          await tf.nextFrame(); // UI responsive lock protection (prevents main thread freezing)
         }
       }
     });
@@ -244,21 +245,47 @@ export default function FederatedLearningPage() {
           subtitle="Cihaz içi TensorFlow.js eğitimi gerçektir; uzak peer/WebRTC ağı bu hackathon demosunda kontrollü simülasyondur."
           badge="TF.js Gerçek - P2P Demo"
         >
-          <button 
-            onClick={startTraining}
-            disabled={trainingState !== 'idle' && trainingState !== 'done'}
-            style={{
-              background: trainingState === 'idle' || trainingState === 'done' ? `linear-gradient(135deg, ${P.blue}, #2563EB)` : P.bg3,
-              color: trainingState === 'idle' || trainingState === 'done' ? '#fff' : P.text3,
-              border: 'none',
-              padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
-              boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 20px rgba(59,130,246,0.3)' : 'none'
-            }}
-          >
-            {trainingState === 'idle' || trainingState === 'done' ? <Cpu size={16} /> : <Loader2 size={16} className="animate-spin" />}
-            {trainingState === 'idle' || trainingState === 'done' ? 'Eğitimi Başlat' : 'Eğitiliyor...'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Training Profile Selector (Main-Thread protection option) */}
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.25)', border: `1px solid ${P.border}`, borderRadius: 12, padding: 4 }}>
+              {[3, 5, 10].map((num) => (
+                <button
+                  key={num}
+                  disabled={trainingState !== 'idle' && trainingState !== 'done'}
+                  onClick={() => setSelectedEpochs(num)}
+                  style={{
+                    background: selectedEpochs === num ? P.blue : 'transparent',
+                    color: selectedEpochs === num ? '#fff' : P.text3,
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {num === 3 ? 'Hızlı (3 E)' : num === 5 ? 'Denge (5 E)' : 'Derin (10 E)'}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={startTraining}
+              disabled={trainingState !== 'idle' && trainingState !== 'done'}
+              style={{
+                background: trainingState === 'idle' || trainingState === 'done' ? `linear-gradient(135deg, ${P.blue}, #2563EB)` : P.bg3,
+                color: trainingState === 'idle' || trainingState === 'done' ? '#fff' : P.text3,
+                border: 'none',
+                padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
+                boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 20px rgba(59,130,246,0.3)' : 'none'
+              }}
+            >
+              {trainingState === 'idle' || trainingState === 'done' ? <Cpu size={16} /> : <Loader2 size={16} className="animate-spin" />}
+              {trainingState === 'idle' || trainingState === 'done' ? 'Eğitimi Başlat' : 'Eğitiliyor...'}
+            </button>
+          </div>
         </PageHeader>
 
         {/* VISUALIZATION TOPOLOGY */}

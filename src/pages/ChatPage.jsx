@@ -533,6 +533,20 @@ export default function ChatPage() {
                           </div>
                         </div>
                       )}
+
+                      {/* Subtle Legal Guardrail Disclaimer */}
+                      <div style={{
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.28)',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                        paddingTop: 8,
+                        marginTop: 4,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <span>⚠️ <em>Eğitsel Amaçlı Analiz: Yatırım veya finansal danışmanlık kapsamında değildir.</em></span>
+                      </div>
                     </div>
                   ) : (
                     <span style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</span>

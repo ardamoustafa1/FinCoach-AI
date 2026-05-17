@@ -182,9 +182,13 @@ export default function FinancialICUPage() {
                     <AlertTriangle size={32} color={P.red} />
                     <h2 style={{ fontSize: 22, fontWeight: 900, color: P.red, margin: 0 }}>SİSTEM ALARMI: Bireysel İflas Riski</h2>
                   </div>
-                  <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 24 }}>
+                  <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 16 }}>
                     Mevcut harcama ivmesi devam ederse, müşteri <strong style={{ color: '#fff' }}>Haziran ayında</strong> kredi kartı asgarisini ödeyemeyerek temerrüde (default) düşecektir.
                   </p>
+                  
+                  <div style={{ fontSize: 11, color: P.text3, marginBottom: 20, fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>⚠️ <em>Eğitsel Amaçlı Analiz: Yatırım veya finansal danışmanlık kapsamında değildir.</em></span>
+                  </div>
                   
                   <button 
                     onClick={() => setStep(3)}
