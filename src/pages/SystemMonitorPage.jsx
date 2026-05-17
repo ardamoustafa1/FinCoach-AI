@@ -77,7 +77,7 @@ export default function SystemMonitorPage() {
         @keyframes flowAnim { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
       `}</style>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
+      <div className="flex flex-col gap-6 pb-10">
         
         <PageHeader
           icon={<Zap size={24} />}

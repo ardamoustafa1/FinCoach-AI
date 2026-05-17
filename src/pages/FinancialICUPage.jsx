@@ -82,7 +82,7 @@ export default function FinancialICUPage() {
         .secure-text { color: #10B981; font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
       `}</style>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, position: 'relative', overflow: 'hidden' }}>
+      <div className="flex flex-col gap-6 pb-10 relative overflow-hidden">
         
         {/* Background Distress Signal */}
         {step === 1 && (
@@ -99,7 +99,7 @@ export default function FinancialICUPage() {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           
           {/* LEFT: PROPHET MODEL CHART */}
           <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${step === 1 ? 'rgba(239,68,68,0.5)' : P.border}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', boxShadow: step === 1 ? '0 0 40px rgba(239,68,68,0.1)' : 'none' }}>
@@ -134,7 +134,7 @@ export default function FinancialICUPage() {
           </div>
 
           {/* RIGHT: ICU CONTROLS */}
-          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.1s' }}>
+          <div className="animate-enter flex flex-col gap-4" style={{ animationDelay: '0.1s' }}>
             
             {/* ALERT BOX */}
             <div style={{ background: step === 3 ? 'rgba(16,185,129,0.05)' : step === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(239,68,68,0.1)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : step === 0 ? P.border : 'rgba(239,68,68,0.4)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
