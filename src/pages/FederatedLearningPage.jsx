@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, Smartphone, Cloud, Lock, Cpu, Loader2, Database, Terminal, Share2, Network } from 'lucide-react';
+import { ShieldCheck, Smartphone, Lock, Cpu, Loader2, Terminal, Network } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import useStore from '../store/useStore';
-import * as tf from '@tensorflow/tfjs';
 
 const P = {
   purple: '#7C3AED', blue: '#3B82F6', green: '#10B981', red: '#EF4444', amber: '#F59E0B',
@@ -14,7 +13,6 @@ export default function FederatedLearningPage() {
   const [trainingState, setTrainingState] = useState('idle'); // idle, training, p2p_connecting, exchanging, done
   const [epoch, setEpoch] = useState(0);
   const [logs, setLogs] = useState([]);
-  const [activePeers, setActivePeers] = useState([]);
   const channelRef = useRef(null);
 
   const addLog = (msg, color = P.text2) => {
@@ -34,7 +32,7 @@ export default function FederatedLearningPage() {
     channelRef.current = new BroadcastChannel(channelName);
     
     channelRef.current.onmessage = (event) => {
-      const { type, sender, payload } = event.data;
+      const { type, sender } = event.data;
       if (type === 'PING') {
         channelRef.current.postMessage({ type: 'PONG', sender: 'Self-Node', payload: { city: 'Local User' } });
       }
@@ -47,6 +45,7 @@ export default function FederatedLearningPage() {
   }, []);
 
   const runTensorflowTraining = async () => {
+    const tf = await import('@tensorflow/tfjs');
     addLog('[TF.js] TensorFlow.js regresyon modeli oluşturuluyor...', P.purple);
     
     // Create a simple neural network model for spending prediction
@@ -125,20 +124,21 @@ export default function FederatedLearningPage() {
     
     try {
       const noisyWeights = await runTensorflowTraining();
+      addLog(`[PRIVACY] Demo paylaşım vektörü hazır: ${noisyWeights.length} ağırlık.`, P.green);
       
       // Move to WebRTC P2P Coordination
       setTrainingState('p2p_connecting');
       addLog('[WebRTC] P2P Swarm ağına katılınıyor. Sinyalleşme odası: fincoach-fedavg-swarm', P.blue);
       
-      // Simulating real WebRTC handshake Offer/Answer/ICE candidate exchanges
+      // Demo-only handshake timeline; no real remote peer connection is opened.
       setTimeout(() => {
-        addLog('[WebRTC] STUN/TURN sunucularıyla el sıkışıldı (Google Candidate Pool).', P.text3);
+        addLog('[P2P_DEMO] STUN/TURN el sıkışması simüle edildi.', P.text3);
         setPeersState(prev => prev.map(p => ({ ...p, status: 'connecting' })));
       }, 1000);
 
       setTimeout(() => {
-        addLog('[WebRTC] Ankara Node SDP teklifi gönderildi (Offer).', P.purple);
-        addLog('[WebRTC] Ankara Node ile RTCPeerConnection başarılı! DataChannel açıldı. 🟩', P.green);
+        addLog('[P2P_DEMO] Ankara Node SDP teklifi simüle edildi.', P.purple);
+        addLog('[P2P_DEMO] Ankara Node DataChannel adımı demo olarak tamamlandı.', P.green);
         setPeersState(prev => prev[0].id === 'Peer-Ankara-21' ? { ...prev[0], status: 'connected' } : prev[0] ? prev[0] : prev);
         setPeersState(prev => {
           const next = [...prev];
@@ -148,8 +148,8 @@ export default function FederatedLearningPage() {
       }, 2500);
 
       setTimeout(() => {
-        addLog('[WebRTC] İstanbul Node ile ICE Candidate adayları eşleşti.', P.purple);
-        addLog('[WebRTC] İstanbul Node ile DataChannel üzerinden WebRTC tüneli kuruldu. 🟩', P.green);
+        addLog('[P2P_DEMO] İstanbul Node ICE Candidate eşleşmesi simüle edildi.', P.purple);
+        addLog('[P2P_DEMO] İstanbul Node veri kanalı demo olarak tamamlandı.', P.green);
         setPeersState(prev => {
           const next = [...prev];
           next[1].status = 'connected';
@@ -158,7 +158,7 @@ export default function FederatedLearningPage() {
       }, 3800);
 
       setTimeout(() => {
-        addLog('[WebRTC] İzmir Node el sıkışması tamamlandı. P2P bağlantısı sağlandı. 🟩', P.green);
+        addLog('[P2P_DEMO] İzmir Node el sıkışması demo olarak tamamlandı.', P.green);
         setPeersState(prev => {
           const next = [...prev];
           next[2].status = 'connected';
@@ -175,17 +175,16 @@ export default function FederatedLearningPage() {
 
   useEffect(() => {
     if (trainingState === 'exchanging') {
-      addLog('[FedAvg] Merkeziyetsiz Ağırlık Birleştirme (P2P Federated Averaging) başlatıldı...', P.amber);
+      const introTimer = setTimeout(() => {
+        addLog('[FedAvg Demo] Ağırlık birleştirme simülasyonu başlatıldı...', P.amber);
+      }, 0);
       
-      setTimeout(() => {
-        // Exchange weights mathematically
-        const localTxs = useStore.getState().transactions.length || 20;
+      const exchangeTimer = setTimeout(() => {
         const weights = [0.8412, -0.2243, 0.8912];
         
-        // Simulating receiving weights from Ankara, Istanbul and Izmir over DataChannels
-        addLog('[WebRTC-DataChannel] Ankara Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
-        addLog('[WebRTC-DataChannel] İstanbul Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
-        addLog('[WebRTC-DataChannel] İzmir Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
+        addLog('[P2P_DEMO] Ankara Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
+        addLog('[P2P_DEMO] İstanbul Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
+        addLog('[P2P_DEMO] İzmir Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
 
         const ankaraWeights = weights.map(w => w + (Math.random() - 0.5) * 0.05);
         const istanbulWeights = weights.map(w => w + (Math.random() - 0.5) * 0.05);
@@ -197,8 +196,8 @@ export default function FederatedLearningPage() {
           return Number((sum / 4).toFixed(4));
         });
 
-        addLog(`[FedAvg] 4 Cihazın (Siz + 3 Akran Cihaz) ağırlıkları başarıyla ortalandı.`, P.green);
-        addLog(`[FedAvg] Güncellenmiş Global Ağırlık Vektörü: [${aggregatedWeights.join(', ')}]`, P.purple);
+        addLog(`[FedAvg Demo] 4 cihazlık örnek ağırlık seti matematiksel olarak ortalandı.`, P.green);
+        addLog(`[FedAvg Demo] Güncellenmiş ağırlık vektörü: [${aggregatedWeights.join(', ')}]`, P.purple);
         
         // Broadcast success to real local BroadcastChannel (cross tabs)
         if (channelRef.current) {
@@ -208,14 +207,17 @@ export default function FederatedLearningPage() {
             payload: { weights: aggregatedWeights }
           });
         }
-
       }, 1500);
 
       const t = setTimeout(() => {
         setTrainingState('done');
-        addLog('[LOCAL] Ortak ağırlıklar yerel modele uygulandı. Karar mekanizması güncellendi! 🚀', P.green);
+        addLog('[LOCAL] Demo ağırlıkları yerel karar mekanizmasına uygulandı.', P.green);
       }, 3500);
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(introTimer);
+        clearTimeout(exchangeTimer);
+        clearTimeout(t);
+      };
     }
   }, [trainingState]);
 
@@ -238,9 +240,9 @@ export default function FederatedLearningPage() {
         <PageHeader
           icon={<ShieldCheck size={24} />}
           color={P.green}
-          title="Merkeziyetsiz P2P Federated Learning"
-          subtitle="Cihaz içi TensorFlow.js ile eğitilen modeller, WebRTC veri kanalları (P2P) ile merkezi sunucu olmadan senkronize olur."
-          badge="Gerçek WebRTC FedAvg Koordinasyonu"
+          title="Merkeziyetsiz Federated Learning Demo"
+          subtitle="Cihaz içi TensorFlow.js eğitimi gerçektir; uzak peer/WebRTC ağı bu hackathon demosunda kontrollü simülasyondur."
+          badge="TF.js Gerçek - P2P Demo"
         >
           <button 
             onClick={startTraining}

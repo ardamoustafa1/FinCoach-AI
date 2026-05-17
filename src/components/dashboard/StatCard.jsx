@@ -18,13 +18,6 @@ const P = {
   red: '#EF4444',
 };
 
-const fmt = (v) =>
-  new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
-    maximumFractionDigits: 0,
-  }).format(v);
-
 export default function StatCard({ label, value, icon: Icon, color, change, isCurrency = true, delay = 0 }) {
   const [visible, setVisible] = useState(false);
 

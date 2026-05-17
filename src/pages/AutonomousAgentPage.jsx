@@ -10,15 +10,15 @@ const P = {
 };
 
 const LOG_MESSAGES = [
-  "[SYS] Initializing Self-Driving Money Engine...",
-  "[API] Fetching Open Banking Balances (Akbank, Garanti)...",
+  "[SYS] Initializing Self-Driving Money Demo Engine...",
+  "[DEMO_API] Demo Open Banking balances loaded (Akbank, Garanti)...",
   "[SCAN] Analyzing Vadesiz (Idle) Accounts... 20,000 TL detected.",
   "[SCAN] Analyzing Credit Card Debt... 15,000 TL debt detected at %5.5 APR.",
   "[AI] Asymmetry detected: Negative spread of -%5.5. Capital destruction imminent.",
-  "[PLAN] Withdrawing 15,000 TL from Vadesiz...",
-  "[PLAN] Executing EFT to Credit Card 44** **** **** 1982...",
-  "[PLAN] Routing remaining 5,000 TL to Overnight Repo Protocol (Yield: %3.1)...",
-  "[EXEC] Waiting for user authorization or auto-approve flag..."
+  "[PLAN_DEMO] Withdrawing 15,000 TL from Vadesiz would be recommended...",
+  "[PLAN_DEMO] EFT to Credit Card 44** **** **** 1982 simulated...",
+  "[PLAN_DEMO] Remaining 5,000 TL overnight repo routing simulated...",
+  "[EXEC_DEMO] Waiting for user authorization in demo flow..."
 ];
 
 export default function AutonomousAgentPage() {
@@ -84,9 +84,9 @@ export default function AutonomousAgentPage() {
         <PageHeader
           icon={<Cpu size={24} />}
           color="#3B82F6"
-          title="Self-Driving Money (Otonom Ajan)"
-          subtitle="Paranızı kendi kendine yöneten yapay zeka. Enflasyon ve faiz asimetrilerini anında kapatır."
-          badge="BETA - Kurumsal"
+          title="Self-Driving Money Demo"
+          subtitle="Boşta nakit ve pahalı borç asimetrisini gösteren güvenli simülasyon; gerçek EFT, repo veya banka işlemi yapmaz."
+          badge="Demo Ajan"
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, flexWrap: 'wrap' }}>
@@ -95,7 +95,7 @@ export default function AutonomousAgentPage() {
           <div className="animate-enter" style={{ background: '#050714', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 400 }}>
             <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px 20px', borderBottom: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <Terminal size={16} color={P.blue} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: P.blue, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Agentic Execution Log</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: P.blue, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Demo Execution Log</span>
             </div>
             
             <div className="matrix-bg" style={{ flex: 1, padding: 24, position: 'relative', overflowY: 'auto' }}>
@@ -137,13 +137,13 @@ export default function AutonomousAgentPage() {
                       disabled={step === 2}
                       style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #3B82F6, #7C3AED)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: step === 2 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}
                     >
-                      {step === 2 ? <><RefreshCw size={18} className="spin" /> Otonom Arbitraj Başlatıldı</> : <><Zap size={18} /> Otonom Arbitrajı Başlat (Borcu Kapat)</>}
+                      {step === 2 ? <><RefreshCw size={18} className="spin" /> Demo Arbitraj Başlatıldı</> : <><Zap size={18} /> Demo Arbitrajı Başlat</>}
                     </button>
                   </>
                 ) : (
                   <>
                     <p style={{ fontSize: 14, color: P.green, lineHeight: 1.6, marginBottom: 24, fontWeight: 600 }}>
-                      ✅ Otonom ajan boşta duran paranızı kullanarak kredi kartı borcunuzu saniyeler içinde kapattı. Kalan 5.000 TL, gecelik repoya aktarıldı.
+                      Demo ajan boşta duran nakdin kredi kartı borcuna yönlendirilmesi halinde aylık zararın nasıl azalacağını simüle etti. Gerçek para hareketi yapılmadı.
                     </p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.1)`, padding: 16, borderRadius: 16 }}>

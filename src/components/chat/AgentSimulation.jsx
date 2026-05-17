@@ -15,7 +15,7 @@ export default function AgentSimulation({ provider }) {
     <div style={{ marginTop: 12, background: '#0D0F1E', borderRadius: 16, border: '1px solid rgba(124,58,237,0.3)', padding: 16, overflow: 'hidden', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
         <Bot size={18} color="#A78BFA" />
-        <span style={{ fontSize: 13, fontWeight: 800, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Otonom Ajan Demo Akışı</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demo Ajan Akışı</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

@@ -20,6 +20,27 @@ function openKeyringDB() {
   });
 }
 
+async function storeMasterKey(db, key) {
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.put(key, KEY_ALIAS);
+    request.onsuccess = () => resolve();
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function generateMasterKey() {
+  return window.crypto.subtle.generateKey(
+    {
+      name: 'AES-GCM',
+      length: 256
+    },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
 // Generate or retrieve the device-bound AES-GCM master key from IndexedDB
 async function getMasterKey() {
   const db = await openKeyringDB();
@@ -33,29 +54,16 @@ async function getMasterKey() {
     request.onerror = () => resolve(null);
   });
 
-  if (existingKey) {
+  if (existingKey && existingKey.extractable !== true) {
     return existingKey;
   }
 
   // 2. Generate a new cryptographically secure 256-bit AES key
-  console.log('[WebCrypto] Device-bound AES-GCM master key not found. Generating a new one...');
-  const newKey = await window.crypto.subtle.generateKey(
-    {
-      name: 'AES-GCM',
-      length: 256
-    },
-    true, // extractable (can be saved)
-    ['encrypt', 'decrypt']
-  );
+  console.log('[WebCrypto] Non-extractable AES-GCM master key not found. Generating a new one...');
+  const newKey = await generateMasterKey();
 
   // 3. Persist the key securely in IndexedDB keyring
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.put(newKey, KEY_ALIAS);
-    request.onsuccess = () => resolve();
-    request.onerror = (e) => reject(e.target.error);
-  });
+  await storeMasterKey(db, newKey);
 
   return newKey;
 }

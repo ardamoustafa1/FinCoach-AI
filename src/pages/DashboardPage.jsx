@@ -98,7 +98,7 @@ export default function DashboardPage() {
     setBankingSyncing(true);
     toast.info('Bankanızla güvenli PSD2 bağlantısı kuruluyor...');
     setTimeout(() => {
-      toast.success('Son 30 günlük Akbank ve Garanti hesap hareketleriniz FinCoach AI ile otonom olarak senkronize edildi! 🎉');
+      toast.success('Son 30 günlük Akbank ve Garanti demo hesap hareketleri FinCoach AI ile senkronize edildi.');
       setBankingSyncing(false);
     }, 3500);
   };
@@ -279,7 +279,7 @@ export default function DashboardPage() {
 
         {/* ── KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-          {/* Otonom Küsurat Yatırımı — gerçek hesaplama */}
+          {/* Otomatik küsurat hesabı — gerçek hesaplama */}
           <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -287,8 +287,8 @@ export default function DashboardPage() {
                 <Bitcoin size={24} color={P.amber} />
               </div>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Otonom Küsurat Yatırımı</h3>
-                <p style={{ fontSize: 12, color: P.text3 }}>Smart Contract Aktif (BETA)</p>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1 }}>Otomatik Küsurat Birikimi</h3>
+                <p style={{ fontSize: 12, color: P.text3 }}>Demo hesaplama aktif</p>
               </div>
             </div>
             {(() => {

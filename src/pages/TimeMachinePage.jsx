@@ -145,8 +145,8 @@ export default function TimeMachinePage() {
                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                    <TrendingUp size={32} color={P.green} />
                  </div>
-                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren B: Otonom Fon</h3>
-                 <p style={{ fontSize: 14, color: P.text3, marginBottom: 32, lineHeight: 1.6 }}>Harcamayı ertelediniz. Para otonom olarak <strong>S&P 500 & Teknoloji Fonlarına</strong> yatırıldı.</p>
+                 <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren B: Yatırım Senaryosu</h3>
+                 <p style={{ fontSize: 14, color: P.text3, marginBottom: 32, lineHeight: 1.6 }}>Harcamayı ertelediğiniz varsayılır; aynı tutarın <strong>S&P 500 & Teknoloji Fonları</strong> senaryosundaki projeksiyonu gösterilir.</p>
                  <div style={{ marginTop: 'auto' }}>
                    <p style={{ fontSize: 12, fontWeight: 800, color: P.green, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>10 YIL SONRAKİ DEĞER</p>
                    <h2 className="neon-glow" style={{ fontSize: 48, fontWeight: 900, color: '#fff', margin: 0 }}>{fmt(investedValue)}</h2>

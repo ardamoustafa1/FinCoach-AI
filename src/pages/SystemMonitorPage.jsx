@@ -232,7 +232,7 @@ export default function SystemMonitorPage() {
                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing (Simülasyon)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Markowitz optimizasyonu ve AI çıkarımları merkezi sunucularda değil, size en yakın Cloudflare Worker (Edge Node) üzerinde hesaplanır. (Demo amaçlı yerel çalışmaktadır)
+                 Markowitz optimizasyonu ve AI çıkarımları için hedef mimari edge node'lardır; bu ekranda hesaplama yerel demo akışıyla gösterilir.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -250,7 +250,7 @@ export default function SystemMonitorPage() {
                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline (Simüle)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Açık Bankacılık, Snowflake ve Kafka akışı burada UI mock olarak gösterilir; canlı demo gerçek Supabase işlem kayıtlarına dayanır.
+                 Açık Bankacılık, veri ambarı ve event streaming akışı burada UI mock olarak gösterilir; canlı demo gerçek Supabase işlem kayıtlarına dayanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

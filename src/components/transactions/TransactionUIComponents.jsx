@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, X, Pencil, Trash2, Check, ArrowUpRight, ArrowDownRight, Calendar } from 'lucide-react';
 import { TUM_KATEGORILER, fmt } from '../../utils/categories';
 

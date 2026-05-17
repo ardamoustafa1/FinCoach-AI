@@ -9,6 +9,7 @@ import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { computeEmotionMetrics, buildCheckinPrompt, buildWeeklyReportPrompt, getRiskLevel } from '../utils/emotionCoach';
 import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
+import { calculateCosineSimilarity } from '../utils/semanticSearch';
 import ChatChart from '../components/chat/ChatChart';
 import AgentSimulation from '../components/chat/AgentSimulation';
 import EmotionCheckinModal from '../components/chat/EmotionCheckinModal';
@@ -44,7 +45,7 @@ const getInitialMessages = () => {
 const QUICK_QUESTIONS = [
   "Beni özetle! (Finansal Sarmal Kartımı Çıkar 🃏)",
   "Finansal İkizim kim? Başkalarına göre nasılım? 👥",
-  "Netflix'i iptal et (Otonom Ajan) 🤖",
+  "Netflix iptali için demo ajan akışını göster 🤖",
   "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
 ];
@@ -135,60 +136,6 @@ function extractTaggedPayload(text, tag) {
 
   return { text, payload: null };
 }
-
-function tokenize(text) {
-  return String(text || '').toLowerCase()
-    .replace(/[^\w\sğüşöçıİĞÜŞÖÇ]/g, ' ')
-    .split(/\s+/)
-    .filter(t => t.length > 1);
-}
-
-export function calculateCosineSimilarity(query, txs) {
-  if (!txs || txs.length === 0) return [];
-  
-  const vocab = new Set();
-  const queryTokens = tokenize(query);
-  queryTokens.forEach(t => vocab.add(t));
-  
-  const txTokensList = txs.map(tx => {
-    const tokens = tokenize(`${tx.aciklama || ''} ${tx.magaza || ''} ${tx.kategori || ''}`);
-    tokens.forEach(t => vocab.add(t));
-    return tokens;
-  });
-  
-  const vocabArray = Array.from(vocab);
-  const queryVector = vocabArray.map(word => queryTokens.includes(word) ? 1 : 0);
-  
-  const results = txs.map((tx, idx) => {
-    const tokens = txTokensList[idx];
-    const txVector = vocabArray.map(word => tokens.includes(word) ? 1 : 0);
-    
-    let dotProduct = 0;
-    let queryNorm = 0;
-    let txNorm = 0;
-    
-    for (let i = 0; i < vocabArray.length; i++) {
-      dotProduct += queryVector[i] * txVector[i];
-      queryNorm += queryVector[i] * queryVector[i];
-      txNorm += txVector[i] * txVector[i];
-    }
-    
-    const similarity = (queryNorm > 0 && txNorm > 0)
-      ? dotProduct / (Math.sqrt(queryNorm) * Math.sqrt(txNorm))
-      : 0;
-      
-    return {
-      tx,
-      similarity: Number(similarity.toFixed(4))
-    };
-  });
-  
-  return results
-    .filter(r => r.similarity > 0.05)
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 3);
-}
-
 
 export default function ChatPage() {
   const location = useLocation();
@@ -388,7 +335,7 @@ export default function ChatPage() {
                 AI Finansal Koçun
                 <Sparkles size={20} color={P.amber} />
               </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Sana özel analizler ve otonom görevler</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Sana özel analizler ve güvenli demo görev akışları</p>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
               {/* Duygu Koçu Butonları */}
@@ -614,7 +561,7 @@ export default function ChatPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                    <Database size={14} color={P.green} />
-                   <span style={{ fontSize: 11, fontWeight: 900, color: P.green, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG & Pinecone Vektör Arama</span>
+                   <span style={{ fontSize: 11, fontWeight: 900, color: P.green, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Yerel RAG Demo Araması</span>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -629,7 +576,7 @@ export default function ChatPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
                       <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>
-                        Pinecone Vektör İndeksi semantik eşleşmeler:
+                        Yerel cosine similarity eşleşmeleri:
                       </span>
                     </div>
                     {ragStep >= 2 && (

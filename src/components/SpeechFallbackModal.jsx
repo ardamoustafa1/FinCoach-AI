@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { X, Mic, Check, ArrowRight, Sparkles } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import { authFetch } from '../utils/api';
@@ -10,16 +10,9 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
   const [suggestions, setSuggestions] = useState([]);
   const toast = useToast();
 
-  useEffect(() => {
-    if (isOpen) {
-      setTranscript(initialTranscript || '');
-      generateSuggestions(initialTranscript || '');
-    }
-  }, [isOpen, initialTranscript]);
-
-  const generateSuggestions = (text = '') => {
+  const generateSuggestions = useCallback((text = '') => {
     const lower = text.toLowerCase();
-    let derived = [];
+    let derived;
 
     if (lower.includes('market') || lower.includes('migros') || lower.includes('şok') || lower.includes('bim') || lower.includes('gıda') || lower.includes('alışveriş')) {
       derived = [
@@ -54,7 +47,16 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
     }
 
     setSuggestions(derived);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const syncTimer = setTimeout(() => {
+      setTranscript(initialTranscript || '');
+      generateSuggestions(initialTranscript || '');
+    }, 0);
+    return () => clearTimeout(syncTimer);
+  }, [isOpen, initialTranscript, generateSuggestions]);
 
   const handleAnalyze = async (textToAnalyze) => {
     if (!textToAnalyze.trim()) {

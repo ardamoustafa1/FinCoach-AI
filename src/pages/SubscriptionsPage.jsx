@@ -80,11 +80,11 @@ export default function SubscriptionsPage() {
     const sub = subs.find(s => s.id === cancelingId);
     
     const steps = [
-      { delay: 1000, step: 2, log: `[Puppeteer] Headless tarayıcı başlatılıyor...` },
-      { delay: 2500, step: 3, log: `[Navigation] ${sub.name.toLowerCase()}.com adresine gidiliyor ve oturum açılıyor...` },
-      { delay: 4500, step: 4, log: `[Vision AI] DOM analiz edildi. 'Hesap Ayarları' > 'Aboneliği İptal Et' butonu bulundu.` },
-      { delay: 6500, step: 5, log: `[Action] İptal onayı verildi. Karanlık kalıplar (dark patterns) aşıldı.` },
-      { delay: 8500, step: 6, log: `[Success] ${sub.name} aboneliği başarıyla iptal edildi! 🎉` },
+      { delay: 1000, step: 2, log: `[DEMO] Headless tarayıcı adımı simüle ediliyor...` },
+      { delay: 2500, step: 3, log: `[DEMO] ${sub.name.toLowerCase()}.com navigasyonu ve oturum adımı simüle ediliyor...` },
+      { delay: 4500, step: 4, log: `[DEMO] DOM analizi ve iptal butonu bulma adımı simüle edildi.` },
+      { delay: 6500, step: 5, log: `[DEMO] İptal onayı kullanıcıdan beklenirmiş gibi gösterildi.` },
+      { delay: 8500, step: 6, log: `[DEMO] ${sub.name} aboneliği için iptal akışı tamamlandı. Gerçek sağlayıcı işlemi yapılmadı.` },
     ];
 
     const timeouts = steps.map(s => setTimeout(() => {
@@ -96,7 +96,7 @@ export default function SubscriptionsPage() {
           setCancelingId(null);
           setAgentStep(0);
           setAgentLogs([]);
-          toast.success(`${sub.name} aboneliği otonom olarak iptal edildi!`);
+          toast.success(`${sub.name} için demo iptal akışı tamamlandı.`);
         }, 3000);
       }
     }, s.delay));
@@ -123,9 +123,9 @@ export default function SubscriptionsPage() {
         <PageHeader
           icon={<ShieldAlert size={24} />}
           color="#EF4444"
-          title="Abonelik Taksıpçisi"
-          subtitle="Unuttuğunuz abonelikleri tespit edin, yapay zeka ajanımız sizin yerinize iptal etsin."
-          badge="Agentic AI"
+          title="Abonelik Takipçisi"
+          subtitle="Unuttuğunuz abonelikleri tespit edin; iptal sürecini güvenli demo ajan akışıyla prova edin."
+          badge="Demo Agent"
         />
 
         {/* ── SUBSCRIPTIONS LIST ── */}
@@ -192,7 +192,7 @@ export default function SubscriptionsPage() {
                     onMouseLeave={e => { if(!cancelingId) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; } }}
                   >
                     {isCanceling ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Bot size={18} />}
-                    {isCanceling ? 'Agent Devrede...' : 'Otonom İptal Et'}
+                    {isCanceling ? 'Demo Agent Devrede...' : 'Demo İptal Akışı'}
                   </button>
                 )}
               </div>
@@ -222,8 +222,8 @@ export default function SubscriptionsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Bot size={24} color="#c4b5fd" className={agentStep < 6 ? "animate-pulse" : ""} />
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '0.05em' }}>Agent Terminal</h3>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Otonom tarayıcı kontrolü sağlanıyor...</p>
+                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '0.05em' }}>Demo Agent Terminal</h3>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Tarayıcı kontrolü ve sağlayıcı işlemleri simüle ediliyor.</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>

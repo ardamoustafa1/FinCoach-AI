@@ -27,8 +27,6 @@ export default function OfflineBanner() {
       };
       checkQueue();
       interval = setInterval(checkQueue, 1500);
-    } else {
-      setQueueCount(0);
     }
     return () => { if (interval) clearInterval(interval); };
   }, [isOffline]);

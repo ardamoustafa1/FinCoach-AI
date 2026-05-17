@@ -39,7 +39,7 @@ export default function FinancialICUPage() {
       // Try loading existing trained model from IndexedDB
       model = await tf.loadLayersModel('indexeddb://icu-model');
       predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
-    } catch (e) {
+    } catch {
       // Model not trained yet, build and compile a new sequential network
       model = tf.sequential();
       model.add(tf.layers.dense({units: 1, inputShape: [1]}));
@@ -199,7 +199,7 @@ export default function FinancialICUPage() {
                 <div style={{ textAlign: 'center' }}>
                   <Radio size={48} color={P.red} className="spin" style={{ marginBottom: 16 }} />
                   <h2 style={{ fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Protokoller Devreye Giriyor...</h2>
-                  <p className="distress-text" style={{ margin: 0 }}>API çağrıları bankaya iletiliyor.</p>
+                  <p className="distress-text" style={{ margin: 0 }}>Banka API çağrısı demo olarak simüle ediliyor.</p>
                 </div>
               )}
 
@@ -210,7 +210,7 @@ export default function FinancialICUPage() {
                     <h2 style={{ fontSize: 22, fontWeight: 900, color: P.green, margin: 0 }}>MÜŞTERİ KURTARILDI</h2>
                   </div>
                   <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6 }}>
-                    FinCoach Otonom Ajanı banka sistemleriyle konuşarak krizi patlamadan önce önledi.
+                    FinCoach demo ajanı, banka entegrasyonu olmadan kriz önleme akışını simüle etti.
                   </p>
                 </>
               )}
