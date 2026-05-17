@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import compression from 'compression';
 import dns from 'node:dns/promises';
 import net from 'node:net';
 import path from 'node:path';
@@ -29,6 +30,17 @@ dotenv.config({ path: path.resolve(__dirname, '.env'), override: true });
 Object.assign(process.env, runtimeEnv);
 
 const app = express();
+
+// High-Performance Brotli / Gzip Compression Middleware
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  }
+}));
+
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST;
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -775,6 +787,24 @@ if (process.env.WHATSAPP_ENABLED === 'false') {
 
   whatsappClient.initialize();
 }
+
+// Standalone Mode: Serve React frontend static files with high-performance Brotli/Gzip caching
+const distPath = path.resolve(__dirname, '..', 'dist');
+app.use(express.static(distPath, {
+  maxAge: '1y',
+  etag: true,
+  lastModified: true
+}));
+
+// Single Page App Router fallback
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/ws')) {
+    return next();
+  }
+  res.sendFile(path.resolve(distPath, 'index.html'), (err) => {
+    if (err) next();
+  });
+});
 
 app.listen(PORT, HOST || undefined, () => {
   console.log(`[FinCoach AI Backend] Gemini API Server running on ${HOST || '0.0.0.0'}:${PORT}`);
