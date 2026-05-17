@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network, Cpu
 } from 'lucide-react';
 import useStore from '../store/useStore';
 
@@ -16,10 +16,10 @@ const navItems = [
   { to: '/real-estate', label: 'Ev & Kredi AI', icon: Home },
   { to: '/anomaly', label: 'Anomali & Fraud AI', icon: Lock },
   { to: '/shop-sim', label: 'Harcama Simülatörü', icon: Target },
-  { to: '/graph-analysis', label: 'Market Basket Graph', icon: Network },
   { to: '/system-monitor', label: 'Sistem Mimarisi', icon: Server },
   { to: '/federated', label: 'Federated AI', icon: ShieldCheck },
   { to: '/escrow', label: 'Web3 Escrow (Kilit)', icon: Lock },
+  { to: '/autonomous-agent', label: 'Self-Driving Money', icon: Cpu },
   { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
   { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
