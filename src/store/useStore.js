@@ -45,57 +45,80 @@ const useStore = create((set, get) => ({
 
   // Transactions
   addTransaction: async (transaction) => {
-    // 1. Optimistic Update (Hızlı UI)
+    // 1. Optimistic Update
     const newTx = { ...transaction };
     if (!newTx.id) newTx.id = crypto.randomUUID();
     if (!newTx.createdAt) newTx.createdAt = new Date().toISOString();
 
+    const previousTransactions = get().transactions;
     set((state) => ({ transactions: [newTx, ...state.transactions] }));
 
-    // 2. Supabase Sync
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const payload = {
-        user_id: session.user.id,
-        aciklama: newTx.aciklama,
-        tutar: Number(newTx.tutar),
-        tarih: newTx.tarih || new Date().toISOString().split('T')[0],
-        kategori: newTx.kategori,
-        magaza: newTx.magaza,
-        tur: newTx.tur || 'gider'
-      };
-      
-      const { data } = await supabase.from('transactions').insert([payload]).select().single();
-      if (data) {
-        set((state) => ({
-          transactions: state.transactions.map(t => t.id === newTx.id ? { ...t, id: data.id } : t)
-        }));
+    try {
+      // 2. Supabase Sync
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const payload = {
+          user_id: session.user.id,
+          aciklama: newTx.aciklama,
+          tutar: Number(newTx.tutar),
+          tarih: newTx.tarih || new Date().toISOString().split('T')[0],
+          kategori: newTx.kategori,
+          magaza: newTx.magaza,
+          tur: newTx.tur || 'gider'
+        };
+        
+        const { data, error } = await supabase.from('transactions').insert([payload]).select().single();
+        if (error) throw error;
+        
+        if (data) {
+          set((state) => ({
+            transactions: state.transactions.map(t => t.id === newTx.id ? { ...t, id: data.id } : t)
+          }));
+        }
       }
+      
+      if (newTx.magaza) {
+        get().saveCategoryRule(newTx.magaza, newTx.kategori);
+      }
+      return newTx;
+    } catch (err) {
+      set({ transactions: previousTransactions }); // Rollback
+      throw new Error('İşlem kaydedilemedi: ' + err.message, { cause: err });
     }
-    
-    if (newTx.magaza) {
-      get().saveCategoryRule(newTx.magaza, newTx.kategori);
-    }
-    return newTx;
   },
 
   updateTransaction: async (id, transaction) => {
+    const previousTransactions = get().transactions;
     set((state) => ({
       transactions: state.transactions.map(t => t.id === id ? { ...t, ...transaction } : t)
     }));
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const payload = { ...transaction };
-      await supabase.from('transactions').update(payload).eq('id', id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const payload = { ...transaction };
+        const { error } = await supabase.from('transactions').update(payload).eq('id', id);
+        if (error) throw error;
+      }
+    } catch (err) {
+      set({ transactions: previousTransactions });
+      throw new Error('İşlem güncellenemedi: ' + err.message, { cause: err });
     }
   },
 
   removeTransaction: async (id) => {
+    const previousTransactions = get().transactions;
     set((state) => ({ transactions: state.transactions.filter(t => t.id !== id) }));
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      await supabase.from('transactions').delete().eq('id', id);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { error } = await supabase.from('transactions').delete().eq('id', id);
+        if (error) throw error;
+      }
+    } catch (err) {
+      set({ transactions: previousTransactions });
+      throw new Error('İşlem silinemedi: ' + err.message, { cause: err });
     }
   },
 

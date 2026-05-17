@@ -210,10 +210,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.05), transparent)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(16,185,129,0.2)', padding: 8, borderRadius: 12 }}><ShieldCheck size={20} color={P.green} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS (Simüle)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Uygulama genelinde AES-256 (E2EE) şifreleme ve veritabanı katmanında Row-Level Security aktiftir. Kurucu CTO dahi kullanıcı verilerine erişemez.
+                 Uygulama genelinde AES-256 (E2EE) şifreleme ve veritabanı katmanında Row-Level Security aktiftir. Kurucu CTO dahi kullanıcı verilerine erişemez. (Sadece UI Simülasyonu)
                </p>
                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg2, padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
@@ -229,10 +229,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(59,130,246,0.2)', padding: 8, borderRadius: 12 }}><Globe size={20} color={P.blue} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing (Sınır Bilişim)</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing (Simülasyon)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Markowitz optimizasyonu ve AI çıkarımları merkezi sunucularda değil, size en yakın Cloudflare Worker (Edge Node) üzerinde hesaplanır.
+                 Markowitz optimizasyonu ve AI çıkarımları merkezi sunucularda değil, size en yakın Cloudflare Worker (Edge Node) üzerinde hesaplanır. (Demo amaçlı yerel çalışmaktadır)
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -247,10 +247,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.05), transparent)', border: `1px solid rgba(124,58,237,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(124,58,237,0.2)', padding: 8, borderRadius: 12 }}><Database size={20} color={P.purple} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline (Simüle)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Milyonlarca ham işlem verisi Snowflake Veri Gölü'ne dökülür ve <strong>dbt (data build tool)</strong> ile temizlenerek (ETL) yapay zeka modellerimizin eğitim setine (Training Set) dönüştürülür.
+                 Açık Bankacılık verileri ham olarak Snowflake Data Lake'e akar, Apache Kafka ile stream işlenerek modellere sunulur. (UI Mock)
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

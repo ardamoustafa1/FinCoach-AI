@@ -589,17 +589,21 @@ export default function TransactionsPage() {
     recognition.start();
   };
 
-    const forceKaydet = async (form) => {
+  const forceKaydet = async (form) => {
     const yeniIslemMi = !duzenlenen;
     let kaydedilen;
-    if (yeniIslemMi) {
-      kaydedilen = await addTransaction({ ...form });
-    } else {
-      await updateTransaction(duzenlenen.id, { ...form });
-      kaydedilen = { ...duzenlenen, ...form };
+    try {
+      if (yeniIslemMi) {
+        kaydedilen = await addTransaction({ ...form });
+      } else {
+        await updateTransaction(duzenlenen.id, { ...form });
+        kaydedilen = { ...duzenlenen, ...form };
+      }
+      if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
+      setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
+    } catch (err) {
+      toast.error(err.message);
     }
-    if (yeniIslemMi) { const u = detectUnusualSpending(kaydedilen, ham); if (u) setAlisilmadik(u); }
-    setModalAcik(false); setDuzenlenen(null); setTaslakIslem(null);
   };
 
   const handleKaydet = async (form) => {
@@ -623,7 +627,15 @@ export default function TransactionsPage() {
   };
 
   const handleAlisilmadikSecim = (d) => { if (alisilmadik) saveUnusualSpendingDecision(alisilmadik, d); setAlisilmadik(null); };
-  const handleSil = async () => { if (!silinecek) return; await removeTransaction(silinecek.id); setSilinecek(null); };
+  const handleSil = async () => { 
+    if (!silinecek) return; 
+    try {
+      await removeTransaction(silinecek.id); 
+      setSilinecek(null); 
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
   const handleDuzenle = (tx) => { setDuzenlenen(tx); setModalAcik(true); };
   const handleCsvImport = async (islemler) => { 
     const keyFor = (tx) => tx.duplicateKey || [

@@ -97,7 +97,7 @@ test('saves a text transaction and replies only after store success', async () =
     now: () => new Date('2026-05-11T10:00:00Z'),
   });
 
-  const msg = createFakeMessage({ body: 'Migros 125 TL' });
+  const msg = createFakeMessage({ body: 'Fincoach Migros 125 TL' });
   const result = await handler(msg);
 
   assert.equal(result.status, 'saved');
@@ -119,7 +119,7 @@ test('falls back to conversation when text is not a transaction', async () => {
   };
   const handler = createWhatsAppMessageHandler({ model, transactionStore: store });
 
-  const msg = createFakeMessage({ body: 'Selam, nasılsın?' });
+  const msg = createFakeMessage({ body: 'Fincoach Selam, nasılsın?' });
   const result = await handler(msg);
 
   assert.equal(result.status, 'chat_replied');
@@ -138,6 +138,7 @@ test('handles receipt media by OCR parsing and saving', async () => {
   const handler = createWhatsAppMessageHandler({ model, transactionStore: store });
   const msg = createFakeMessage({
     hasMedia: true,
+    caption: 'fincoach',
     async downloadMedia() {
       return { mimetype: 'image/jpeg', data: 'base64-data' };
     },
@@ -165,7 +166,7 @@ test('does not claim saved when WhatsApp phone is not linked to a profile', asyn
     now: () => new Date('2026-05-11T10:00:00Z'),
   });
 
-  const msg = createFakeMessage({ body: 'Kahveci 75 TL' });
+  const msg = createFakeMessage({ body: 'Fincoach Kahveci 75 TL' });
   const result = await handler(msg);
 
   assert.equal(result.status, 'unmatched_user');

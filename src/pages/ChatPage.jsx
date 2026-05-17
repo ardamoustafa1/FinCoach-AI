@@ -11,7 +11,7 @@ import useStore from '../store/useStore';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { computeEmotionMetrics, buildCheckinPrompt, buildWeeklyReportPrompt, getRiskLevel } from '../utils/emotionCoach';
-import { generateChatResponse } from '../utils/geminiApi';
+import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 
 /* ─── Palette ─── */
@@ -222,9 +222,11 @@ export default function ChatPage() {
     setMessages(newMessages);
     setIsLoading(true);
     setRagStep(0);
-
-    generateChatResponse(prompt).then(responseText => {
-      setMessages(prev => [...prev, { role: 'bot', content: responseText }]);
+    authFetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
+    }).then(r => r.json()).then(data => {
+      setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Şu an yanıt alınamadı.' }]);
     }).catch(() => {
       setMessages(prev => [...prev, { role: 'bot', content: 'Duygu koçuna bağlanılamadı.' }]);
     }).finally(() => { setIsLoading(false); setRagStep(0); });
@@ -244,8 +246,11 @@ export default function ChatPage() {
     const prompt = buildWeeklyReportPrompt(last7, metrics);
     setMessages(prev => [...prev, { role: 'user', content: '[Haftalık Duygu Raporu istendi]' }]);
     setIsLoading(true);
-    generateChatResponse(prompt).then(responseText => {
-      setMessages(prev => [...prev, { role: 'bot', content: responseText }]);
+    authFetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
+    }).then(r => r.json()).then(data => {
+      setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Rapor alınamadı.' }]);
     }).catch(() => {
       setMessages(prev => [...prev, { role: 'bot', content: 'Rapor oluşturulamadı.' }]);
     }).finally(() => { setIsLoading(false); });
@@ -262,15 +267,24 @@ export default function ChatPage() {
     setRagStep(0);
     try {
       const userContext = getUserContext();
-      const prompt = `Kullanıcı Bağlamı: ${JSON.stringify(userContext)}\n\nKullanıcı Mesajı: ${cleanInput}\nSen FinCoach yapay zekasısın.`;
+      const response = await authFetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ messages: newMessages, userContext }),
+      });
       
-      const responseText = await generateChatResponse(prompt);
+      const data = await response.json();
       
-      setMessages(prev => [...prev, { role: 'bot', content: responseText }]);
+      if (!response.ok) {
+        throw new Error(data.error || 'Sunucu hatası oluştu.');
+      }
+      
+      setMessages(prev => [...prev, { role: 'bot', content: data.response }]);
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'bot',
-        content: `Üzgünüm, yapay zeka servisine erişilemedi.\n\nDetay: ${error.message}`
+        content: error.message.includes('Hata:') || error.message.includes('⚠️') 
+          ? error.message 
+          : `Üzgünüm, şu an bağlantı kuramıyorum. Backend servisinin (${API_URL}) çalıştığından emin misin?\n\nDetay: ${error.message}`
       }]);
     } finally { setIsLoading(false); setRagStep(0); }
   }, [input, isLoading, messages]);
