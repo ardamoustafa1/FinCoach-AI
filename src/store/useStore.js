@@ -6,6 +6,8 @@ const useStore = create((set, get) => ({
   goals: [],
   budgetLimits: {},
   categoryRules: {},
+  // Duygu günlüğü (Emotion Coach)
+  emotionLogs: JSON.parse(localStorage.getItem('fincoach_emotion_logs') || '[]'),
   userProfile: {
     name: localStorage.getItem('fincoach_user_name') || '',
     phone: localStorage.getItem('fincoach_phone') || '',
@@ -196,8 +198,46 @@ const useStore = create((set, get) => ({
     if (!magaza) return '';
     const rules = get().categoryRules;
     return rules[magaza.trim().toLowerCase()] || '';
-  }
+  },
 
+  // ─── Emotion Coach ───────────────────────────────────────────────────────
+  addEmotionLog: (log) => {
+    const newLog = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString().split('T')[0],
+      dayOfWeek: ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'][new Date().getDay()],
+      createdAt: new Date().toISOString(),
+      cancelled: false,
+      regretScore: null,
+      regretDays: null,
+      regretNote: null,
+      ...log,
+    };
+    set((state) => {
+      // Son 90 günü tut (bellek yönetimi)
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 90);
+      const pruned = state.emotionLogs.filter(l => new Date(l.createdAt) >= cutoff);
+      const next = [newLog, ...pruned];
+      localStorage.setItem('fincoach_emotion_logs', JSON.stringify(next));
+      return { emotionLogs: next };
+    });
+    return newLog;
+  },
+
+  markEmotionRegret: (id, regretScore, regretNote = '') => {
+    set((state) => {
+      const now = new Date();
+      const next = state.emotionLogs.map(l => {
+        if (l.id !== id) return l;
+        const created = new Date(l.createdAt);
+        const regretDays = Math.round((now - created) / (1000 * 60 * 60 * 24));
+        return { ...l, regretScore, regretDays, regretNote };
+      });
+      localStorage.setItem('fincoach_emotion_logs', JSON.stringify(next));
+      return { emotionLogs: next };
+    });
+  },
 
 }));
 

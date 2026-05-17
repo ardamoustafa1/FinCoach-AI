@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, Zap, Share2, Maximize2, X, Search, Loader2, Database, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Zap, Share2, Maximize2, X, Search, Loader2, Database, CheckCircle2, HeartPulse, BarChart2 } from 'lucide-react';
 import { sanitize } from '../utils/security';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -10,6 +10,7 @@ import {
 import useStore from '../store/useStore';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
+import { computeEmotionMetrics, buildCheckinPrompt, buildWeeklyReportPrompt, getRiskLevel } from '../utils/emotionCoach';
 import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 
@@ -50,6 +51,92 @@ const QUICK_QUESTIONS = [
   "Şu ürünü alsam bütçemi sarsar mı? 🛍️ https://www.trendyol.com/apple/airpods-4-nesil",
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
 ];
+
+// ─── Duygu check-in formu ─────────────────────────────────────────────────────
+const VALENCE_OPTIONS = [
+  { value: 'pozitif',  label: '😊 Pozitif',  color: '#10B981' },
+  { value: 'sakin',   label: '😌 Sakin',    color: '#3B82F6' },
+  { value: 'negatif', label: '😟 Negatif',  color: '#F59E0B' },
+  { value: 'stresli', label: '😤 Stresli',  color: '#EF4444' },
+];
+const CATEGORIES_EC = ['Market', 'Yemek', 'Giyim', 'Eğlence', 'Ulaşım', 'Teknoloji', 'Sağlık', 'Diğer'];
+
+function EmotionCheckinModal({ onClose, onSubmit }) {
+  const [valence, setValence]   = useState('');
+  const [arousal, setArousal]   = useState(5);
+  const [amount, setAmount]     = useState('');
+  const [category, setCategory] = useState('');
+
+  const handleSubmit = () => {
+    if (!valence || !amount || !category) return;
+    onSubmit({ valence, arousal, amount: Number(amount), category, hour: new Date().getHours() });
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(5,7,20,0.92)', backdropFilter: 'blur(20px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 440, background: '#0d0d1a',
+        border: '1px solid rgba(124,58,237,0.35)', borderRadius: 24, padding: 32,
+        boxShadow: '0 0 60px rgba(124,58,237,0.2)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <HeartPulse size={20} color="#ec4899" /> Duygu Check-in
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Valence */}
+        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 10 }}>Şu an nasıl hissediyorsun?</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+          {VALENCE_OPTIONS.map(o => (
+            <button key={o.value} onClick={() => setValence(o.value)} style={{
+              padding: '10px', borderRadius: 12, border: `1px solid ${valence === o.value ? o.color : 'rgba(255,255,255,0.08)'}`,
+              background: valence === o.value ? `${o.color}20` : 'transparent',
+              color: valence === o.value ? o.color : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+            }}>{o.label}</button>
+          ))}
+        </div>
+
+        {/* Arousal */}
+        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Uyarılmışlık: {arousal}/10</label>
+        <input type="range" min={1} max={10} value={arousal} onChange={e => setArousal(Number(e.target.value))}
+          style={{ width: '100%', marginBottom: 20, accentColor: '#7c3aed' }} />
+
+        {/* Amount */}
+        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Harcama tutarı (₺)</label>
+        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Örn: 450"
+          style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 15, marginBottom: 20, boxSizing: 'border-box' }} />
+
+        {/* Category */}
+        <label style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Kategori</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+          {CATEGORIES_EC.map(c => (
+            <button key={c} onClick={() => setCategory(c)} style={{
+              padding: '6px 12px', borderRadius: 99, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+              border: `1px solid ${category === c ? '#7c3aed' : 'rgba(255,255,255,0.1)'}`,
+              background: category === c ? 'rgba(124,58,237,0.2)' : 'transparent',
+              color: category === c ? '#a78bfa' : '#64748b'
+            }}>{c}</button>
+          ))}
+        </div>
+
+        <button onClick={handleSubmit} disabled={!valence || !amount || !category} style={{
+          width: '100%', padding: '14px', borderRadius: 14,
+          background: (!valence || !amount || !category) ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #7c3aed, #ec4899)',
+          border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: (!valence || !amount || !category) ? 'not-allowed' : 'pointer',
+          boxShadow: (!valence || !amount || !category) ? 'none' : '0 8px 24px rgba(124,58,237,0.4)'
+        }}>Koçuma Sor</button>
+      </div>
+    </div>
+  );
+}
 
 function getUserContext() {
   try {
@@ -101,7 +188,9 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [ragStep, setRagStep] = useState(0);
   const [modalChart, setModalChart] = useState(null);
+  const [showEmotionCheckin, setShowEmotionCheckin] = useState(false);
   const messagesEndRef = useRef(null);
+  const { emotionLogs, addEmotionLog } = useStore();
 
   const initialMsgHandled = useRef(false);
 
@@ -119,6 +208,53 @@ export default function ChatPage() {
       if (error?.name !== 'AbortError') toast.error('Paylaşım hazırlanamadı.');
     }
   };
+
+  const handleEmotionCheckin = useCallback((log) => {
+    setShowEmotionCheckin(false);
+    const saved = addEmotionLog(log);
+    const last30 = emotionLogs.slice(0, 30);
+    const metrics = computeEmotionMetrics(last30);
+    const prompt = buildCheckinPrompt(saved, metrics, last30);
+    const riskLevel = getRiskLevel(log.arousal, log.valence);
+    const riskTag = riskLevel === 'high' ? '⚠️ Yüksek Risk' : riskLevel === 'medium' ? '⚡ Orta Risk' : '✅ Düşük Risk';
+    const userMsg = `[Duygu Check-in — ${riskTag}]\nDuygu: ${log.valence} | Arousal: ${log.arousal}/10 | ${log.amount}₺ ${log.category}`;
+    const newMessages = [...messages, { role: 'user', content: userMsg }];
+    setMessages(newMessages);
+    setIsLoading(true);
+    setRagStep(0);
+    authFetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
+    }).then(r => r.json()).then(data => {
+      setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Şu an yanıt alınamadı.' }]);
+    }).catch(() => {
+      setMessages(prev => [...prev, { role: 'bot', content: 'Duygu koçuna bağlanılamadı.' }]);
+    }).finally(() => { setIsLoading(false); setRagStep(0); });
+  }, [messages, emotionLogs, addEmotionLog]);
+
+  const handleWeeklyReport = useCallback(() => {
+    const last7 = emotionLogs.slice(0, 20).filter(l => {
+      const d = new Date(l.createdAt);
+      const week = new Date(); week.setDate(week.getDate() - 7);
+      return d >= week;
+    });
+    if (last7.length < 2) {
+      setMessages(prev => [...prev, { role: 'bot', content: 'Haftalık rapor için en az 2 duygu check-in\'i gerekiyor. Önce birkaç check-in yap.' }]);
+      return;
+    }
+    const metrics = computeEmotionMetrics(last7);
+    const prompt = buildWeeklyReportPrompt(last7, metrics);
+    setMessages(prev => [...prev, { role: 'user', content: '[Haftalık Duygu Raporu istendi]' }]);
+    setIsLoading(true);
+    authFetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
+    }).then(r => r.json()).then(data => {
+      setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Rapor alınamadı.' }]);
+    }).catch(() => {
+      setMessages(prev => [...prev, { role: 'bot', content: 'Rapor oluşturulamadı.' }]);
+    }).finally(() => { setIsLoading(false); });
+  }, [emotionLogs]);
 
   const handleSend = useCallback(async (text = input) => {
     const cleanInput = sanitize(text);
@@ -230,12 +366,51 @@ export default function ChatPage() {
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Sana özel analizler ve otonom görevler</p>
             </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
-              <Zap size={16} color="#c4b5fd" />
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 2.5 Flash</span>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Duygu Koçu Butonları */}
+              <button
+                onClick={() => setShowEmotionCheckin(true)}
+                title="Duygu Check-in"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+                  borderRadius: 12, border: '1px solid rgba(236,72,153,0.35)',
+                  background: 'rgba(236,72,153,0.08)', color: '#f9a8d4',
+                  fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(236,72,153,0.18)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(236,72,153,0.08)'; }}
+              >
+                <HeartPulse size={14} /> Check-in
+              </button>
+              <button
+                onClick={handleWeeklyReport}
+                title="Haftalık Duygu Raporu"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+                  borderRadius: 12, border: '1px solid rgba(124,58,237,0.35)',
+                  background: 'rgba(124,58,237,0.08)', color: '#c4b5fd',
+                  fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
+              >
+                <BarChart2 size={14} /> Haftalık Rapor
+              </button>
+              <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Zap size={16} color="#c4b5fd" />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 2.5 Flash</span>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* ── EMOTION CHECKIN MODAL ── */}
+        {showEmotionCheckin && (
+          <EmotionCheckinModal
+            onClose={() => setShowEmotionCheckin(false)}
+            onSubmit={handleEmotionCheckin}
+          />
+        )}
 
         {/* ── MESSAGES ── */}
         <div className="chat-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16, paddingRight: 4 }}>
