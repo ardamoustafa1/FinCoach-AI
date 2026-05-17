@@ -126,7 +126,7 @@ export function buildCheckinPrompt(log, metrics, recentLogs) {
     ? +(regretLogs.reduce((a, b) => a + b.regretScore, 0) / regretLogs.length).toFixed(1)
     : 7;
 
-  let scenarioInstruction = '';
+  let scenarioInstruction;
   if (risk === 'high') {
     scenarioInstruction = `SENARYO A (Yüksek Risk): Kullanıcıyı nazikçe uyar. Harcamayı ertelemesini ima et, ama suçlama.`;
   } else if (risk === 'medium') {

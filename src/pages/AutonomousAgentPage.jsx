@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Cpu, Zap, ArrowRight, ShieldCheck, Activity, Terminal, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Cpu, Zap, Activity, Terminal, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import PageHeader from '../components/PageHeader';
 

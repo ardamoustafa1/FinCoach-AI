@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock } from 'lucide-react';
+import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock, Terminal } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const P = {
@@ -149,7 +149,7 @@ export default function DeadMansSwitchPage() {
               {step === 0 && <span style={{ opacity: 0.5 }}>Standby. Listening to Chainlink Oracles...</span>}
               {step === 1 && (
                 <div style={{ color: P.red, fontWeight: 700, marginBottom: 16 }}>
-                  [FATAL] Oracle triggered. User inactive > 180 days.<br/>
+                  [FATAL] Oracle triggered. User inactive &gt; 180 days.<br/>
                   [FATAL] Hospital API status code: 410 (Gone).<br/>
                   [REQ] Awaiting contract execution confirmation...
                 </div>

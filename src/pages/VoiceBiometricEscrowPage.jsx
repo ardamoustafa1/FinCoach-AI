@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Mic, Fingerprint, Waves, ShieldCheck, Cpu, Code2, PlayCircle, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mic, Fingerprint, Waves, ShieldCheck, Cpu, Code2, CheckCircle2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const P = {
@@ -47,8 +47,11 @@ export default function VoiceBiometricEscrowPage() {
 
   useEffect(() => {
     if (step === 2) {
-      setLogs(prev => [...prev, "[NLP] Parsing intent: TRANSFER, AMOUNT: 500 USDC, TO: 'Ali', CONDITION: 'University Graduation'"]);
-      setTimeout(() => setStep(3), 2000);
+      const timer = setTimeout(() => {
+        setLogs(prev => [...prev, "[NLP] Parsing intent: TRANSFER, AMOUNT: 500 USDC, TO: 'Ali', CONDITION: 'University Graduation'"]);
+        setStep(3);
+      }, 2000);
+      return () => clearTimeout(timer);
     }
     else if (step === 3) {
       let l = 4;

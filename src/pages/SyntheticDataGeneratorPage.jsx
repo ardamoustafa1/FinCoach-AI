@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Database, Zap, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { Database, Zap, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const P = {
@@ -109,7 +109,7 @@ export default function SyntheticDataGeneratorPage() {
                 </button>
               ) : step === 1 ? (
                 <div style={{ width: '100%', padding: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 16, overflow: 'hidden' }}>
-                  <div style={{ width: \`\${progress}%\`, height: 48, background: P.blue, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, transition: 'width 0.3s' }}>
+                  <div style={{ width: `${progress}%`, height: 48, background: P.blue, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, transition: 'width 0.3s' }}>
                     {progress}%
                   </div>
                 </div>
