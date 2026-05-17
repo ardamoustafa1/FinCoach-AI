@@ -57,6 +57,14 @@ Ana dizinde (FinCoach-AI) yeni bir terminal açın ve bağımlılıkları kurun:
 \`\`\`bash
 npm install
 \`\`\`
+`.env` dosyanızda sadece public frontend değişkenlerini tutun:
+\`\`\`env
+VITE_SUPABASE_URL=https://proje-id.supabase.co
+VITE_SUPABASE_ANON_KEY=public_anon_key
+VITE_API_URL=http://localhost:3001
+\`\`\`
+Canlı deploy için `VITE_API_URL` değerini deploy edilmiş backend originine ayarlayın; Gemini ve Supabase service-role anahtarlarını frontend env dosyalarına koymayın.
+
 Arayüzü başlatın:
 \`\`\`bash
 npm run dev

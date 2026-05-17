@@ -98,7 +98,7 @@ export default function OpenBankingModal({ onComplete }) {
       }, 600); // Slow motion effect for AI
       return () => clearInterval(interval);
     }
-  }, [step]);
+  }, [step, activeData.length]);
 
   const handleApply = () => {
     const processedTx = activeData.map((raw, i) => {

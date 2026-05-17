@@ -1,9 +1,11 @@
 import { supabase } from './supabase';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
+export const API_URL = configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:3001' : '');
 
 export function apiUrl(path) {
-  return `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return API_URL ? `${API_URL}${normalizedPath}` : normalizedPath;
 }
 
 export async function authFetch(path, options = {}) {

@@ -3,16 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { Send, Bot, User, Sparkles, Zap, Share2, Maximize2, X, Search, Loader2, Database, CheckCircle2, HeartPulse, BarChart2 } from 'lucide-react';
 import { sanitize } from '../utils/security';
 import ReactMarkdown from 'react-markdown';
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend
-} from 'recharts';
 import useStore from '../store/useStore';
 import { aySkoru } from '../utils/healthScore';
 import { kisilikTipiBelirle } from '../utils/spendingPersonality';
 import { computeEmotionMetrics, buildCheckinPrompt, buildWeeklyReportPrompt, getRiskLevel } from '../utils/emotionCoach';
 import { API_URL, authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
+import ChatChart from '../components/chat/ChatChart';
+import AgentSimulation from '../components/chat/AgentSimulation';
 
 /* ─── Palette ─── */
 const P = {
@@ -32,8 +30,6 @@ const P = {
   text2: 'var(--text-secondary)',
   text3: 'var(--text-muted)',
 };
-
-const PIE_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#06B6D4'];
 
 const getInitialMessages = () => {
   const userName = useStore.getState().userProfile?.name || '';
@@ -617,21 +613,21 @@ export default function ChatPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                    <Database size={14} color={P.purple} />
-                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Engine Devrede</span>
+                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Demo Akışı</span>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {ragStep >= 1 ? <CheckCircle2 size={14} color={P.green} /> : <Loader2 size={14} color={P.text3} style={{ animation: 'spin 1s linear infinite' }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Soru vektörel uzaya (Embedding) dönüştürülüyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Soru için embedding adımı simüle ediliyor...</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 1 ? 1 : 0.4 }}>
                     {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Pinecone DB: Son 5 yılın işlemleri taranıyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Vektör arama simülasyonu: işlem bağlamı hazırlanıyor...</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 2 ? 1 : 0.4 }}>
                     {ragStep >= 3 ? <Loader2 size={14} color={P.amber} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 3 ? P.amber : P.text3, fontWeight: ragStep >= 3 ? 600 : 400 }}>Bağlam (Context) eklendi. LLM yanıtı üretiliyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 3 ? P.amber : P.text3, fontWeight: ragStep >= 3 ? 600 : 400 }}>Demo bağlamı eklendi. LLM yanıtı üretiliyor...</span>
                   </div>
                 </div>
               </div>
@@ -736,93 +732,5 @@ export default function ChatPage() {
         )}
       </div>
     </>
-  );
-}
-
-/* ─── Chart Component ─── */
-function ChatChart({ chartData }) {
-  if (!chartData || !chartData.data || chartData.data.length === 0) {
-    return <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13, paddingTop: 40 }}>Grafik verisi bulunamadı.</div>;
-  }
-  const { type, data } = chartData;
-  const pieData = type === 'pie' ? data.map(d => ({ name: d.label, value: d.value })) : data;
-  const tickStyle = { fill: '#64748B', fontSize: 11 };
-
-  switch (type) {
-    case 'bar':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="label" tick={tickStyle} tickLine={false} axisLine={false} />
-            <YAxis tick={tickStyle} tickLine={false} axisLine={false} tickFormatter={v => `₺${v}`} />
-            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
-            <Bar dataKey="value" fill="#7C3AED" radius={[6, 6, 0, 0]} maxBarSize={50} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    case 'line':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="label" tick={tickStyle} tickLine={false} axisLine={false} />
-            <YAxis tick={tickStyle} tickLine={false} axisLine={false} tickFormatter={v => `₺${v}`} />
-            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
-            <Line type="monotone" dataKey="value" stroke="#10B981" strokeWidth={2.5} dot={{ r: 4, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 6 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    case 'pie':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={pieData} cx="50%" cy="50%" innerRadius="45%" outerRadius="75%" paddingAngle={4} dataKey="value" stroke="none">
-              {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-            </Pie>
-            <RechartsTooltip contentStyle={{ background: '#1C2038', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9' }} formatter={v => [`₺${v}`, 'Tutar']} />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: '#94A3B8' }} />
-          </PieChart>
-        </ResponsiveContainer>
-      );
-    default:
-      return <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13 }}>Desteklenmeyen grafik tipi: {type}</div>;
-  }
-}
-
-/* ─── Agent Simulation Component ─── */
-function AgentSimulation({ provider }) {
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    let t1 = setTimeout(() => setStep(1), 1500); 
-    let t2 = setTimeout(() => setStep(2), 3500); 
-    let t3 = setTimeout(() => setStep(3), 5500); 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
-
-  return (
-    <div style={{ marginTop: 12, background: '#0D0F1E', borderRadius: 16, border: '1px solid rgba(124,58,237,0.3)', padding: 16, overflow: 'hidden', position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <Bot size={18} color="#A78BFA" />
-        <span style={{ fontSize: 13, fontWeight: 800, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Otonom Ajan Devrede</span>
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-           {step >= 1 ? <CheckCircle2 size={18} color="#10B981" /> : <Loader2 size={18} color="#64748B" style={{ animation: 'spin 1s linear infinite' }} />}
-           <span style={{ fontSize: 13, color: step >= 1 ? '#F1F5F9' : '#64748B', fontWeight: 600 }}>Headless tarayıcı başlatıldı ({provider})</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-           {step >= 2 ? <CheckCircle2 size={18} color="#10B981" /> : step === 1 ? <Loader2 size={18} color="#3B82F6" style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
-           <span style={{ fontSize: 13, color: step >= 2 ? '#F1F5F9' : step === 1 ? '#3B82F6' : '#64748B', fontWeight: 600 }}>Abonelik iptal formu otonom dolduruluyor...</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-           {step >= 3 ? <CheckCircle2 size={18} color="#10B981" /> : step === 2 ? <Loader2 size={18} color="#F59E0B" style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }} />}
-           <span style={{ fontSize: 13, color: step >= 3 ? '#10B981' : step === 2 ? '#F59E0B' : '#64748B', fontWeight: step >= 3 ? 800 : 600 }}>{step >= 3 ? 'Abonelik başarıyla iptal edildi!' : 'Onay bekleniyor...'}</span>
-        </div>
-      </div>
-      {step >= 3 && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at center, rgba(16,185,129,0.15) 0%, transparent 70%)', animation: 'ping 1.5s ease-out' }} />}
-    </div>
   );
 }

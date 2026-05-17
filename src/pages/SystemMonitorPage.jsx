@@ -45,7 +45,7 @@ export default function SystemMonitorPage() {
       
       // 2. Kafka Distributes
       setTimeout(() => {
-        addLog(`[${time}] [KAFKA] Olay (Event ${tx.id}) kuyruğa alındı ve asenkron yayınlandı.`);
+        addLog(`[${time}] [KAFKA_SIM] Olay (Event ${tx.id}) demo kuyruğuna alındı ve asenkron yayın simüle edildi.`);
         setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
         
         // 3. ML Nodes process in parallel
@@ -55,8 +55,8 @@ export default function SystemMonitorPage() {
           } else {
              addLog(`[${time}] [FRAUD_AI] İşlem temiz. (Güven Skoru: %${92 + Math.floor(Math.random()*7)})`, 'green');
           }
-          addLog(`[${time}] [CASHFLOW_AI] Prophet modeli 12 aylık projeksiyonu güncelledi.`, 'blue');
-          addLog(`[${time}] [RAG_DB] Pinecone vektör veritabanına embedding eklendi.`, 'purple');
+          addLog(`[${time}] [CASHFLOW_SIM] Prophet benzeri 12 aylık projeksiyon simüle edildi.`, 'blue');
+          addLog(`[${time}] [RAG_SIM] Pinecone benzeri vektör kayıt adımı simüle edildi.`, 'purple');
           
           setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
         }, 600);
@@ -83,8 +83,8 @@ export default function SystemMonitorPage() {
           icon={<Zap size={24} />}
           color={P.blue}
           title="Sistem Monitörü"
-          subtitle="Apache Kafka event-driven mimarisi ile tüm AI servislerinin canlı sistem topolojisi."
-          badge="Canlı"
+          subtitle="Kafka/Pinecone/Prophet entegrasyonlarının demo topolojisi; gerçek transaction eventleri bu ekranda simüle edilir."
+          badge="Simülasyon"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
             <Activity size={16} color={P.green} />
@@ -119,8 +119,8 @@ export default function SystemMonitorPage() {
                 <GitMerge size={40} color={P.blue} />
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Apache Kafka</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Event Broker (Asenkron)</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Kafka Demo</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Event Broker Simülasyonu</div>
               </div>
             </div>
 
@@ -164,8 +164,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.cashflow ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.cashflow ? P.green : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Cpu size={24} color={activeNodes.cashflow ? P.green : '#64748b'} className={activeNodes.cashflow ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>Prophet Modeli</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Nakit Akışı (12 Ay)</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>Prophet Demo</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Nakit Akışı Simülasyonu</div>
                 </div>
               </div>
 
@@ -173,8 +173,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.rag ? 'rgba(124, 58, 237, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.rag ? P.purple : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Database size={24} color={activeNodes.rag ? P.purple : '#64748b'} className={activeNodes.rag ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>Pinecone RAG</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Vektör Gömme (Embed)</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>RAG Demo</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Vektör Gömme Simülasyonu</div>
                 </div>
               </div>
 
@@ -213,7 +213,7 @@ export default function SystemMonitorPage() {
                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS (Simüle)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Uygulama genelinde AES-256 (E2EE) şifreleme ve veritabanı katmanında Row-Level Security aktiftir. Kurucu CTO dahi kullanıcı verilerine erişemez. (Sadece UI Simülasyonu)
+                 Supabase RLS gerçek şema seviyesinde tanımlıdır; AES-256/E2EE anlatımı bu ekranda ürün vizyonu simülasyonudur.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg2, padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
@@ -250,7 +250,7 @@ export default function SystemMonitorPage() {
                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline (Simüle)</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Açık Bankacılık verileri ham olarak Snowflake Data Lake'e akar, Apache Kafka ile stream işlenerek modellere sunulur. (UI Mock)
+                 Açık Bankacılık, Snowflake ve Kafka akışı burada UI mock olarak gösterilir; canlı demo gerçek Supabase işlem kayıtlarına dayanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

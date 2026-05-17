@@ -223,6 +223,11 @@ export default function App() {
         email: user.email,
         name: profile?.full_name || user.email.split('@')[0]
       });
+      useStore.getState().setUserProfile({
+        name: profile?.full_name || user.email.split('@')[0],
+        email: user.email,
+        phone: profile?.phone_text || ''
+      });
 
       setOnboardingCompleted(profile?.onboarding_completed || false);
 
@@ -332,13 +337,15 @@ export default function App() {
   if (!onboardingCompleted) {
     return (
       <ToastProvider>
-        <Onboarding onComplete={async () => {
+        <Onboarding userName={authUser.name} onComplete={async (profile) => {
           await supabase.from('profiles').upsert({
             id: authUser.id,
             email: authUser.email,
             full_name: authUser.name,
             onboarding_completed: true
           });
+          useStore.getState().setBehavioralProfile(profile);
+          useStore.getState().setUserProfile({ bank: profile?.bank || 'Finansal Koç' });
           setOnboardingCompleted(true);
         }} />
       </ToastProvider>

@@ -24,7 +24,7 @@ const GOALS = [
   { key: "birikim", label: "🎯 Birikim hedefi koymak" },
 ];
 
-export default function Onboarding({ onComplete }) {
+export default function Onboarding({ userName = 'Kullanıcı', onComplete }) {
   const [step, setStep] = useState(1);
   const [income, setIncome] = useState("");
   const [goal, setGoal]   = useState("");
@@ -41,13 +41,7 @@ export default function Onboarding({ onComplete }) {
 
   function finish() {
     const finalBank = bank === "Diğer" ? customBank : bank;
-    // İsim kayıt sırasında e-postadan alındı, localStorage'dan oku
-    const name = localStorage.getItem("fincoach_user_name") || "Kullanıcı";
-    const profile = { name, income: Number(income), goal, bank: finalBank };
-    localStorage.setItem("fincoach_onboarding_completed", "true");
-    localStorage.setItem("fincoach_profile", JSON.stringify(profile));
-    localStorage.setItem("fincoach_income", income);
-    localStorage.setItem("fincoach_bank", finalBank);
+    const profile = { name: userName, income: Number(income), goal, bank: finalBank };
     setLeaving(true);
     setTimeout(() => onComplete(profile), 350);
   }

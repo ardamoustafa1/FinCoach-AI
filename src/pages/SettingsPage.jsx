@@ -80,6 +80,8 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 }
 
 export default function SettingsPage({ theme, onToggleTheme }) {
+  const storeProfile = useStore(state => state.userProfile);
+  const setUserProfile = useStore(state => state.setUserProfile);
   const [limits, setLimits] = useState(() => useStore.getState().budgetLimits);
   const [isSaved, setIsSaved] = useState(false);
   const [roastMode, setRoastMode] = useState(() => localStorage.getItem('fincoach_roast_mode') === 'true');
@@ -90,11 +92,10 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const [whatsappError, setWhatsappError] = useState('');
 
   // Profile state
-  const getAuthUser = () => { try { return JSON.parse(localStorage.getItem('fincoach_auth_user') || '{}'); } catch { return {}; } };
   const [profile, setProfile] = useState(() => ({
-    name: localStorage.getItem('fincoach_user_name') || getAuthUser().name || '',
-    email: getAuthUser().email || '',
-    phone: localStorage.getItem('fincoach_phone') || '',
+    name: storeProfile.name || '',
+    email: storeProfile.email || '',
+    phone: storeProfile.phone || '',
   }));
   const [editField, setEditField] = useState(null); // 'name' | 'email' | 'phone'
   const [editValue, setEditValue] = useState('');
@@ -115,6 +116,31 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   // Email verification
   const [emailVerified, setEmailVerified] = useState(() => localStorage.getItem('fincoach_email_verified') === 'true');
   const [verificationSent, setVerificationSent] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProfile() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, phone_text, email')
+        .eq('id', user.id)
+        .single();
+
+      if (cancelled) return;
+      const nextProfile = {
+        name: data?.full_name || user.email?.split('@')[0] || '',
+        email: data?.email || user.email || '',
+        phone: data?.phone_text || '',
+      };
+      setProfile(nextProfile);
+      setUserProfile(nextProfile);
+    }
+    loadProfile();
+    return () => { cancelled = true; };
+  }, [setUserProfile]);
 
   const loadWhatsAppStatus = useCallback(async () => {
     try {
@@ -169,11 +195,8 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
     const updated = { ...profile, [field]: value };
     setProfile(updated);
-    if (field === 'name') { localStorage.setItem('fincoach_user_name', value); }
-    if (field === 'phone') { localStorage.setItem('fincoach_phone', value); }
+    setUserProfile(updated);
     if (field === 'email') {
-      const auth = getAuthUser();
-      localStorage.setItem('fincoach_auth_user', JSON.stringify({ ...auth, email: value }));
       setEmailVerified(false); localStorage.removeItem('fincoach_email_verified');
     }
 
@@ -183,14 +206,13 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
   const handlePasswordChange = async () => {
     setPassError('');
-    const auth = getAuthUser();
-    if (!auth.email) { setPassError('Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.'); return; }
+    if (!profile.email) { setPassError('Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.'); return; }
     if (!currentPass) { setPassError('Mevcut şifrenizi girin.'); return; }
     if (newPass.length < 6) { setPassError('Yeni şifre en az 6 karakter olmalı.'); return; }
     if (newPass !== confirmPass) { setPassError('Yeni şifreler eşleşmiyor.'); return; }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: auth.email,
+      email: profile.email,
       password: currentPass,
     });
     if (signInError) {
@@ -240,7 +262,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   };
 
   const clearLocalAppData = () => {
-    const keepKeys = ['fincoach_auth_user', 'fincoach_user_name', 'fincoach_phone', 'fincoach_roast_mode', 'fincoach_email_verified'];
+    const keepKeys = ['fincoach_roast_mode', 'fincoach_email_verified'];
     const preserved = Object.fromEntries(
       keepKeys
         .map(key => [key, localStorage.getItem(key)])
@@ -276,6 +298,9 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     await supabase.auth.signOut();
     localStorage.removeItem('fincoach_onboarding_completed');
     localStorage.removeItem('fincoach_auth_user');
+    localStorage.removeItem('fincoach_user_name');
+    localStorage.removeItem('fincoach_phone');
+    localStorage.removeItem('fincoach_emotion_logs');
     window.location.replace('/');
   };
 

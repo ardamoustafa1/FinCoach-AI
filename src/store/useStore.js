@@ -1,20 +1,31 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabase';
 
+const toTransactionDbPayload = (transaction = {}) => {
+  const payload = {};
+  if (transaction.aciklama !== undefined) payload.aciklama = transaction.aciklama;
+  if (transaction.tutar !== undefined) payload.tutar = Number(transaction.tutar);
+  if (transaction.tarih !== undefined) payload.tarih = transaction.tarih;
+  if (transaction.kategori !== undefined) payload.kategori = transaction.kategori;
+  if (transaction.magaza !== undefined) payload.magaza = transaction.magaza;
+  if (transaction.tur !== undefined) payload.tur = transaction.tur || 'gider';
+  return payload;
+};
+
 const useStore = create((set, get) => ({
   transactions: [],
   goals: [],
   budgetLimits: {},
   categoryRules: {},
-  // Duygu günlüğü (Emotion Coach)
-  emotionLogs: JSON.parse(localStorage.getItem('fincoach_emotion_logs') || '[]'),
+  // Duygu günlüğü session içinde tutulur; hassas davranış verisi localStorage'a yazılmaz.
+  emotionLogs: [],
   userProfile: {
-    name: localStorage.getItem('fincoach_user_name') || '',
-    phone: localStorage.getItem('fincoach_phone') || '',
-    bank: localStorage.getItem('fincoach_bank') || 'Finansal Koç',
+    name: '',
+    phone: '',
+    bank: 'Finansal Koç',
     email: ''
   },
-  behavioralProfile: JSON.parse(localStorage.getItem('fincoach_profile') || '{}'),
+  behavioralProfile: {},
   seenTours: JSON.parse(localStorage.getItem('fincoach_seen_tours') || '[]'),
 
   setTransactions: (transactions) => set({ transactions }),
@@ -31,15 +42,11 @@ const useStore = create((set, get) => ({
   setUserProfile: (updates) => {
     set((state) => {
       const newUserProfile = { ...state.userProfile, ...updates };
-      if (updates.name) localStorage.setItem('fincoach_user_name', updates.name);
-      if (updates.phone) localStorage.setItem('fincoach_phone', updates.phone);
-      if (updates.bank) localStorage.setItem('fincoach_bank', updates.bank);
       return { userProfile: newUserProfile };
     });
   },
 
   setBehavioralProfile: (profile) => {
-    localStorage.setItem('fincoach_profile', JSON.stringify(profile));
     set({ behavioralProfile: profile });
   },
 
@@ -96,9 +103,11 @@ const useStore = create((set, get) => ({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const payload = { ...transaction };
-        const { error } = await supabase.from('transactions').update(payload).eq('id', id);
-        if (error) throw error;
+        const payload = toTransactionDbPayload(transaction);
+        if (Object.keys(payload).length > 0) {
+          const { error } = await supabase.from('transactions').update(payload).eq('id', id);
+          if (error) throw error;
+        }
       }
     } catch (err) {
       set({ transactions: previousTransactions });
@@ -242,7 +251,6 @@ const useStore = create((set, get) => ({
       cutoff.setDate(cutoff.getDate() - 90);
       const pruned = state.emotionLogs.filter(l => new Date(l.createdAt) >= cutoff);
       const next = [newLog, ...pruned];
-      localStorage.setItem('fincoach_emotion_logs', JSON.stringify(next));
       return { emotionLogs: next };
     });
     return newLog;
@@ -257,7 +265,6 @@ const useStore = create((set, get) => ({
         const regretDays = Math.round((now - created) / (1000 * 60 * 60 * 24));
         return { ...l, regretScore, regretDays, regretNote };
       });
-      localStorage.setItem('fincoach_emotion_logs', JSON.stringify(next));
       return { emotionLogs: next };
     });
   },

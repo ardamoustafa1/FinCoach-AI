@@ -24,8 +24,8 @@ const P = {
 const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
-function normalizeTransactions() {
-  return useStore.getState().transactions.map((tx) => ({
+function normalizeTransactions(rawTransactions) {
+  return rawTransactions.map((tx) => ({
     id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
     kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
@@ -96,8 +96,11 @@ export default function ReportsPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [pdfLoading, setPdfLoading] = useState(false);
+  const rawTransactions = useStore(state => state.transactions);
+  const budgetLimits = useStore(state => state.budgetLimits);
+  const goals = useStore(state => state.goals);
 
-  const transactions = useMemo(() => normalizeTransactions(), []);
+  const transactions = useMemo(() => normalizeTransactions(rawTransactions), [rawTransactions]);
   const months = useMemo(() => buildMonthWindow(transactions), [transactions]);
   const [selectedIndex, setSelectedIndex] = useState(months.length - 1);
   const selectedMonth = months[selectedIndex] || months[months.length - 1];
@@ -124,7 +127,7 @@ export default function ReportsPage() {
             ozet: { toplamGelir: selectedSummary.gelir, toplamGider: selectedSummary.gider, netBakiye: selectedSummary.net, tasarrufOrani: Number(selectedSummary.tasarrufOrani.toFixed(1)) },
             kategoriKarsilastirma: rows, islemler: selectedSummary.aylik,
           },
-          limitler: useStore.getState().budgetLimits, hedefler: useStore.getState().goals,
+          limitler: budgetLimits, hedefler: goals,
         }),
       });
       if (!res.ok) throw new Error('Analiz servisi yanıt vermedi.');

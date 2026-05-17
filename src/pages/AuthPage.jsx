@@ -14,6 +14,7 @@ const USER_SCOPED_KEYS = [
   'fincoach_profile',
   'fincoach_income',
   'fincoach_bank',
+  'fincoach_emotion_logs',
 ];
 
 function clearUserScopedCache() {
@@ -212,9 +213,6 @@ export default function AuthPage({ onAuth }) {
         isDemo: data.user.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()
       };
       
-      localStorage.setItem('fincoach_auth_user', JSON.stringify(authData));
-      localStorage.setItem('fincoach_user_name', authData.name);
-      if (authData.phone) localStorage.setItem('fincoach_phone', authData.phone);
       onAuth(authData);
     }
     setLoading(false);
@@ -289,9 +287,6 @@ export default function AuthPage({ onAuth }) {
       if (data.session) {
         clearUserScopedCache();
         const authData = { name: name, email: data.user.email, id: data.user.id, phone, onboardingCompleted: false, isDemo: false };
-        localStorage.setItem('fincoach_auth_user', JSON.stringify(authData));
-        localStorage.setItem('fincoach_user_name', name);
-        localStorage.setItem('fincoach_phone', phone);
         onAuth(authData);
         return;
       }
