@@ -56,7 +56,10 @@ export default function VoiceBiometricEscrowPage() {
     else if (step === 3) {
       let l = 4;
       const t = setInterval(() => {
-        setLogs(prev => [...prev, PHASES[l]]);
+        const nextMsg = PHASES[l];
+        if (nextMsg) {
+          setLogs(prev => [...prev, nextMsg]);
+        }
         l++;
         if (l === 7) {
           clearInterval(t);
@@ -68,7 +71,10 @@ export default function VoiceBiometricEscrowPage() {
     else if (step === 4) {
       let l = 7;
       const t = setInterval(() => {
-        setLogs(prev => [...prev, PHASES[l]]);
+        const nextMsg = PHASES[l];
+        if (nextMsg) {
+          setLogs(prev => [...prev, nextMsg]);
+        }
         l++;
         if (l === 10) {
           clearInterval(t);
@@ -185,8 +191,8 @@ export default function VoiceBiometricEscrowPage() {
               </div>
               <div className="code-box" style={{ display: 'flex', flexDirection: 'column', gap: 8, height: 200, overflowY: 'auto' }}>
                 {logs.map((log, index) => (
-                  <div key={index} style={{ color: log.includes('Match') || log.includes('Confirmed') ? P.green : log.includes('Deploying') ? P.purple : '#a1a1aa' }}>
-                    &gt; {log}
+                  <div key={index} style={{ color: (log && (log.includes('Match') || log.includes('Confirmed'))) ? P.green : (log && log.includes('Deploying')) ? P.purple : '#a1a1aa' }}>
+                    &gt; {log || ''}
                   </div>
                 ))}
               </div>
