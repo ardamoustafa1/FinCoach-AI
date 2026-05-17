@@ -7,6 +7,7 @@ import ThemeToggle from './ThemeToggle';
 import DemoQRCodeModal from './DemoQRCodeModal';
 import FeatureTourModal from './FeatureTourModal';
 import OfflineBanner from './OfflineBanner';
+import SpeechFallbackModal from './SpeechFallbackModal';
 import { useToast } from '../hooks/useToast';
 import { fmt } from '../utils/categories';
 import useStore from '../store/useStore';
@@ -32,6 +33,8 @@ export default function Layout({ theme, onToggleTheme }) {
   const [isListening, setIsListening] = useState(false);
   const [showWeeklySummary, setShowWeeklySummary] = useState(() => shouldShowWeeklySummary());
   const [showQrModal, setShowQrModal] = useState(false);
+  const [fallbackModalOpen, setFallbackModalOpen] = useState(false);
+  const [failedTranscript, setFailedTranscript] = useState('');
   const toast = useToast();
   const location = useLocation();
   const haftalik = useMemo(() => weeklySummary(useStore.getState().budgetLimits), []);
@@ -74,13 +77,19 @@ export default function Layout({ theme, onToggleTheme }) {
         const data = await res.json();
         const yeniIslem = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), tarih: new Date().toISOString().slice(0, 10), tutar: data.tutar || '', magaza: data.magaza || '', aciklama: transcript, kategori: data.kategori || 'Diğer', tur: data.tur || 'gider', not: 'Sesli asistan ile eklendi' };
         if (!yeniIslem.tutar) { 
-           toast.warning(`Tutar tam anlaşılamadı. Lütfen manuel ekleyin.`); 
+           setFailedTranscript(transcript);
+           setFallbackModalOpen(true);
+           toast.warning(`Tutar tam anlaşılamadı. Düzeltme önerileri açılıyor...`); 
            return; 
         }
         await useStore.getState().addTransaction(yeniIslem);
         toast.success(`${yeniIslem.magaza || 'İşlem'} (${fmt(yeniIslem.tutar)}) eklendi! ✨`);
         window.dispatchEvent(new Event('transaction_added'));
-      } catch(err) { toast.error(`Analiz hatası: ${err.message}`); }
+      } catch(err) { 
+        setFailedTranscript(transcript);
+        setFallbackModalOpen(true);
+        toast.error(`Analiz hatası: ${err.message}. Lütfen manuel düzeltin.`); 
+      }
     };
     recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
     recognition.onend = () => { setIsListening(false); };
@@ -204,6 +213,15 @@ export default function Layout({ theme, onToggleTheme }) {
       )}
       
       <FeatureTourModal pathname={location.pathname} />
+      
+      <SpeechFallbackModal
+        isOpen={fallbackModalOpen}
+        onClose={() => setFallbackModalOpen(false)}
+        transcript={failedTranscript}
+        onSuccess={() => {
+          window.dispatchEvent(new Event('transaction_added'));
+        }}
+      />
     </div>
   );
 }
