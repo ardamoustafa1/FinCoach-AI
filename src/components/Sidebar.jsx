@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
-  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network, Cpu, HeartPulse, Skull
+  ChevronLeft, ChevronRight, Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark, Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck, Network, Cpu, HeartPulse, Skull, Mic
 } from 'lucide-react';
 import useStore from '../store/useStore';
 
@@ -21,6 +21,7 @@ const navItems = [
   { to: '/autonomous-agent', label: 'Self-Driving Money', icon: Cpu },
   { to: '/financial-icu', label: 'Financial ICU', icon: HeartPulse },
   { to: '/dead-mans-switch', label: 'Web3 Vasiyet', icon: Skull },
+  { to: '/voice-escrow', label: 'Voice Biometric', icon: Mic },
   { to: '/goals', label: 'Hedefler', icon: Target },
   { to: '/league', label: 'Tasarruf Ligi', icon: Trophy },
   { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
