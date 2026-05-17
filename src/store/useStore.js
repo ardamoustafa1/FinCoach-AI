@@ -2,44 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '../utils/supabase';
 import { saveToOfflineQueue } from '../utils/offlineSync';
-
-// UTF-8 Safe Base64 Obfuscation for KVKK / Enterprise Security
-function safeBtoa(str) {
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-    return String.fromCharCode(parseInt(p1, 16));
-  }));
-}
-
-function safeAtob(str) {
-  return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => {
-    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
-}
-
-const secureStorage = {
-  getItem: (name) => {
-    const raw = localStorage.getItem(name);
-    if (!raw) return null;
-    try {
-      const decrypted = safeAtob(raw);
-      return JSON.parse(decrypted);
-    } catch (e) {
-      try {
-        return JSON.parse(raw);
-      } catch (err) {
-        return null;
-      }
-    }
-  },
-  setItem: (name, value) => {
-    const str = JSON.stringify(value);
-    const encrypted = safeBtoa(str);
-    localStorage.setItem(name, encrypted);
-  },
-  removeItem: (name) => {
-    localStorage.removeItem(name);
-  }
-};
+import { secureCryptoStorage } from '../utils/cryptoStorage';
 
 const toTransactionDbPayload = (transaction = {}) => {
   const payload = {};
@@ -336,7 +299,7 @@ const useStore = create(
     }),
     {
       name: 'fincoach_secure_store',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => secureCryptoStorage),
       partialize: (state) => ({
         transactions: state.transactions,
         goals: state.goals,

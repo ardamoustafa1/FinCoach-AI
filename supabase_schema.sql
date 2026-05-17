@@ -71,3 +71,4 @@ create policy "Kullanıcılar kendi işlemlerini yönetebilir" on transactions f
 create policy "Kullanıcılar kendi hedeflerini yönetebilir" on goals for all using (auth.uid() = user_id);
 create policy "Kullanıcılar kendi limitlerini yönetebilir" on budget_limits for all using (auth.uid() = user_id);
 create policy "Kullanıcılar kendi eventlerini görebilir" on app_events for select using (auth.uid() = user_id);
+create policy "Kullanıcılar kendi eventlerini ekleyebilir" on app_events for insert with check (auth.uid() = user_id);
