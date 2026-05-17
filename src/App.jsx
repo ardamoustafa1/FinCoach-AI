@@ -36,6 +36,7 @@ const AutonomousAgentPage = lazy(() => import('./pages/AutonomousAgentPage'));
 const FinancialICUPage = lazy(() => import('./pages/FinancialICUPage'));
 const DeadMansSwitchPage = lazy(() => import('./pages/DeadMansSwitchPage'));
 const VoiceBiometricEscrowPage = lazy(() => import('./pages/VoiceBiometricEscrowPage'));
+const SyntheticDataGeneratorPage = lazy(() => import('./pages/SyntheticDataGeneratorPage'));
 
 /** Inner component so it can use useLocation (must be inside BrowserRouter) */
 function TourOverlay() {
@@ -90,7 +91,8 @@ function RouteHandler() {
       '/autonomous-agent': 'Self-Driving Money',
       '/financial-icu': 'Financial ICU (İflas Radarı)',
       '/dead-mans-switch': 'Dead Man\'s Switch (Web3 Vasiyet)',
-      '/voice-escrow': 'Voice Biometric Escrow'
+      '/voice-escrow': 'Voice Biometric Escrow',
+      '/synthetic-data': 'Synthetic Data Generator'
     };
     const currentTitle = titleMap[pathname] || 'Finansal Koçunuz';
     document.title = `${currentTitle} | FinCoach AI`;
@@ -380,6 +382,7 @@ export default function App() {
               <Route path="/financial-icu" element={<FinancialICUPage />} />
               <Route path="/dead-mans-switch" element={<DeadMansSwitchPage />} />
               <Route path="/voice-escrow" element={<VoiceBiometricEscrowPage />} />
+              <Route path="/synthetic-data" element={<SyntheticDataGeneratorPage />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/settings" element={<SettingsPage theme={theme} onToggleTheme={toggleTheme} />} />
