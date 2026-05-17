@@ -170,7 +170,23 @@ export const secureCryptoStorage = {
     try {
       const decrypted = await decryptData(raw);
       if (!decrypted) return null;
-      return JSON.parse(decrypted);
+      
+      const parsed = JSON.parse(decrypted);
+      
+      // Standardize GDPR/KVKK Compliance: 15-Minute Cache TTL Envelope Validation
+      if (parsed && typeof parsed === 'object' && 'updatedAt' in parsed && 'payload' in parsed) {
+        const now = Date.now();
+        const CACHE_TTL_MS = 15 * 60 * 1000; // 15-minute expiration threshold
+        
+        if (now - parsed.updatedAt > CACHE_TTL_MS) {
+          console.warn(`[WebCrypto] Client secure cache TTL expired for: "${name}". Evicting locally cached data to protect KVKK/GDPR privacy.`);
+          localStorage.removeItem(name);
+          return null;
+        }
+        return parsed.payload;
+      }
+      
+      return parsed;
     } catch (e) {
       console.warn('[WebCrypto] Fallback to raw parsing due to key mismatch:', e);
       try {
@@ -182,7 +198,12 @@ export const secureCryptoStorage = {
   },
   setItem: async (name, value) => {
     try {
-      const str = JSON.stringify(value);
+      // Wrap payload with absolute timestamp to support sliding/absolute auto-eviction TTL
+      const envelope = {
+        updatedAt: Date.now(),
+        payload: value
+      };
+      const str = JSON.stringify(envelope);
       const encrypted = await encryptData(str);
       localStorage.setItem(name, encrypted);
     } catch (error) {
