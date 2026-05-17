@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '../utils/supabase';
+import { saveToOfflineQueue } from '../utils/offlineSync';
 
 // UTF-8 Safe Base64 Obfuscation for KVKK / Enterprise Security
 function safeBtoa(str) {
@@ -128,7 +129,19 @@ const useStore = create(
       }
       return newTx;
     } catch (err) {
-      set({ transactions: previousTransactions }); // Rollback
+      // Check if it's a network offline error
+      const isNetworkError = !navigator.onLine || err.message.includes('fetch') || err.message.includes('network') || err.message.includes('NetworkError');
+      if (isNetworkError) {
+        console.warn('[Offline Mode] Internet bağlantısı yok. İşlem yerel veri tabanına kaydedildi ve arka plan senkronizasyon kuyruğuna eklendi.', err);
+        // Save to offline IndexedDB sync queue
+        await saveToOfflineQueue(newTx, 'add');
+        if (newTx.magaza) {
+          get().saveCategoryRule(newTx.magaza, newTx.kategori);
+        }
+        return newTx; // Keep optimistic update!
+      }
+
+      set({ transactions: previousTransactions }); // Rollback on actual auth/validation error
       throw new Error('İşlem kaydedilemedi: ' + err.message, { cause: err });
     }
   },
@@ -149,6 +162,12 @@ const useStore = create(
         }
       }
     } catch (err) {
+      const isNetworkError = !navigator.onLine || err.message.includes('fetch') || err.message.includes('network') || err.message.includes('NetworkError');
+      if (isNetworkError) {
+        console.warn('[Offline Mode] Internet bağlantısı yok. Güncelleme yerel olarak saklandı ve arka plan senkronizasyon kuyruğuna eklendi.', err);
+        await saveToOfflineQueue({ id, ...transaction }, 'update');
+        return;
+      }
       set({ transactions: previousTransactions });
       throw new Error('İşlem güncellenemedi: ' + err.message, { cause: err });
     }
@@ -165,6 +184,12 @@ const useStore = create(
         if (error) throw error;
       }
     } catch (err) {
+      const isNetworkError = !navigator.onLine || err.message.includes('fetch') || err.message.includes('network') || err.message.includes('NetworkError');
+      if (isNetworkError) {
+        console.warn('[Offline Mode] Internet bağlantısı yok. Silme işlemi yerel olarak saklandı ve arka plan senkronizasyon kuyruğuna eklendi.', err);
+        await saveToOfflineQueue({ id }, 'delete');
+        return;
+      }
       set({ transactions: previousTransactions });
       throw new Error('İşlem silinemedi: ' + err.message, { cause: err });
     }
