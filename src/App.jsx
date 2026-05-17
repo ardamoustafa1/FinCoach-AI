@@ -150,7 +150,7 @@ function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
       `}</style>
       
       {/* Sidebar Skeleton */}
-      <div style={{ width: 260, borderRight: '1px solid #1e293b', padding: 24, display: 'flex', flexDirection: 'column', gap: 24, flexShrink: 0, '@media (max-width: 768px)': { display: 'none' } }}>
+      <div className="hidden lg:flex" style={{ width: 260, borderRight: '1px solid #1e293b', padding: 24, flexDirection: 'column', gap: 24, flexShrink: 0 }}>
         <div className="skeleton-box" style={{ height: 40, width: '80%', borderRadius: 8 }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
           {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton-box" style={{ height: 24, width: '90%', borderRadius: 6 }} />)}

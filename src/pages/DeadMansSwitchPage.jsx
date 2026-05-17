@@ -34,7 +34,10 @@ export default function DeadMansSwitchPage() {
     if (step === 2) {
       let currentLogIndex = 0;
       const interval = setInterval(() => {
-        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]]);
+        const nextMsg = LOG_MESSAGES[currentLogIndex];
+        if (nextMsg) {
+          setLogs(prev => [...prev, nextMsg]);
+        }
         currentLogIndex++;
         if (currentLogIndex >= LOG_MESSAGES.length) {
           clearInterval(interval);
@@ -156,12 +159,12 @@ export default function DeadMansSwitchPage() {
               )}
               {step >= 2 && logs.map((log, i) => (
                 <div key={i} style={{ 
-                  color: log.includes('ERROR') || log.includes('WARNING') ? P.red : log.includes('success') ? P.green : '#a1a1aa',
+                  color: (log && (log.includes('ERROR') || log.includes('WARNING'))) ? P.red : (log && log.includes('success')) ? P.green : '#a1a1aa',
                   marginBottom: 8,
                   display: 'flex', alignItems: 'flex-start', gap: 8
                 }}>
                   <ChevronRight size={14} style={{ marginTop: 4, flexShrink: 0 }} />
-                  <span>{log}</span>
+                  <span>{log || ''}</span>
                 </div>
               ))}
               {step === 2 && (
