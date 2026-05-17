@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
+import Redis from 'ioredis';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as cheerio from 'cheerio';
 import qrcode from 'qrcode-terminal';
@@ -76,11 +78,18 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 // ─── Rate Limiters ────────────────────────────────────────────────
+const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
+
+const createRedisStore = () => redisClient ? new RedisStore({
+  sendCommand: (...args) => redisClient.call(...args),
+}) : undefined;
+
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore(),
   message: { error: 'Çok fazla istek gönderdiniz. Lütfen 1 dakika sonra tekrar deneyin.' },
 });
 
@@ -90,6 +99,7 @@ const aiLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore(),
   message: { error: 'AI işlem limiti aşıldı. Lütfen bekleyin.' },
 });
 

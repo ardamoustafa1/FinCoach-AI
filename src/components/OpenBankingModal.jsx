@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Landmark, Loader2, Sparkles, CheckCircle2, Server, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Landmark, Loader2, Sparkles, CheckCircle2, Server, ArrowRight, Upload } from 'lucide-react';
+import Papa from 'papaparse';
 
 const P = {
   purple: '#7C3AED', green: '#10B981', blue: '#3B82F6', amber: '#F59E0B', red: '#EF4444',
@@ -29,36 +30,65 @@ const CATEGORIZED_DATA = [
 
 export default function OpenBankingModal({ onComplete }) {
   const [step, setStep] = useState(0); 
-  // 0: Connecting, 1: Fetching Raw, 2: AI Categorization, 3: Done
+  // 0: Connecting/Waiting for CSV, 1: Fetching Raw, 2: AI Categorization, 3: Done
   const [visibleItems, setVisibleItems] = useState([]);
   const [categorizedItems, setCategorizedItems] = useState([]);
+  const [activeData, setActiveData] = useState(RAW_DATA);
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      Papa.parse(file, {
+        header: true,
+        complete: (results) => {
+          const parsed = results.data.map(row => ({
+            raw: row.description || row.aciklama || row.raw,
+            amount: parseFloat(row.amount || row.tutar) || 0,
+            date: row.date || row.tarih || new Date().toISOString().split('T')[0]
+          })).filter(r => r.raw && r.amount);
+          if (parsed.length > 0) setActiveData(parsed);
+          setStep(1); // Resume flow
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     // 1. Connect
-    const t1 = setTimeout(() => setStep(1), 2000);
+    let t1;
+    if (step === 0) {
+      t1 = setTimeout(() => setStep(1), 2000);
+    }
     
     // 2. Stream Raw Data
-    const t2 = setTimeout(() => {
+    if (step === 1) {
       let count = 0;
       const interval = setInterval(() => {
-        if (count < RAW_DATA.length) {
-          setVisibleItems(prev => [...prev, RAW_DATA[count]]);
+        if (count < activeData.length) {
+          setVisibleItems(prev => [...prev, activeData[count]]);
           count++;
         } else {
           clearInterval(interval);
           setStep(2); // Start AI Categorization
         }
       }, 150);
-    }, 2500);
+      return () => {
+        if (t1) clearTimeout(t1);
+        clearInterval(interval);
+      };
+    }
 
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+    return () => {
+      if (t1) clearTimeout(t1);
+    };
+  }, [step, activeData]);
 
   useEffect(() => {
     if (step === 2) {
       let count = 0;
       const interval = setInterval(() => {
-        if (count < RAW_DATA.length) {
+        if (count < activeData.length) {
           setCategorizedItems(prev => [...prev, count]);
           count++;
         } else {
@@ -71,8 +101,8 @@ export default function OpenBankingModal({ onComplete }) {
   }, [step]);
 
   const handleApply = () => {
-    const processedTx = RAW_DATA.map((raw, i) => {
-      const cat = CATEGORIZED_DATA[i];
+    const processedTx = activeData.map((raw, i) => {
+      const cat = CATEGORIZED_DATA[i] || CATEGORIZED_DATA[0];
       return {
         id: crypto.randomUUID(),
         tarih: raw.date,
@@ -132,6 +162,15 @@ export default function OpenBankingModal({ onComplete }) {
               border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
               boxShadow: '0 4px 20px rgba(16,185,129,0.3)', animation: 'fadeSlideUp 0.4s ease'
             }}>Kayıtlara Ekle</button>
+          )}
+          {step === 0 && (
+            <div>
+              <input type="file" accept=".csv" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+              <button onClick={() => fileInputRef.current?.click()} style={{
+                padding: '8px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
+              }}><Upload size={14} /> CSV Yükle</button>
+            </div>
           )}
         </div>
 
