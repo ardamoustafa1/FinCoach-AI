@@ -114,7 +114,7 @@ export default function ShopSimulationPage() {
       {/* MULTI-AGENT SWARM MODAL */}
       {swarmStep > 0 && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(20px)', animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ width: '100%', maxWidth: 540, background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 32, padding: '32px 40px', boxShadow: `0 40px 120px rgba(0,0,0,0.8)`, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ width: '100%', maxWidth: 540, maxHeight: 'calc(100vh - 64px)', overflowY: 'auto', background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 32, padding: '32px 40px', boxShadow: `0 40px 120px rgba(0,0,0,0.8)`, position: 'relative' }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, borderBottom: `1px solid ${P.border}`, paddingBottom: 20 }}>
               <div style={{ background: 'rgba(124,58,237,0.2)', padding: 10, borderRadius: 14 }}><Zap size={24} color={P.purple} /></div>
