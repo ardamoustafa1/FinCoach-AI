@@ -5,74 +5,18 @@ import {
   User, Mail, Phone, Lock, Eye, EyeOff, Check, X, Edit3, BadgeCheck, Settings
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+
 import { initMockData } from '../data/mockData';
 import useStore from '../store/useStore';
 import { TUM_KATEGORILER } from '../utils/categories';
 import { supabase } from '../utils/supabase';
 import { authFetch } from '../utils/api';
-import PageHeader from '../components/PageHeader';
 import { useToast } from '../hooks/useToast';
-
 import { P } from '../styles/palette';
-/* ─── Palette ─── */
 
-function SettingRow({ icon: Icon, iconColor = P.purple, title, subtitle, action }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '18px 24px', borderRadius: 18,
-        background: hov ? P.bg3 : P.bg2,
-        border: `1px solid ${hov ? P.borderHover : P.border}`,
-        transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
-        transform: hov ? 'translateY(-1px)' : 'none',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 13, background: `${iconColor}1A`, border: `1px solid ${iconColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Icon size={19} color={iconColor} />
-        </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 700, color: P.text1, marginBottom: 2 }}>{title}</p>
-          {subtitle && <p style={{ fontSize: 12, color: P.text3 }}>{subtitle}</p>}
-        </div>
-      </div>
-      <div style={{ flexShrink: 0 }}>{action}</div>
-    </div>
-  );
-}
-
-function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disabled }) {
-  const [hov, setHov] = useState(false);
-  const isFill = variant === 'fill';
-  const isDanger = variant === 'danger';
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        padding: '8px 18px', borderRadius: 11, fontSize: 13, fontWeight: 700,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'all 0.2s',
-        border: isFill ? 'none' : `1px solid ${isDanger ? 'rgba(239,68,68,0.3)' : `${color}40`}`,
-        background: isFill
-          ? `linear-gradient(135deg, ${color}, ${color}cc)`
-          : isDanger
-            ? hov ? 'rgba(239,68,68,0.18)' : 'rgba(239,68,68,0.08)'
-            : hov ? `${color}25` : `${color}12`,
-        color: isFill ? '#fff' : isDanger ? P.red : color,
-        boxShadow: isFill && hov ? `0 8px 20px ${color}50` : 'none',
-        transform: isFill && hov ? 'translateY(-1px)' : 'none',
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      {label}
-    </button>
-  );
-}
+import PageHeader from '../components/PageHeader';
+import SettingRow from '../components/settings/SettingRow';
+import ActionButton from '../components/settings/ActionButton';
 
 export default function SettingsPage({ theme, onToggleTheme }) {
   const toast = useToast();
@@ -287,9 +231,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   };
 
   const handleLoadDemoData = () => setConfirmAction('demo');
-
   const handleClearData = () => setConfirmAction('clear');
-
   const handleLogout = () => setShowLogoutModal(true);
 
   const confirmLogout = async () => {
