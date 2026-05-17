@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, Activity, Lock, TrendingDown, Radio, ShieldAlert, HeartPulse, Building2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import * as tf from '@tensorflow/tfjs';
 import PageHeader from '../components/PageHeader';
 
 const P = {
@@ -31,6 +30,7 @@ export default function FinancialICUPage() {
       hasTrained.current = true;
       const trainModel = async () => {
         // Build a real sequential model for Linear Regression
+        const tf = await import('@tensorflow/tfjs');
         const model = tf.sequential();
         model.add(tf.layers.dense({units: 1, inputShape: [1]}));
         model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
@@ -106,7 +106,7 @@ export default function FinancialICUPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrendingDown size={20} color={step === 1 ? P.red : P.text3} /> 
-                Markov Chain & Prophet Projeksiyonu
+                Lineer Regresyon Projeksiyonu (TF.js Demo)
               </h3>
               {step === 0 && <span className="secure-text" style={{ color: P.text3 }}>Analiz Ediliyor...</span>}
               {step === 1 && <span className="distress-text" style={{ animation: 'pulse 1s infinite' }}>NPL RİSKİ: %94</span>}

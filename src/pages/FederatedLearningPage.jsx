@@ -94,9 +94,9 @@ export default function FederatedLearningPage() {
         <PageHeader
           icon={<ShieldCheck size={24} />}
           color={P.green}
-          title="Federated Learning"
-          subtitle="Harcama verileriniz cihazınızda kalır, sadece matematiksel ağırlıklar anonim olarak birleştirilir."
-          badge="Gizlilik Odaklı AI"
+          title="Federated Learning (Simülasyon)"
+          subtitle="Privacy-preserving eğitim akışı simülasyonu. Gerçekte cihazda eğitilen model ağırlıkları buluta gider."
+          badge="Gizlilik Odaklı AI (Demo Akışı)"
         >
           <button 
             onClick={startTraining}
