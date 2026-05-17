@@ -17,7 +17,6 @@ import {
   createBotReplyTracker,
   createSupabaseTransactionStore,
   createWhatsAppMessageHandler,
-  extractJsonObject,
 } from './whatsappBot.js';
 const { Client, LocalAuth } = pkg;
 
@@ -185,16 +184,222 @@ async function fetchScrapeText(rawUrl, redirectLimit = 2) {
   }
 }
 
-function cleanPromptValue(value, maxLength = 180) {
+function cleanPromptValue(value, fallbackOrMaxLength = '', maxLength = 180) {
+  const fallback = typeof fallbackOrMaxLength === 'number' ? '' : fallbackOrMaxLength;
+  const limit = typeof fallbackOrMaxLength === 'number' ? fallbackOrMaxLength : maxLength;
   const withoutControlChars = Array.from(String(value || ''), (char) => {
     const code = char.charCodeAt(0);
     return code < 32 || code === 127 ? ' ' : char;
   }).join('');
 
-  return withoutControlChars
+  const clean = withoutControlChars
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, maxLength);
+    .slice(0, limit);
+  return clean || fallback;
+}
+
+const ALLOWED_CATEGORIES = new Set([
+  'Market',
+  'Yemek Siparişi',
+  'Ulaşım',
+  'Abonelik',
+  'Fatura',
+  'Alışveriş',
+  'Sağlık',
+  'Eğlence',
+  'Restoran',
+  'Maaş',
+  'Diğer',
+]);
+
+function findJsonSlice(text) {
+  const source = String(text || '');
+  for (let i = 0; i < source.length; i += 1) {
+    const open = source[i];
+    if (open !== '{' && open !== '[') continue;
+    const close = open === '{' ? '}' : ']';
+    const stack = [close];
+    let inString = false;
+    let escaped = false;
+
+    for (let j = i + 1; j < source.length; j += 1) {
+      const char = source[j];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (char === '{') stack.push('}');
+      if (char === '[') stack.push(']');
+      if (char === stack[stack.length - 1]) stack.pop();
+      if (!stack.length) return source.slice(i, j + 1);
+    }
+  }
+  throw new Error('json_not_found');
+}
+
+function parseJsonValue(rawText) {
+  const cleaned = String(rawText || '')
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim();
+  if (!cleaned) throw new Error('empty_ai_response');
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return JSON.parse(findJsonSlice(cleaned));
+  }
+}
+
+function validateJsonText(rawText, validate, fallback, label) {
+  try {
+    return validate(parseJsonValue(rawText));
+  } catch (error) {
+    console.warn(`[AI JSON fallback:${label}]`, error?.message);
+    return typeof fallback === 'function' ? fallback() : fallback;
+  }
+}
+
+function jsonContract(schemaDescription) {
+  return `\n\nYANIT SÖZLEŞMESİ:\n- Sadece geçerli JSON döndür.\n- Markdown, açıklama, kod bloğu, yorum veya fazladan metin ekleme.\n- Şema: ${schemaDescription}`;
+}
+
+async function generateValidatedJson(prompt, validate, fallback, label, schemaDescription) {
+  const result = await model.generateContent(`${prompt}${jsonContract(schemaDescription)}`);
+  return validateJsonText(result.response.text(), validate, fallback, label);
+}
+
+function normalizeCategory(value) {
+  const category = cleanPromptValue(value, 'Diğer', 40);
+  return ALLOWED_CATEGORIES.has(category) ? category : 'Diğer';
+}
+
+function validateCategorizationPayload(raw, transactions = []) {
+  const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
+  const byId = new Map(rows.map(item => [String(item?.id || ''), item]));
+  return transactions.map(tx => {
+    const match = byId.get(String(tx.id)) || rows.find(item => cleanPromptValue(item?.id) === cleanPromptValue(tx.id));
+    return {
+      id: tx.id,
+      kategori: normalizeCategory(match?.kategori || match?.category),
+    };
+  });
+}
+
+function positiveNumber(value) {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? Math.abs(value) : null;
+
+  let text = String(value ?? '').replace(/[^\d,.-]/g, '').trim();
+  const lastComma = text.lastIndexOf(',');
+  const lastDot = text.lastIndexOf('.');
+  if (lastComma !== -1 && lastDot !== -1) {
+    text = lastComma > lastDot ? text.replace(/\./g, '').replace(',', '.') : text.replace(/,/g, '');
+  } else if (lastComma !== -1) {
+    text = text.replace(',', '.');
+  }
+
+  const number = Number(text);
+  return Number.isFinite(number) && number > 0 ? Math.abs(number) : null;
+}
+
+function dateOrEmpty(value) {
+  const text = cleanPromptValue(value, '', 20);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
+}
+
+function validateReceiptPayload(raw) {
+  return {
+    tutar: positiveNumber(raw?.tutar ?? raw?.amount),
+    tarih: dateOrEmpty(raw?.tarih ?? raw?.date),
+    magaza: cleanPromptValue(raw?.magaza ?? raw?.merchant, '', 80),
+  };
+}
+
+function validateVoicePayload(raw) {
+  return {
+    tutar: positiveNumber(raw?.tutar ?? raw?.amount),
+    magaza: cleanPromptValue(raw?.magaza ?? raw?.merchant, '', 80),
+    kategori: normalizeCategory(raw?.kategori ?? raw?.category),
+    tur: raw?.tur === 'gelir' || raw?.type === 'income' ? 'gelir' : 'gider',
+  };
+}
+
+function jsonObjectSliceAfter(text, markerIndex) {
+  const start = String(text).indexOf('{', markerIndex);
+  if (start === -1) return null;
+  const jsonText = findJsonSlice(String(text).slice(start));
+  return { start, end: start + jsonText.length, jsonText };
+}
+
+function validateChartPayload(raw) {
+  const type = ['bar', 'line', 'pie'].includes(raw?.type) ? raw.type : 'bar';
+  const data = Array.isArray(raw?.data) ? raw.data.slice(0, 12).map(item => ({
+    label: cleanPromptValue(item?.label, 'Kalem', 40),
+    value: Number(item?.value) || 0,
+  })) : [];
+  return { type, title: cleanPromptValue(raw?.title, 'Grafik Analizi', 80), data };
+}
+
+function validateSimulationPayload(raw) {
+  return {
+    status: raw?.status === 'rich' ? 'rich' : 'poor',
+    story: cleanPromptValue(raw?.story, 'Projeksiyon üretilemedi.', 240),
+  };
+}
+
+function validateWrappedPayload(raw) {
+  return {
+    title: cleanPromptValue(raw?.title, 'FinCoach Özeti', 80),
+    total_spent: cleanPromptValue(raw?.total_spent, 'Bilinmiyor', 40),
+    worst_habit: cleanPromptValue(raw?.worst_habit, 'Belirsiz', 80),
+    roast_text: cleanPromptValue(raw?.roast_text, 'Veri yetersiz.', 180),
+    score: Math.max(0, Math.min(100, Number(raw?.score) || 0)),
+  };
+}
+
+function validateAgentPayload(raw) {
+  return {
+    action: raw?.action === 'cancel_subscription' ? 'cancel_subscription' : 'demo_action',
+    provider: cleanPromptValue(raw?.provider, 'Abonelik', 80),
+  };
+}
+
+function normalizeChatResponse(rawText) {
+  let text = String(rawText || '');
+  const tags = {
+    CHART_DATA: validateChartPayload,
+    SIMULATION: validateSimulationPayload,
+    WRAPPED_CARD: validateWrappedPayload,
+    AGENT_ACTION: validateAgentPayload,
+  };
+
+  for (const [tag, validate] of Object.entries(tags)) {
+    const marker = `${tag}:`;
+    const markerIndex = text.indexOf(marker);
+    if (markerIndex === -1) continue;
+
+    const slice = jsonObjectSliceAfter(text, markerIndex + marker.length);
+    if (!slice) continue;
+    try {
+      const payload = validate(JSON.parse(slice.jsonText));
+      text = `${text.slice(0, markerIndex)}${marker}${JSON.stringify(payload)}${text.slice(slice.end)}`;
+    } catch (error) {
+      console.warn(`[Chat payload removed:${tag}]`, error?.message);
+      text = text.slice(0, markerIndex).trim();
+    }
+  }
+
+  return text;
 }
 
 // ─── Rate Limiters ────────────────────────────────────────────────
@@ -374,7 +579,7 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
     
     const result = await chat.sendMessage(prompt);
     const response = await result.response;
-    res.json({ response: response.text() });
+    res.json({ response: normalizeChatResponse(response.text()) });
   } catch (error) {
     console.error('[Chat API Error] Message:', error?.message);
     let userMessage = 'Hata oluştu. API anahtarınızı kontrol edin.';
@@ -388,19 +593,27 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
 // Categorize Endpoint
 app.post('/api/categorize', aiLimiter, async (req, res) => {
   try {
-    const { transactions } = req.body;
+    const transactions = Array.isArray(req.body?.transactions) ? req.body.transactions.slice(0, 200) : [];
+    if (!transactions.length) return res.json([]);
+
     const prompt = `Aşağıdaki işlemleri kategorize et ve SADECE JSON array döndür. 
 Kategoriler: Market, Yemek Siparişi, Ulaşım, Abonelik, Fatura, Alışveriş, Sağlık, Eğlence, Restoran, Maaş, Diğer
 Format: [{"id": "...", "kategori": "..."}]
 
 İşlemler: ${JSON.stringify(transactions.map(t => ({ id: t.id, aciklama: t.aciklama, magaza: t.magaza })))}`;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    res.json(JSON.parse(text));
+    const categorized = await generateValidatedJson(
+      prompt,
+      (raw) => validateCategorizationPayload(raw, transactions),
+      () => transactions.map(tx => ({ id: tx.id, kategori: 'Diğer' })),
+      'categorize',
+      '[{"id":"transaction-id","kategori":"Market|Yemek Siparişi|Ulaşım|Abonelik|Fatura|Alışveriş|Sağlık|Eğlence|Restoran|Maaş|Diğer"}]'
+    );
+    res.json(categorized);
   } catch (error) {
     console.error('[Categorize Error]:', error);
-    res.status(500).json({ error: 'Kategorize edilemedi.' });
+    const transactions = Array.isArray(req.body?.transactions) ? req.body.transactions.slice(0, 200) : [];
+    res.json(transactions.map(tx => ({ id: tx.id, kategori: 'Diğer' })));
   }
 });
 
@@ -410,17 +623,22 @@ app.post('/api/ocr', aiLimiter, async (req, res) => {
     const { image, mimeType } = req.body;
     const base64Data = String(image).replace(/^data:[^;]+;base64,/, '');
     
-    const prompt = "Bu fişteki toplam tutarı, tarihi (YYYY-MM-DD) ve mağaza adını çıkar. SADECE JSON döndür: {tutar: number, tarih: string, magaza: string}";
+    const prompt = "Bu fişteki toplam tutarı, tarihi (YYYY-MM-DD) ve mağaza adını çıkar. SADECE JSON döndür: {tutar: number|null, tarih: string, magaza: string}";
 
     const result = await model.generateContent([
       { inlineData: { data: base64Data, mimeType: mimeType } },
-      { text: prompt }
+      { text: `${prompt}${jsonContract('{"tutar": number|null, "tarih": "YYYY-MM-DD veya boş string", "magaza": "string" }')}` }
     ]);
 
-    res.json(extractJsonObject(result.response.text()));
+    res.json(validateJsonText(
+      result.response.text(),
+      validateReceiptPayload,
+      { tutar: null, tarih: '', magaza: '' },
+      'ocr'
+    ));
   } catch (error) {
     console.error('[OCR Error]:', error);
-    res.status(500).json({ error: 'Fiş okunamadı.' });
+    res.json({ tutar: null, tarih: '', magaza: '' });
   }
 });
 
@@ -446,14 +664,20 @@ app.post('/api/voice', aiLimiter, async (req, res) => {
 Cümle: "${text}"
 ÖNEMLİ: Sadece ve sadece JSON formatında yanıt ver, markdown kullanma, ekstra metin ekleme.`;
 
-    const result = await model.generateContent(prompt);
-    res.json(extractJsonObject(result.response.text()));
+    const parsed = await generateValidatedJson(
+      prompt,
+      validateVoicePayload,
+      { tutar: null, magaza: '', kategori: 'Diğer', tur: 'gider' },
+      'voice',
+      '{"tutar": number|null, "magaza": "string", "kategori": "izinli kategori", "tur": "gelir|gider"}'
+    );
+    res.json(parsed);
   } catch (error) {
     console.error("Voice API Error:", error.message);
     if (error.status === 429 || String(error.message).includes('429') || String(error.message).includes('exceeded')) {
         return res.status(429).json({ error: 'Google Gemini API kotanız doldu (429 Too Many Requests).' });
     }
-    res.status(500).json({ error: 'Ses anlaşılamadı: ' + error.message });
+    res.json({ tutar: null, magaza: '', kategori: 'Diğer', tur: 'gider' });
   }
 });
 

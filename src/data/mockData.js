@@ -195,18 +195,11 @@ export const mockGelir = [
 // ─── Üretilmiş işlemler ──────────────────────────────────────
 export const mockTransactions = tumIslemleriUret();
 
-// ─── localStorage'a yükle ────────────────────────────────────
+// ─── Demo verisini session store'a aktarılmak üzere döndür ─────────────────
 export function initMockData() {
-  const KEY_TX = 'fincoach_transactions';
-  const KEY_GELIR = 'fincoach_gelir';
-  const KEY_INIT = 'fincoach_mock_initialized';
-
-  // Sadece ilk açılışta yükle
-  if (localStorage.getItem(KEY_INIT)) return;
-
-  localStorage.setItem(KEY_TX, JSON.stringify(mockTransactions));
-  localStorage.setItem(KEY_GELIR, JSON.stringify(mockGelir));
-  localStorage.setItem(KEY_INIT, 'true');
-
-  console.log('[FinCoach AI] Mock veriler yüklendi: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
+  console.info('[FinCoach AI] Demo veri hazırlandı: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
+  return {
+    transactions: mockTransactions,
+    gelir: mockGelir,
+  };
 }

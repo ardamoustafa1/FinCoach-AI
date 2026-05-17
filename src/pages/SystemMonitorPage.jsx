@@ -43,9 +43,9 @@ export default function SystemMonitorPage() {
       setActiveNodes({ kafka: true, fraud: false, cashflow: false, rag: false });
       addLog(`[${time}] [API] Yeni İşlem: ${tx.merchant} - ${fmt(tx.amount)}`);
       
-      // 2. Kafka Distributes
+      // 2. Kafka demo distribution
       setTimeout(() => {
-        addLog(`[${time}] [KAFKA_SIM] Olay (Event ${tx.id}) demo kuyruğuna alındı ve asenkron yayın simüle edildi.`);
+        addLog(`[${time}] [KAFKA_SIM] Gerçek broker yok; Event ${tx.id} demo kuyruğunda simüle edildi.`);
         setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
         
         // 3. ML Nodes process in parallel
@@ -55,8 +55,8 @@ export default function SystemMonitorPage() {
           } else {
              addLog(`[${time}] [FRAUD_AI] İşlem temiz. (Güven Skoru: %${92 + Math.floor(Math.random()*7)})`, 'green');
           }
-          addLog(`[${time}] [CASHFLOW_SIM] Prophet benzeri 12 aylık projeksiyon simüle edildi.`, 'blue');
-          addLog(`[${time}] [RAG_SIM] Pinecone benzeri vektör kayıt adımı simüle edildi.`, 'purple');
+          addLog(`[${time}] [CASHFLOW_SIM] Prophet entegrasyonu yok; nakit akışı demo projeksiyonu simüle edildi.`, 'blue');
+          addLog(`[${time}] [RAG_SIM] Pinecone bağlantısı yok; vektör kayıt adımı UI simülasyonu olarak gösterildi.`, 'purple');
           
           setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
         }, 600);
@@ -83,8 +83,8 @@ export default function SystemMonitorPage() {
           icon={<Zap size={24} />}
           color={P.blue}
           title="Sistem Monitörü"
-          subtitle="Kafka/Pinecone/Prophet entegrasyonlarının demo topolojisi; gerçek transaction eventleri bu ekranda simüle edilir."
-          badge="Simülasyon"
+          subtitle="Gerçek Kafka, Pinecone veya Prophet bağlantısı yoktur; bu ekran yalnızca demo topolojisini ve Supabase kaynaklı işlem akışının görsel simülasyonunu gösterir."
+          badge="Demo Topolojisi"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
             <Activity size={16} color={P.green} />
@@ -119,8 +119,8 @@ export default function SystemMonitorPage() {
                 <GitMerge size={40} color={P.blue} />
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Kafka Demo</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Event Broker Simülasyonu</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Kafka Yok - Demo</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Broker UI Simülasyonu</div>
               </div>
             </div>
 
@@ -164,8 +164,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.cashflow ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.cashflow ? P.green : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Cpu size={24} color={activeNodes.cashflow ? P.green : '#64748b'} className={activeNodes.cashflow ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>Prophet Demo</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Nakit Akışı Simülasyonu</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>Prophet Yok</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Demo Projeksiyon</div>
                 </div>
               </div>
 
@@ -173,8 +173,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.rag ? 'rgba(124, 58, 237, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.rag ? P.purple : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Database size={24} color={activeNodes.rag ? P.purple : '#64748b'} className={activeNodes.rag ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>RAG Demo</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Vektör Gömme Simülasyonu</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>Pinecone Yok</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>RAG UI Simülasyonu</div>
                 </div>
               </div>
 

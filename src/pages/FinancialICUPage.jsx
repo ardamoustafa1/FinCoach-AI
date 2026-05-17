@@ -9,7 +9,7 @@ const P = {
   border: 'var(--border-color)', text1: 'var(--text-primary)', text2: 'var(--text-secondary)', text3: 'var(--text-muted)'
 };
 
-// Simulated Prophet model trajectory
+// TF.js lineer regresyon demo verisi; Prophet modeli değildir.
 const chartData = [
   { month: 'Şub', liquidity: 45000, threshold: 0 },
   { month: 'Mar', liquidity: 32000, threshold: 0 },
@@ -94,19 +94,19 @@ export default function FinancialICUPage() {
             icon={<ShieldAlert size={24} />}
             color="#EF4444"
             title="Financial ICU (İflas Radarı)"
-            subtitle="Kullanıcının temerrüde (default) düşeceğini aylar önceden öngörür ve Yoğun Bakım modunu açar."
-            badge="B2B Risk Motoru"
+            subtitle="TF.js ile lineer regresyon demo projeksiyonu üretir; Prophet entegrasyonu içermez."
+            badge="TF.js Demo"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           
-          {/* LEFT: PROPHET MODEL CHART */}
+          {/* LEFT: TF.js demo projection chart */}
           <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${step === 1 ? 'rgba(239,68,68,0.5)' : P.border}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', boxShadow: step === 1 ? '0 0 40px rgba(239,68,68,0.1)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrendingDown size={20} color={step === 1 ? P.red : P.text3} /> 
-                Lineer Regresyon Projeksiyonu (TF.js Demo)
+                Lineer Regresyon Projeksiyonu (TF.js Demo, Prophet değil)
               </h3>
               {step === 0 && <span className="secure-text" style={{ color: P.text3 }}>Analiz Ediliyor...</span>}
               {step === 1 && <span className="distress-text" style={{ animation: 'pulse 1s infinite' }}>NPL RİSKİ: %94</span>}

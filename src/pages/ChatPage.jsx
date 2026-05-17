@@ -175,6 +175,50 @@ function getUserContext() {
   } catch { return {}; }
 }
 
+function extractTaggedPayload(text, tag) {
+  const marker = `${tag}:`;
+  const markerIndex = text.indexOf(marker);
+  if (markerIndex === -1) return { text, payload: null };
+
+  const start = text.indexOf('{', markerIndex + marker.length);
+  if (start === -1) return { text, payload: null };
+
+  const stack = ['}'];
+  let inString = false;
+  let escaped = false;
+  for (let i = start + 1; i < text.length; i += 1) {
+    const char = text[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === '{') stack.push('}');
+    if (char === '[') stack.push(']');
+    if (char === stack[stack.length - 1]) stack.pop();
+    if (!stack.length) {
+      try {
+        return {
+          text: `${text.slice(0, markerIndex)}${text.slice(i + 1)}`.trim(),
+          payload: JSON.parse(text.slice(start, i + 1)),
+        };
+      } catch {
+        return { text: text.slice(0, markerIndex).trim(), payload: null };
+      }
+    }
+  }
+
+  return { text, payload: null };
+}
+
 
 export default function ChatPage() {
   const location = useLocation();
@@ -417,48 +461,21 @@ export default function ChatPage() {
             let wrappedData = null;
             let agentData = null;
             if (msg.role === 'bot' && typeof text === 'string') {
-              // Regex: Find tag and capture everything until the LAST closing brace
-              const chartMatch = text.match(/CHART_DATA:(\{[\s\S]*\})/);
-              if (chartMatch) {
-                try {
-                  // Greedily finding the JSON block
-                  const jsonBlock = chartMatch[1];
-                  chartData = JSON.parse(jsonBlock);
-                  text = text.replace(/CHART_DATA:\{[\s\S]*\}/, '').trim();
-                } catch (error) {
-                  console.error("Chart parse error:", error);
-                }
-              }
+              let extracted = extractTaggedPayload(text, 'CHART_DATA');
+              text = extracted.text;
+              chartData = extracted.payload;
 
-              const simMatch = text.match(/SIMULATION:(\{[\s\S]*\})/);
-              if (simMatch) {
-                try {
-                  simulationData = JSON.parse(simMatch[1]);
-                  text = text.replace(/SIMULATION:\{[\s\S]*\}/, '').trim();
-                } catch (error) {
-                  console.error("Simulation parse error:", error);
-                }
-              }
+              extracted = extractTaggedPayload(text, 'SIMULATION');
+              text = extracted.text;
+              simulationData = extracted.payload;
 
-              const wrappedMatch = text.match(/WRAPPED_CARD:(\{[\s\S]*\})/);
-              if (wrappedMatch) {
-                try {
-                  wrappedData = JSON.parse(wrappedMatch[1]);
-                  text = text.replace(/WRAPPED_CARD:\{[\s\S]*\}/, '').trim();
-                } catch (error) {
-                  console.error("Wrapped card parse error:", error);
-                }
-              }
+              extracted = extractTaggedPayload(text, 'WRAPPED_CARD');
+              text = extracted.text;
+              wrappedData = extracted.payload;
 
-              const agentMatch = text.match(/AGENT_ACTION:(\{[\s\S]*\})/);
-              if (agentMatch) {
-                try {
-                  agentData = JSON.parse(agentMatch[1]);
-                  text = text.replace(/AGENT_ACTION:\{[\s\S]*\}/, '').trim();
-                } catch (error) {
-                  console.error("Agent action parse error:", error);
-                }
-              }
+              extracted = extractTaggedPayload(text, 'AGENT_ACTION');
+              text = extracted.text;
+              agentData = extracted.payload;
             }
             const isBot = msg.role === 'bot';
             return (
@@ -613,17 +630,17 @@ export default function ChatPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                    <Database size={14} color={P.purple} />
-                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Demo Akışı</span>
+                   <span style={{ fontSize: 11, fontWeight: 900, color: P.purple, letterSpacing: '0.1em', textTransform: 'uppercase' }}>RAG Simülasyonu - Pinecone yok</span>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {ragStep >= 1 ? <CheckCircle2 size={14} color={P.green} /> : <Loader2 size={14} color={P.text3} style={{ animation: 'spin 1s linear infinite' }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Soru için embedding adımı simüle ediliyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 1 ? '#fff' : P.text3, fontWeight: ragStep >= 1 ? 600 : 400 }}>Embedding adımı demo olarak simüle ediliyor...</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 1 ? 1 : 0.4 }}>
                     {ragStep >= 2 ? <CheckCircle2 size={14} color={P.green} /> : ragStep === 1 ? <Search size={14} color={P.blue} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}
-                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Vektör arama simülasyonu: işlem bağlamı hazırlanıyor...</span>
+                    <span style={{ fontSize: 13, color: ragStep >= 2 ? '#fff' : ragStep === 1 ? P.blue : P.text3, fontWeight: ragStep >= 2 ? 600 : 400 }}>Pinecone yerine demo vektör arama animasyonu gösteriliyor...</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: ragStep >= 2 ? 1 : 0.4 }}>
                     {ragStep >= 3 ? <Loader2 size={14} color={P.amber} style={{ animation: 'spin 1s linear infinite' }} /> : <div style={{ width: 14 }} />}

@@ -1,11 +1,14 @@
 import { abonelikleriTespit, yaklasanYenilemeler } from './subscriptionDetector';
+import useStore from '../store/useStore';
 
 export const WEEKLY_SUMMARY_SEEN_KEY = 'fincoach_weekly_summary_seen_at';
 export const UNUSUAL_SPENDING_KEY = 'fincoach_unusual_spending_reviews';
+let weeklySummarySeenAt = null;
+let unusualSpendingReviews = [];
 
 export function readExpenses() {
   try {
-    return JSON.parse(localStorage.getItem('fincoach_transactions') || '[]')
+    return useStore.getState().transactions
       .map(tx => ({
         ...tx,
         tarih: tx.tarih || tx.date,
@@ -44,11 +47,7 @@ export function budgetStatus(expenses, limits, monthKey = latestMonthKey(expense
 }
 
 export function upcomingSubscriptionReminders() {
-  const dismissed = (() => {
-    try { return JSON.parse(localStorage.getItem('fincoach_dismissed_subs') || '[]'); }
-    catch { return []; }
-  })();
-  return yaklasanYenilemeler(abonelikleriTespit(readExpenses(), dismissed));
+  return yaklasanYenilemeler(abonelikleriTespit(readExpenses(), []));
 }
 
 export function weeklySummary(limits) {
@@ -71,14 +70,13 @@ export function weeklySummary(limits) {
 }
 
 export function shouldShowWeeklySummary() {
-  const lastSeen = localStorage.getItem(WEEKLY_SUMMARY_SEEN_KEY);
-  if (!lastSeen) return true;
-  const days = (Date.now() - new Date(lastSeen).getTime()) / (1000 * 60 * 60 * 24);
+  if (!weeklySummarySeenAt) return true;
+  const days = (Date.now() - new Date(weeklySummarySeenAt).getTime()) / (1000 * 60 * 60 * 24);
   return days >= 7;
 }
 
 export function markWeeklySummarySeen() {
-  localStorage.setItem(WEEKLY_SUMMARY_SEEN_KEY, new Date().toISOString());
+  weeklySummarySeenAt = new Date().toISOString();
 }
 
 export function detectUnusualSpending(transaction, previousExpenses = readExpenses()) {
@@ -136,11 +134,7 @@ export function detectUnusualSpending(transaction, previousExpenses = readExpens
 }
 
 export function saveUnusualSpendingDecision(alert, decision) {
-  const list = (() => {
-    try { return JSON.parse(localStorage.getItem(UNUSUAL_SPENDING_KEY) || '[]'); }
-    catch { return []; }
-  })();
-  list.unshift({
+  unusualSpendingReviews = [{
     id: crypto.randomUUID(),
     transactionId: alert.transaction.id,
     kategori: alert.transaction.kategori,
@@ -148,6 +142,6 @@ export function saveUnusualSpendingDecision(alert, decision) {
     ortalama: alert.average,
     decision,
     createdAt: new Date().toISOString(),
-  });
-  localStorage.setItem(UNUSUAL_SPENDING_KEY, JSON.stringify(list.slice(0, 100)));
+  }, ...unusualSpendingReviews].slice(0, 100);
+  return unusualSpendingReviews;
 }

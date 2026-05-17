@@ -1,16 +1,10 @@
 /**
- * FinCoach AI - localStorage & Supabase Senkronizasyon Katmanı
+ * FinCoach AI - Supabase-first helper layer.
+ *
+ * Finansal veri localStorage'a yazılmaz. Bu dosya legacy import'lar için
+ * session belleğinde küçük bir cache tutar ve mümkünse Supabase ile senkronize eder.
  */
 import { supabase } from './supabase';
-
-const KEYS = {
-  TRANSACTIONS: 'fincoach_transactions',
-  GOALS: 'fincoach_goals',
-  SETTINGS: 'fincoach_settings',
-  THEME: 'fincoach_theme',
-  BUDGET_LIMITS: 'fincoach_budget_limits',
-  CATEGORY_RULES: 'fincoach_category_rules',
-};
 
 export const DEFAULT_LIMITS = {
   Market: 3000,
@@ -23,47 +17,41 @@ export const DEFAULT_LIMITS = {
   Sağlık: 1000,
 };
 
-// ─── Genel yardımcılar ───────────────────────────────────────
-function getItem(key, fallback = []) {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
-  } catch {
-    return fallback;
-  }
+const memoryStore = {
+  transactions: [],
+  goals: [],
+  budgetLimits: { ...DEFAULT_LIMITS },
+  categoryRules: {},
+};
+
+const clone = (value) => JSON.parse(JSON.stringify(value));
+
+function upsertById(list, item) {
+  const id = item.id || crypto.randomUUID();
+  const nextItem = { ...item, id };
+  const idx = list.findIndex(i => i.id === id);
+  if (idx >= 0) list[idx] = nextItem;
+  else list.unshift(nextItem);
+  return nextItem;
 }
 
-function setItem(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch {
-    return false;
-  }
+async function getUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user || null;
 }
 
 // ─── İşlemler (Transactions) ─────────────────────────────────
 export function getTransactions() {
-  return getItem(KEYS.TRANSACTIONS, []);
+  return clone(memoryStore.transactions);
 }
 
 export async function saveTransaction(islem) {
-  // 1. Yerel kaydet (Offline-first / Hızlı UI için)
-  const list = getTransactions();
-  const idx = list.findIndex(i => i.id === islem.id);
-  
-  const islemToSave = { ...islem };
-  if (idx >= 0) {
-    list[idx] = islemToSave;
-  } else {
-    if (!islemToSave.id) islemToSave.id = crypto.randomUUID();
-    if (!islemToSave.createdAt) islemToSave.createdAt = new Date().toISOString();
-    list.unshift(islemToSave);
-  }
-  setItem(KEYS.TRANSACTIONS, list);
+  const islemToSave = upsertById(memoryStore.transactions, {
+    createdAt: new Date().toISOString(),
+    ...islem,
+  });
 
-  // 2. Supabase Senkronizasyonu
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
     const payload = {
       user_id: user.id,
@@ -72,82 +60,66 @@ export async function saveTransaction(islem) {
       tarih: islemToSave.tarih || new Date().toISOString().split('T')[0],
       kategori: islemToSave.kategori,
       magaza: islemToSave.magaza,
-      tur: islemToSave.tur || 'gider'
+      tur: islemToSave.tur || 'gider',
     };
 
-    if (idx >= 0 && typeof islemToSave.id === 'string' && islemToSave.id.length > 30) {
-      // UUID ise update dene
-      await supabase.from('transactions').upsert({ id: islemToSave.id, ...payload });
-    } else {
-      // Yeni ekle
-      const { data } = await supabase.from('transactions').insert([payload]).select().single();
-      if (data) {
-        // ID'yi eşle
-        islemToSave.id = data.id;
-        setItem(KEYS.TRANSACTIONS, list.map(i => i.id === (islem.id || islemToSave.id) ? { ...i, id: data.id } : i));
-      }
-    }
+    const { data, error } = await supabase
+      .from('transactions')
+      .upsert({ id: islemToSave.id, ...payload })
+      .select()
+      .single();
+    if (error) throw error;
+    if (data?.id) islemToSave.id = data.id;
   }
-  
+
   if (islemToSave.magaza) saveCategoryRule(islemToSave.magaza, islemToSave.kategori);
-  return islemToSave;
+  return clone(islemToSave);
 }
 
 export async function removeTransaction(id) {
-  // 1. Yerel sil
-  const list = getTransactions().filter(i => i.id !== id);
-  setItem(KEYS.TRANSACTIONS, list);
+  memoryStore.transactions = memoryStore.transactions.filter(i => i.id !== id);
 
-  // 2. Supabase sil
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
-    await supabase.from('transactions').delete().eq('id', id);
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (error) throw error;
   }
 }
 
 // ─── Hedefler (Goals) ────────────────────────────────────────
 export function getGoals() {
-  return getItem(KEYS.GOALS, []);
+  return clone(memoryStore.goals);
 }
 
 export async function addGoal(goal) {
-  const goals = getGoals();
-  const newGoal = {
-    id: crypto.randomUUID(),
+  const newGoal = upsertById(memoryStore.goals, {
     createdAt: new Date().toISOString(),
     currentAmount: 0,
     ...goal,
-  };
-  goals.push(newGoal);
-  setItem(KEYS.GOALS, goals);
+  });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
-    const { data } = await supabase.from('goals').insert([{
+    const { data, error } = await supabase.from('goals').insert([{
       user_id: user.id,
       baslik: newGoal.name,
       hedef_tutar: Number(newGoal.targetAmount),
       mevcut_tutar: Number(newGoal.currentAmount),
       icon: newGoal.icon,
       renk: newGoal.color,
-      deadline: newGoal.deadline
+      deadline: newGoal.deadline,
     }]).select().single();
-    
-    if (data) {
-      newGoal.id = data.id;
-      setItem(KEYS.GOALS, goals.map(g => g.id === (goal.id || newGoal.id) ? { ...g, id: data.id } : g));
-    }
+    if (error) throw error;
+    if (data?.id) newGoal.id = data.id;
   }
-  return newGoal;
+
+  return clone(newGoal);
 }
 
 export async function updateGoal(id, updates) {
-  const goals = getGoals().map((g) =>
-    g.id === id ? { ...g, ...updates } : g
-  );
-  setItem(KEYS.GOALS, goals);
+  memoryStore.goals = memoryStore.goals.map(g => g.id === id ? { ...g, ...updates } : g);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
     const payload = {};
     if (updates.name) payload.baslik = updates.name;
@@ -157,76 +129,79 @@ export async function updateGoal(id, updates) {
     if (updates.icon) payload.icon = updates.icon;
     if (updates.color) payload.renk = updates.color;
 
-    await supabase.from('goals').update(payload).eq('id', id);
+    if (Object.keys(payload).length) {
+      const { error } = await supabase.from('goals').update(payload).eq('id', id);
+      if (error) throw error;
+    }
   }
-  return goals;
+
+  return getGoals();
 }
 
 export async function deleteGoal(id) {
-  const goals = getGoals().filter((g) => g.id !== id);
-  setItem(KEYS.GOALS, goals);
+  memoryStore.goals = memoryStore.goals.filter(g => g.id !== id);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
-    await supabase.from('goals').delete().eq('id', id);
+    const { error } = await supabase.from('goals').delete().eq('id', id);
+    if (error) throw error;
   }
-  return goals;
+
+  return getGoals();
 }
 
 // ─── Bütçe Limitleri ─────────────────────────────────────────
 export function getBudgetLimits() {
-  return getItem(KEYS.BUDGET_LIMITS, DEFAULT_LIMITS);
+  return clone(memoryStore.budgetLimits);
 }
 
 export async function saveBudgetLimits(limits) {
-  setItem(KEYS.BUDGET_LIMITS, limits);
-  
-  const { data: { user } } = await supabase.auth.getUser();
+  memoryStore.budgetLimits = { ...limits };
+
+  const user = await getUser();
   if (user) {
-    // Toplu güncelleme Supabase tarafında biraz daha zahmetli olabilir, 
-    // ama her kategoriyi tek tek upsert edelim
-    const promises = Object.entries(limits).map(([kategori, limit]) => 
+    const writes = Object.entries(limits).map(([kategori, limit]) =>
       supabase.from('budget_limits').upsert({
         user_id: user.id,
         category: kategori,
-        limit_amount: Number(limit)
+        limit_amount: Number(limit),
       }, { onConflict: 'user_id,category' })
     );
-    await Promise.all(promises);
+    const results = await Promise.all(writes);
+    const failed = results.find(({ error }) => error);
+    if (failed?.error) throw failed.error;
   }
-  return limits;
+
+  return getBudgetLimits();
 }
 
 export async function updateBudgetLimit(kategori, limit) {
-  const limits = getBudgetLimits();
-  limits[kategori] = Number(limit);
-  setItem(KEYS.BUDGET_LIMITS, limits);
+  memoryStore.budgetLimits = { ...memoryStore.budgetLimits, [kategori]: Number(limit) };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (user) {
-    await supabase.from('budget_limits').upsert({
+    const { error } = await supabase.from('budget_limits').upsert({
       user_id: user.id,
       category: kategori,
-      limit_amount: Number(limit)
+      limit_amount: Number(limit),
     }, { onConflict: 'user_id,category' });
+    if (error) throw error;
   }
-  return limits;
+
+  return getBudgetLimits();
 }
 
 // ─── Diğerleri ───────────────────────────────────────────────
 export function saveTheme(theme) {
-  localStorage.setItem(KEYS.THEME, theme);
+  localStorage.setItem('fincoach_theme', theme);
 }
 
 export function saveCategoryRule(magaza, kategori) {
   if (!magaza || !kategori) return;
-  const rules = getItem(KEYS.CATEGORY_RULES, {});
-  rules[magaza.trim().toLowerCase()] = kategori;
-  setItem(KEYS.CATEGORY_RULES, rules);
+  memoryStore.categoryRules[magaza.trim().toLowerCase()] = kategori;
 }
 
 export function suggestCategory(magaza) {
   if (!magaza) return '';
-  const rules = getItem(KEYS.CATEGORY_RULES, {});
-  return rules[magaza.trim().toLowerCase()] || '';
+  return memoryStore.categoryRules[magaza.trim().toLowerCase()] || '';
 }

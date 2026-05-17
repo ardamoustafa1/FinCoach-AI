@@ -11,6 +11,7 @@ import { TUM_KATEGORILER } from '../utils/categories';
 import { supabase } from '../utils/supabase';
 import { authFetch } from '../utils/api';
 import PageHeader from '../components/PageHeader';
+import { useToast } from '../hooks/useToast';
 
 /* ─── Palette ─── */
 const P = {
@@ -80,6 +81,7 @@ function ActionButton({ onClick, label, color = P.purple, variant = 'fill', disa
 }
 
 export default function SettingsPage({ theme, onToggleTheme }) {
+  const toast = useToast();
   const storeProfile = useStore(state => state.userProfile);
   const setUserProfile = useStore(state => state.setUserProfile);
   const [limits, setLimits] = useState(() => useStore.getState().budgetLimits);
@@ -279,8 +281,10 @@ export default function SettingsPage({ theme, onToggleTheme }) {
   const executeDataAction = () => {
     if (confirmAction === 'demo') {
       clearLocalAppData();
-      initMockData();
-      window.location.reload();
+      const demo = initMockData();
+      useStore.getState().setTransactions(demo.transactions);
+      toast.success('Demo verileri bu oturum için yüklendi.');
+      setConfirmAction(null);
     }
     if (confirmAction === 'clear') {
       clearLocalAppData();

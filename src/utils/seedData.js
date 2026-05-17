@@ -112,13 +112,8 @@ export const sampleGoals = [
 ];
 
 export function seedDataIfEmpty() {
-  const txKey = 'fincoach_transactions';
-  const goalKey = 'fincoach_goals';
-
-  if (!localStorage.getItem(txKey)) {
-    localStorage.setItem(txKey, JSON.stringify(sampleTransactions));
-  }
-  if (!localStorage.getItem(goalKey)) {
-    localStorage.setItem(goalKey, JSON.stringify(sampleGoals));
-  }
+  return {
+    transactions: sampleTransactions,
+    goals: sampleGoals,
+  };
 }
