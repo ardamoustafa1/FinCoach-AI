@@ -92,7 +92,7 @@ export async function fetchGoals() {
     return [];
   }
 
-  return data.map(g => ({
+  return (data || []).map(g => ({
     id: g.id,
     name: g.baslik,
     targetAmount: Number(g.hedef_tutar),
