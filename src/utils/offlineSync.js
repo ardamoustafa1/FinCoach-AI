@@ -33,8 +33,9 @@ export async function saveToOfflineQueue(transaction, action = 'add') {
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const isLocalDemo = String(session?.access_token || '').startsWith('local-demo-token-') || !supabaseUrl || !supabaseAnonKey;
 
-  let endpoint = `${supabaseUrl}/rest/v1/transactions`;
+  let endpoint = isLocalDemo ? '/local-demo/transactions' : `${supabaseUrl}/rest/v1/transactions`;
   let method = 'POST';
   let payload = {};
 
@@ -51,7 +52,7 @@ export async function saveToOfflineQueue(transaction, action = 'add') {
     };
   } else if (action === 'update') {
     method = 'PATCH';
-    endpoint = `${supabaseUrl}/rest/v1/transactions?id=eq.${transaction.id}`;
+    endpoint = isLocalDemo ? `/local-demo/transactions/${transaction.id}` : `${supabaseUrl}/rest/v1/transactions?id=eq.${transaction.id}`;
     payload = {};
     if (transaction.aciklama !== undefined) payload.aciklama = transaction.aciklama;
     if (transaction.tutar !== undefined) payload.tutar = Number(transaction.tutar);
@@ -61,7 +62,7 @@ export async function saveToOfflineQueue(transaction, action = 'add') {
     if (transaction.tur !== undefined) payload.tur = transaction.tur || 'gider';
   } else if (action === 'delete') {
     method = 'DELETE';
-    endpoint = `${supabaseUrl}/rest/v1/transactions?id=eq.${transaction.id}`;
+    endpoint = isLocalDemo ? `/local-demo/transactions/${transaction.id}` : `${supabaseUrl}/rest/v1/transactions?id=eq.${transaction.id}`;
   }
 
   const syncItem = {
@@ -70,12 +71,13 @@ export async function saveToOfflineQueue(transaction, action = 'add') {
     endpoint,
     method,
     headers: {
-      'apikey': supabaseAnonKey,
+      'apikey': supabaseAnonKey || 'local-demo',
       'Authorization': `Bearer ${session.access_token}`,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     },
     payload,
+    localDemo: isLocalDemo,
     createdAt: new Date().toISOString()
   };
 
