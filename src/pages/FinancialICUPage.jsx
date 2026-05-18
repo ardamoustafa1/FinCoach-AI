@@ -86,8 +86,8 @@ export default function FinancialICUPage() {
       { month: 'Mar', liquidity: 32000, threshold: 0 },
       { month: 'Nis', liquidity: 18000, threshold: 0 },
       { month: 'May', liquidity: 5000, threshold: 0 },
-      { month: 'Haz', liquidity: Math.round(predictions[0]), threshold: 0 },
-      { month: 'Tem', liquidity: Math.round(predictions[1]), threshold: 0 },
+      { month: 'Haz', liquidity: Math.round(predictions?.[0] ?? -8000), threshold: 0 },
+      { month: 'Tem', liquidity: Math.round(predictions?.[1] ?? -21000), threshold: 0 },
     ]);
     
     setStep(2); // NPL Detected state
