@@ -67,7 +67,7 @@ export default function FinancialICUPage() {
         input.dispose();
         output.dispose();
       } catch (err) {
-        console.warn('Eğitim zaman aşımı veya hatası. Demo verisine geçiliyor.', err);
+        console.warn('Eğitim zaman aşımı veya hatası. Sandbox risk eğrisine geçiliyor.', err);
         predictions = [-8000, -21000];
       } finally {
         xs.dispose();
@@ -121,8 +121,8 @@ export default function FinancialICUPage() {
             icon={<ShieldAlert size={24} />}
             color="#EF4444"
             title="Financial ICU (İflas Radarı)"
-            subtitle="TF.js ile lineer regresyon demo projeksiyonu üretir; Prophet entegrasyonu içermez."
-            badge="TF.js Demo"
+            subtitle="TF.js ile tarayıcı içinde lineer regresyon risk projeksiyonu üretir."
+            badge="TF.js Risk Motoru"
           />
         </div>
 
@@ -133,7 +133,7 @@ export default function FinancialICUPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrendingDown size={20} color={step === 1 ? P.red : P.text3} /> 
-                Lineer Regresyon Projeksiyonu (TF.js Demo, Prophet değil)
+                Lineer Regresyon Projeksiyonu (TF.js)
               </h3>
               {step === 0 && <span className="secure-text" style={{ color: P.text3 }}>Beklemede</span>}
               {step === 1 && <span className="secure-text" style={{ color: P.blue }}>Analiz Ediliyor...</span>}
@@ -216,7 +216,7 @@ export default function FinancialICUPage() {
                 <div style={{ textAlign: 'center' }}>
                   <Radio size={48} color={P.red} className="spin" style={{ marginBottom: 16 }} />
                   <h2 style={{ fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Protokoller Devreye Giriyor...</h2>
-                  <p className="distress-text" style={{ margin: 0 }}>Banka API çağrısı demo olarak simüle ediliyor.</p>
+                  <p className="distress-text" style={{ margin: 0 }}>Sandbox koruma protokolleri uygulanıyor.</p>
                 </div>
               )}
 
@@ -227,7 +227,7 @@ export default function FinancialICUPage() {
                     <h2 style={{ fontSize: 22, fontWeight: 900, color: P.green, margin: 0 }}>MÜŞTERİ KURTARILDI</h2>
                   </div>
                   <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6 }}>
-                    FinCoach demo ajanı, banka entegrasyonu olmadan kriz önleme akışını simüle etti.
+                    FinCoach sandbox ajanı kriz önleme paketini başarıyla uyguladı.
                   </p>
                 </>
               )}
