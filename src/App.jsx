@@ -106,8 +106,19 @@ function TourOverlay() {
 
 function RouteHandler() {
   const { pathname } = useLocation();
+  const [navigating, setNavigating] = useState(false);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // 1. Üstte ince bir loading bar efekti başlat
+    setNavigating(true);
+    
+    // 2. Yumuşak Scroll Restoration (Timeout ile DOM'un çizilmesini bekler)
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      setNavigating(false);
+    }, 50);
+
+    // 3. SEO / Sayfa başlıkları
     const titleMap = {
       '/': 'Ana Sayfa',
       '/dashboard': 'Dashboard',
@@ -141,8 +152,28 @@ function RouteHandler() {
     };
     const currentTitle = titleMap[pathname] || 'Finansal Koçunuz';
     document.title = `${currentTitle} | FinCoach AI`;
+
+    return () => clearTimeout(timer);
   }, [pathname]);
-  return null;
+
+  return (
+    <>
+      <style>{`
+        @keyframes top-progress {
+          0% { width: 0%; opacity: 1; }
+          50% { width: 70%; opacity: 1; }
+          100% { width: 100%; opacity: 0; }
+        }
+        .nav-progress-bar {
+          position: fixed; top: 0; left: 0; height: 3px;
+          background: linear-gradient(90deg, #7c3aed, #06b6d4, #ec4899);
+          z-index: 99999; pointer-events: none;
+          animation: top-progress 0.4s ease-out forwards;
+        }
+      `}</style>
+      {navigating && <div className="nav-progress-bar" />}
+    </>
+  );
 }
 
 // ErrorBoundary: ./components/ErrorBoundary.jsx'den import ediliyor (KRİTİK-02 düzeltmesi)
