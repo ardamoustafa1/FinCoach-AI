@@ -142,12 +142,12 @@ export default function OpenBankingModal({ onComplete }) {
               <Landmark size={24} color="#60a5fa" />
             </div>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>Açık Bankacılık Senkronizasyonu <span style={{fontSize: 10, backgroundColor: 'rgba(239,68,68,0.2)', color: '#EF4444', padding: '2px 6px', borderRadius: 6, verticalAlign: 'middle'}}>Demo Verisi</span></h3>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>Açık Bankacılık Sandbox Senkronizasyonu <span style={{fontSize: 10, backgroundColor: 'rgba(16,185,129,0.18)', color: '#10B981', padding: '2px 6px', borderRadius: 6, verticalAlign: 'middle'}}>Çalışır Sandbox</span></h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                 {step === 0 && <><Loader2 size={12} color="#94a3b8" className="animate-spin" /><span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>API'ye bağlanılıyor...</span></>}
-                {step === 1 && <><Server size={12} color="#60a5fa" className="animate-pulse" /><span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>Örnek veri akışı başlatıldı...</span></>}
-                {step === 2 && <><Sparkles size={12} color="#c4b5fd" className="animate-pulse" /><span style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600 }}>LLM Kategorizasyonu (Simülasyon)...</span></>}
-                {step === 3 && <><CheckCircle2 size={12} color="#10b981" /><span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>Demo işlem tamamlandı</span></>}
+                {step === 1 && <><Server size={12} color="#60a5fa" className="animate-pulse" /><span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>Sandbox veri akışı başlatıldı...</span></>}
+                {step === 2 && <><Sparkles size={12} color="#c4b5fd" className="animate-pulse" /><span style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600 }}>Yerel kategorizasyon motoru çalışıyor...</span></>}
+                {step === 3 && <><CheckCircle2 size={12} color="#10b981" /><span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>Senkronizasyon tamamlandı</span></>}
               </div>
             </div>
           </div>
