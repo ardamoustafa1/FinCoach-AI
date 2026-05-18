@@ -15,6 +15,14 @@ export default function FederatedLearningPage() {
     setLogs(prev => [...prev, { msg, color, id: Math.random() }]);
   };
 
+  const timersRef = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+    };
+  }, []);
+
   // WebRTC P2P Peers definition
   const [peersState, setPeersState] = useState([
     { id: 'Peer-Ankara-21', city: 'Ankara', status: 'offline', ip: '193.140.88.43', loss: 0 },
@@ -127,12 +135,12 @@ export default function FederatedLearningPage() {
       addLog('[WebRTC] P2P Swarm ağına katılınıyor. Sinyalleşme odası: fincoach-fedavg-swarm', P.blue);
       
       // Sandbox handshake timeline; BroadcastChannel keeps this testable across local tabs.
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         addLog('[LOCAL_SWARM] BroadcastChannel sinyal katmanı hazır.', P.text3);
         setPeersState(prev => prev.map(p => ({ ...p, status: 'connecting' })));
       }, 1000);
 
-      setTimeout(() => {
+      const t2 = setTimeout(() => {
         addLog('[LOCAL_SWARM] Ankara Node sandbox handshake tamamlandı.', P.purple);
         addLog('[LOCAL_SWARM] Ankara Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
@@ -142,7 +150,7 @@ export default function FederatedLearningPage() {
         });
       }, 2500);
 
-      setTimeout(() => {
+      const t3 = setTimeout(() => {
         addLog('[LOCAL_SWARM] İstanbul Node sinyal eşleşmesi tamamlandı.', P.purple);
         addLog('[LOCAL_SWARM] İstanbul Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
@@ -152,7 +160,7 @@ export default function FederatedLearningPage() {
         });
       }, 3800);
 
-      setTimeout(() => {
+      const t4 = setTimeout(() => {
         addLog('[LOCAL_SWARM] İzmir Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
           const next = [...prev];
@@ -161,6 +169,8 @@ export default function FederatedLearningPage() {
         });
         setTrainingState('exchanging');
       }, 5000);
+
+      timersRef.current.push(t1, t2, t3, t4);
 
     } catch (err) {
       addLog(`[HATA] Eğitim yarıda kesildi: ${err.message}`, P.red);
