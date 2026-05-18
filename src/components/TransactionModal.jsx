@@ -178,9 +178,9 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
   });
 
   return (
-    <div style={{
+    <div className="modal-overlay-deep-blur" style={{
       position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      padding: 24,
     }} onClick={e => e.target === e.currentTarget && onKapat()}>
       <div className={shake ? 'shake' : ''} style={{
         width: '100%', maxWidth: 460, background: P.bg2, border: `1px solid ${P.border}`,
@@ -318,7 +318,7 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
 
       {/* Anti-Impulse Blocker Overlay */}
       {showImpulseBlock && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.2s ease' }}>
+        <div className="modal-overlay-deep-blur" style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, animation: 'fadeIn 0.2s ease' }}>
           <div style={{ width: '100%', maxWidth: 360, background: P.bg1, border: `1px solid ${P.amber}50`, borderRadius: 28, padding: '32px 24px', boxShadow: `0 32px 100px ${P.amber}30`, textAlign: 'center' }}>
             <div style={{ width: 64, height: 64, borderRadius: 20, background: `${P.amber}15`, border: `2px solid ${P.amber}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', animation: 'pulse 2s infinite' }}>
               <ShieldAlert size={32} color={P.amber} />

@@ -18,17 +18,33 @@
 
 .dark {
   --bg-main: #050714;
-  --bg-surface: #141728;
-  --bg-surface-soft: #1c2038;
-  --bg-sidebar: #0d0f1e;
+  --bg-surface: rgba(20, 23, 40, 0.65);
+  --bg-surface-soft: rgba(28, 32, 56, 0.7);
+  --bg-sidebar: rgba(13, 15, 30, 0.65);
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(124, 58, 237, 0.4);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(124, 58, 237, 0.45);
   --header-bg: rgba(13, 15, 30, 0.85);
-  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --glass-bg: rgba(20, 23, 40, 0.8);
+}
+
+/* ===== Universal Deep Glassmorphism Hack ===== */
+/* Uygulamadaki tüm mat arkaplanlı kartları otomatik olarak gerçek buzlu cama çevirir */
+[style*="var(--bg-surface)"],
+[style*="var(--bg-surface-soft)"],
+[style*="var(--bg-sidebar)"] {
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+}
+
+/* Deep Blur Overlay for Modals */
+.modal-overlay-deep-blur {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
 }
 
 /* ===== Base Styles ===== */
