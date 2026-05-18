@@ -29,7 +29,7 @@ export default function TaxOptimizerPage() {
       const threeMonthsAgo = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 2, 1);
       const minDateStr = threeMonthsAgo.toISOString().slice(0, 10); // YYYY-MM-DD
       
-      const eligibleTx = tx.filter(t => t.tur === 'gider' && t.tarih >= minDateStr);
+      const eligibleTx = (tx || []).filter(t => t.tur === 'gider' && t.tarih >= minDateStr);
       
       let totalExpense = 0;
       let totalDeductible = 0;
