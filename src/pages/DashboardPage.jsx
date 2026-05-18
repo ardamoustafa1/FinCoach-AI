@@ -40,29 +40,59 @@ function useCountUp(target, duration = 1500) {
 function StatCard({ label, target, icon: Icon, color, isCurrency = true, change, delay = 0 }) {
   const [visible, setVisible] = useState(false);
   const [hov, setHov] = useState(false);
-  const animated = useCountUp(target, 1400);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const cardRef = useRef(null);
+  
+  const animated = useCountUp(target, 1800); // Daha uzun ve yumuşak sayım
+  
   useEffect(() => { const t = setTimeout(() => setVisible(true), delay); return () => clearTimeout(t); }, [delay]);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   const isPos = change > 0;
   return (
     <div
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      ref={cardRef}
+      onMouseEnter={() => setHov(true)} 
+      onMouseLeave={() => setHov(false)}
+      onMouseMove={handleMouseMove}
       style={{
         padding: '22px 24px', borderRadius: 20,
-        background: hov ? P.bg3 : P.bg2,
-        border: `1px solid ${hov ? P.borderHover : P.border}`,
-        transition: `all 0.5s ease ${delay}ms`,
-        transform: visible ? (hov ? 'translateY(-2px)' : 'none') : 'translateY(16px)',
+        background: P.bg2,
+        border: `1px solid ${hov ? 'transparent' : P.border}`,
+        transition: `transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease ${delay}ms`,
+        transform: visible ? (hov ? 'translateY(-4px)' : 'none') : 'translateY(24px)',
         opacity: visible ? 1 : 0,
-        boxShadow: hov ? `0 0 32px ${P.purpleGlow}` : '0 4px 24px rgba(0,0,0,0.4)',
+        boxShadow: hov ? `0 12px 32px rgba(0,0,0,0.5)` : '0 4px 24px rgba(0,0,0,0.4)',
         position: 'relative', overflow: 'hidden',
       }}
     >
+      {/* ── Spotlight Glow Efekti ── */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${color}15, transparent 40%)`,
+        opacity: hov ? 1 : 0, transition: 'opacity 0.3s ease',
+        pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0, borderRadius: 20,
+        padding: 1, background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, ${color}50, transparent 40%)`,
+        opacity: hov ? 1 : 0, transition: 'opacity 0.3s ease',
+        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+        WebkitMaskComposite: 'xor', maskComposite: 'exclude',
+        pointerEvents: 'none'
+      }} />
+      
       <div style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: color, opacity: 0.08, filter: 'blur(28px)', pointerEvents: 'none' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
         <div>
           <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</p>
-          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8 }}>
+          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
             {isCurrency
               ? <><span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>{Math.round(animated).toLocaleString('tr-TR')}</>
               : `%${animated.toFixed(1)}`}
@@ -74,8 +104,8 @@ function StatCard({ label, target, icon: Icon, color, isCurrency = true, change,
             </div>
           )}
         </div>
-        <div style={{ width: 46, height: 46, borderRadius: 14, background: `${color}22`, border: `1px solid ${color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={20} color={color} />
+        <div style={{ width: 46, height: 46, borderRadius: 14, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease', transform: hov ? 'scale(1.05) rotate(5deg)' : 'none' }}>
+          <Icon size={20} color={color} style={{ filter: hov ? `drop-shadow(0 0 8px ${color}60)` : 'none' }} />
         </div>
       </div>
     </div>
@@ -179,46 +209,57 @@ export default function DashboardPage() {
 
   return (
     <>
-      <style>{`@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`}</style>
+      <style>{`
+        @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes fcSlideUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-1 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.05s; }
+        .stagger-2 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.15s; }
+        .stagger-3 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.25s; }
+        .stagger-4 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.35s; }
+        .stagger-5 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.45s; }
+        .stagger-6 { animation: fcSlideUp 0.6s cubic-bezier(0.16,1,0.3,1) both; animation-delay: 0.55s; }
+      `}</style>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <PageHeader
-          icon={<Zap size={24} />}
-          color={P.purple}
-          title="Komuta Merkezi"
-          subtitle="Finansal hayatınızın gerçek zamanlı özeti ve yapay zeka analizleri."
-          badge={new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}
-        >
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button
-              onClick={handleBankSync}
-              disabled={bankingSyncing}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-                background: bankingSyncing ? P.bg3 : `linear-gradient(135deg, ${P.green}, #059669)`, color: bankingSyncing ? P.text3 : '#fff',
-                fontSize: 13, fontWeight: 800, cursor: bankingSyncing ? 'not-allowed' : 'pointer', border: 'none',
-                boxShadow: bankingSyncing ? 'none' : '0 8px 20px rgba(16,185,129,0.3)', transition: 'all 0.2s'
-              }}
-            >
-              {bankingSyncing ? <RefreshCw size={16} className="animate-spin" /> : <Building2 size={16} />}
-              {bankingSyncing ? 'Senkronize...' : 'Bankanı Bağla'}
-            </button>
-            <button
-              onClick={() => navigate('/shop-sim')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-                background: `linear-gradient(135deg, #EC4899, ${P.purple})`, color: '#fff',
-                fontSize: 13, fontWeight: 800, cursor: 'pointer', border: 'none',
-                boxShadow: '0 8px 20px rgba(236,72,153,0.3)', transition: 'all 0.2s'
-              }}
-            >
-              <ShoppingCart size={16} />
-              AI Simülatör
-            </button>
-          </div>
-        </PageHeader>
+        <div className="stagger-1">
+          <PageHeader
+            icon={<Zap size={24} />}
+            color={P.purple}
+            title="Komuta Merkezi"
+            subtitle="Finansal hayatınızın gerçek zamanlı özeti ve yapay zeka analizleri."
+            badge={new Date().toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}
+          >
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button
+                onClick={handleBankSync}
+                disabled={bankingSyncing}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
+                  background: bankingSyncing ? P.bg3 : `linear-gradient(135deg, ${P.green}, #059669)`, color: bankingSyncing ? P.text3 : '#fff',
+                  fontSize: 13, fontWeight: 800, cursor: bankingSyncing ? 'not-allowed' : 'pointer', border: 'none',
+                  boxShadow: bankingSyncing ? 'none' : '0 8px 20px rgba(16,185,129,0.3)', transition: 'all 0.2s'
+                }}
+              >
+                {bankingSyncing ? <RefreshCw size={16} className="animate-spin" /> : <Building2 size={16} />}
+                {bankingSyncing ? 'Senkronize...' : 'Bankanı Bağla'}
+              </button>
+              <button
+                onClick={() => navigate('/shop-sim')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
+                  background: `linear-gradient(135deg, #EC4899, ${P.purple})`, color: '#fff',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', border: 'none',
+                  boxShadow: '0 8px 20px rgba(236,72,153,0.3)', transition: 'all 0.2s'
+                }}
+              >
+                <ShoppingCart size={16} />
+                AI Simülatör
+              </button>
+            </div>
+          </PageHeader>
+        </div>
 
         {cognitiveBiases.length > 0 && (
-          <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="stagger-2" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {cognitiveBiases.map(b => (
               <div key={b.id} style={{ 
                 background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, 
@@ -252,27 +293,38 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <LimitBanner asimlar={asimlar} persistent />
-        <HealthScore islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
-        <PersonalityCard islemler={transactions} />
+        <div className="stagger-2">
+          <LimitBanner asimlar={asimlar} persistent />
+        </div>
+        
+        <div className="stagger-2">
+          <HealthScore islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
+        </div>
+        
+        <div className="stagger-3">
+          <PersonalityCard islemler={transactions} />
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 14 }}>
           {kartlar.map(k => <StatCard key={k.label} {...k} />)}
         </div>
 
-        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
+        <div className="chart-grid-2col stagger-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <CategoryPieChart islemler={transactions} />
           <TrendLineChart islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
         </div>
 
-        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
+        <div className="chart-grid-2col stagger-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <HeatmapCalendar islemler={transactions} />
           <GeoHeatmap />
         </div>
-        <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
+        
+        <div className="stagger-5">
+          <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
+        </div>
 
         {/* ── KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
+        <div className="stagger-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {/* Otomatik küsurat hesabı — gerçek hesaplama */}
           <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />
