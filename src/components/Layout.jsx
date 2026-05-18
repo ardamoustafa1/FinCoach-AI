@@ -51,15 +51,12 @@ export default function Layout({ theme, onToggleTheme }) {
   };
 
   const startListeningGlobal = async () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
-
     // Check existing permission state
     let permState = 'prompt';
     try {
       const result = await navigator.permissions.query({ name: 'microphone' });
       permState = result.state; // 'granted' | 'denied' | 'prompt'
-    } catch { /* Firefox doesn't support permissions.query for microphone */ }
+    } catch { /* Safari/Firefox may not support permissions.query for microphone */ }
 
     if (permState === 'denied') {
       toast.error('Mikrofon erişimi engellendi. Tarayıcı ayarlarından izin vermeniz gerekiyor.');
@@ -77,6 +74,8 @@ export default function Layout({ theme, onToggleTheme }) {
   };
 
   const doStartListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
     const recognition = new SR();
     recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
     recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum... Konuşun.', { duration: 5000, icon: '🎤' }); };
