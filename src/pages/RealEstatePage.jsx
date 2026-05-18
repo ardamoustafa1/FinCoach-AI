@@ -68,7 +68,8 @@ export default function RealEstatePage() {
       
       if (dtiRatio > 55) {
         decision = 'rejected';
-        const requiredDownPayment = housePrice - (((monthlyIncome * 0.40) * (Math.pow(1 + r, n) - 1)) / (r * Math.pow(1 + r, n)));
+        const safeR = r > 0 ? r : 0.0001;
+        const requiredDownPayment = housePrice - (((monthlyIncome * 0.40) * (Math.pow(1 + safeR, n) - 1)) / (safeR * Math.pow(1 + safeR, n)));
         message = `REDDEDİLDİ: Bu evi almak seni finansal olarak batırır. Aylık taksit (₺${Math.round(monthlyPayment).toLocaleString()}), toplam gelirinin %${Math.round(dtiRatio)}'si! Peşinatı en az ₺${Math.round(requiredDownPayment).toLocaleString()}'ye çıkarana kadar bekle veya daha ucuz bir ev bak.`;
       } else if (dtiRatio > 40) {
         decision = 'warning';
