@@ -144,7 +144,7 @@ export default function ChatPage() {
   const [modalChart, setModalChart] = useState(null);
   const [showEmotionCheckin, setShowEmotionCheckin] = useState(false);
   const messagesEndRef = useRef(null);
-  const emotionLogs = useStore(state => state.emotionLogs);
+  const emotionLogs = useStore(state => state.emotionLogs) || [];
   const addEmotionLog = useStore(state => state.addEmotionLog);
 
   const initialMsgHandled = useRef(false);

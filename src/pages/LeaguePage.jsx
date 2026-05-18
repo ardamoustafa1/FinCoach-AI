@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Trophy, Swords, Crown, TrendingUp, AlertCircle, Medal, Zap, ShieldCheck } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import PageHeader from '../components/PageHeader';
@@ -22,10 +22,15 @@ const MOCK_BADGES = [
 export default function LeaguePage() {
   const toast = useToast();
   const [inviting, setInviting] = useState(false);
+  const inviteTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(inviteTimerRef.current);
+  }, []);
 
   const handleInvite = () => {
     setInviting(true);
-    setTimeout(async () => {
+    inviteTimerRef.current = setTimeout(async () => {
       setInviting(false);
       const text = 'Seni FinCoach AI Finansal Düelloya davet ediyorum! Bakalım bu ay kim daha az gereksiz harcama yapacak? ⚔️💰 ' + window.location.origin;
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
@@ -88,7 +93,7 @@ export default function LeaguePage() {
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 20px', borderRadius: 16,
                 background: user.isMe ? 'rgba(124,58,237,0.1)' : P.bg3,
-                border: `1px solid ${user.isMe ? P.purpleGlow : P.border}`,
+                border: `1px solid ${user.isMe ? P.purple : P.border}`,
                 transition: 'transform 0.2s', cursor: 'default'
               }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateX(4px)'}

@@ -19,7 +19,7 @@ export default function MicroInvestPage() {
   useEffect(() => {
     let isMounted = true;
     setTimeout(() => {
-      const tx = (useStore.getState().transactions || []).filter(t => t.tur === 'gider').slice(0, 50);
+      const tx = (useStore.getState().transactions || []).filter(t => t && t.tur === 'gider').slice(0, 50);
       
       let totalSpareChange = 0;
       const recentRounds = [];

@@ -47,11 +47,11 @@ export default function CashFlowPage() {
 
   const runSimulation = (contractPenalty = 0) => {
     // ─── MONTE CARLO SIMULATION ───
-    const tx = useStore.getState().transactions;
+    const tx = useStore.getState().transactions || [];
     
     // 1. Tarihsel Verilerden İstatistik Çıkarımı
-    const gelirler = tx.filter(t => t.tur === 'gelir').map(t => Number(t.tutar));
-    const giderler = tx.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
+    const gelirler = tx.filter(t => t && t.tur === 'gelir').map(t => Number(t.tutar));
+    const giderler = tx.filter(t => t && t.tur === 'gider').map(t => Number(t.tutar));
     
     // Ortalama Gelir (Yoksa varsayılan 50k)
     const avgIncome = gelirler.length > 0 ? gelirler.reduce((a, b) => a + b, 0) / Math.max(1, gelirler.length) : 50000;

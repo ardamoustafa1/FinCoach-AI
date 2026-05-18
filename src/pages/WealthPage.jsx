@@ -44,15 +44,15 @@ export default function WealthPage() {
   const [goalAnalysis, setGoalAnalysis] = useState(null);
 
   useEffect(() => {
-    const tx = useStore.getState().transactions;
-    const goals = useStore.getState().goals;
+    const tx = useStore.getState().transactions || [];
+    const goals = useStore.getState().goals || [];
     
     setTimeout(() => {
       // 1. Calculate Monthly Cashflow (Savings Capacity)
-      const expenses = tx.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
+      const expenses = tx.filter(t => t && t.tur === 'gider').map(t => Number(t.tutar));
       const avgExpense = expenses.reduce((a, b) => a + b, 0) / (expenses.length || 1);
       
-      const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
+      const totalIncome = tx.filter(t => t && t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       const totalExpense = avgExpense * (expenses.length || 1) || 30000;
       const monthlySavings = Math.max(1000, isNaN(totalIncome - totalExpense) ? 20000 : (totalIncome - totalExpense));
 
@@ -168,7 +168,7 @@ export default function WealthPage() {
             </div>
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>
-                {metrics.activeGoal ? `'${metrics.activeGoal.baslik || metrics.activeGoal.name}' Hedefi Analizi` : 'Genel Portföy Analizi'}
+                {metrics?.activeGoal ? `'${metrics.activeGoal.baslik || metrics.activeGoal.name}' Hedefi Analizi` : 'Genel Portföy Analizi'}
               </h3>
               <p style={{ fontSize: 14, color: P.text2, margin: 0, lineHeight: 1.6 }}>
                 {goalAnalysis.msg}
@@ -184,7 +184,7 @@ export default function WealthPage() {
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.text3, textTransform: 'uppercase' }}>Gereken Hedef Getiri</span>
               <Target size={18} color={P.purple} />
             </div>
-            <p style={{ fontSize: 24, fontWeight: 900, color: P.purple, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{metrics.targetReturn}</p>
+            <p style={{ fontSize: 24, fontWeight: 900, color: P.purple, margin: '0 0 4px', letterSpacing: '-0.02em' }}>%{metrics?.targetReturn || '0.0'}</p>
             <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>Zaman çizelgesine göre (Yıllık)</p>
           </div>
           

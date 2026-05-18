@@ -18,7 +18,7 @@ const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','A
 const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
 function normalizeTransactions(rawTransactions) {
-  return (rawTransactions || []).map((tx) => ({
+  return (rawTransactions || []).filter(Boolean).map((tx) => ({
     id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
     kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
@@ -97,7 +97,7 @@ export default function ReportsPage() {
   const transactions = useMemo(() => normalizeTransactions(rawTransactions), [rawTransactions]);
   const months = useMemo(() => buildMonthWindow(transactions), [transactions]);
   const [selectedIndex, setSelectedIndex] = useState(months.length - 1);
-  const selectedMonth = months[selectedIndex] || months[months.length - 1];
+  const selectedMonth = months[selectedIndex] || months[months.length - 1] || new Date().toISOString().slice(0, 7);
   const previousMonth = addMonths(selectedMonth, -1);
   const selectedSummary = useMemo(() => summarizeMonth(transactions, selectedMonth), [transactions, selectedMonth]);
   const previousSummary = useMemo(() => summarizeMonth(transactions, previousMonth), [transactions, previousMonth]);

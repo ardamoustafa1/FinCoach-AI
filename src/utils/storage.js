@@ -24,7 +24,7 @@ const memoryStore = {
   categoryRules: {},
 };
 
-const clone = (value) => JSON.parse(JSON.stringify(value));
+const clone = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 
 function upsertById(list, item) {
   const id = item.id || crypto.randomUUID();
@@ -160,7 +160,7 @@ export async function saveBudgetLimits(limits) {
 
   const user = await getUser();
   if (user) {
-    const writes = Object.entries(limits).map(([kategori, limit]) =>
+    const writes = Object.entries(limits || {}).map(([kategori, limit]) =>
       supabase.from('budget_limits').upsert({
         user_id: user.id,
         category: kategori,

@@ -186,7 +186,7 @@ export default function ShopSimulationPage() {
                       </p>
                     ) : (
                       <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5 }}>
-                        "Mantıksızlık skoru (%{psyData?.score}) çok yüksek. Peşin alım REDDEDİLDİ. Psikolojik dürtüyü kırmak için <strong>7 Gün Bekleme Kuralı</strong> veya likiditeyi korumak için <strong>6 Taksit</strong> şartı koşuyorum."
+                        {`"Mantıksızlık skoru (%${psyData?.score || 0}) çok yüksek. Peşin alım REDDEDİLDİ. Psikolojik dürtüyü kırmak için `}<strong>7 Gün Bekleme Kuralı</strong>{` veya likiditeyi korumak için `}<strong>6 Taksit</strong>{` şartı koşuyorum."`}
                       </p>
                     )}
                   </div>

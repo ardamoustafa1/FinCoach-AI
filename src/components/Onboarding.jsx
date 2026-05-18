@@ -24,7 +24,7 @@ const GOALS = [
   { key: "birikim", label: "🎯 Birikim hedefi koymak" },
 ];
 
-export default function Onboarding({ userName = 'Kullanıcı', onComplete }) {
+export default function Onboarding({ userName = 'Kullanıcı', onComplete = () => {} }) {
   const [step, setStep] = useState(1);
   const [income, setIncome] = useState("");
   const [goal, setGoal]   = useState("");
@@ -32,7 +32,7 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete }) {
   const [customBank, setCustomBank] = useState("");
   const [leaving, setLeaving] = useState(false);
 
-  const s = STEPS[step - 1];
+  const s = STEPS[step - 1] || STEPS[0];
 
   const timerRef = useRef(null);
   useEffect(() => {

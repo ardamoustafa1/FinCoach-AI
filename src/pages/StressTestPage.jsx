@@ -59,7 +59,7 @@ export default function StressTestPage() {
   const [isMonteCarloRunning, setIsMonteCarloRunning] = useState(false);
   const [mcIteration, setMcIteration] = useState(0);
 
-  const activeScenario = SCENARIOS.find(s => s.id === activeScenarioId);
+  const activeScenario = SCENARIOS.find(s => s.id === activeScenarioId) || SCENARIOS[0];
 
   useEffect(() => {
     let isMounted = true;
@@ -101,10 +101,10 @@ export default function StressTestPage() {
     }
 
     function calculateMetrics() {
-      const tx = useStore.getState().transactions;
-      const txList = tx || [];
-      const totalIncome = txList.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
-      const totalExpense = txList.filter(t => t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
+      const tx = useStore.getState().transactions || [];
+      const txList = tx;
+      const totalIncome = txList.filter(t => t && t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
+      const totalExpense = txList.filter(t => t && t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
       const currentSavingsRate = ((totalIncome - totalExpense) / (totalIncome || 1)) * 100;
       const emergencyFund = 85000; 
       

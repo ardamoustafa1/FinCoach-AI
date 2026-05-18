@@ -221,7 +221,7 @@ const useStore = create(
     set({ budgetLimits: limits });
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      const promises = Object.entries(limits).map(([kategori, limit]) => 
+      const promises = Object.entries(limits || {}).map(([kategori, limit]) => 
         supabase.from('budget_limits').upsert({
           user_id: session.user.id,
           category: kategori,
@@ -255,7 +255,7 @@ const useStore = create(
   
   suggestCategory: (magaza) => {
     if (!magaza) return '';
-    const rules = get().categoryRules;
+    const rules = get().categoryRules || {};
     return rules[magaza.trim().toLowerCase()] || '';
   },
 

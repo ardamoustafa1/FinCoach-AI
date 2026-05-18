@@ -2,6 +2,7 @@ export function calculateEcoScore(transactions) {
   // Sadece bu ayın işlemlerini al
   const now = new Date();
   const currentMonthTx = (transactions || []).filter(t => {
+    if (!t) return false;
     if (t.type === 'income' || t.tur === 'gelir') return false;
     const d = new Date(t.tarih || t.createdAt);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();

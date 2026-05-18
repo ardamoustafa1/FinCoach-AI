@@ -21,11 +21,11 @@ export default function DebtSnowballPage() {
     setTimeout(() => {
       if (!isMounted) return;
 
-      const tx = useStore.getState().transactions;
+      const tx = useStore.getState().transactions || [];
       
       // Try to find debt-related transactions to build real data
       const debtPayments = tx.filter(t => 
-        t.tur === 'gider' && 
+        t && t.tur === 'gider' && 
         ((t.kategori || '').toLowerCase().includes('kredi') || (t.kategori || '').toLowerCase().includes('borç'))
       );
 
@@ -52,8 +52,8 @@ export default function DebtSnowballPage() {
       }
 
       // Calculate monthly budget (Total Income - 80% of expenses, roughly)
-      const incomes = tx.filter(t => t.tur === 'gelir').reduce((a,b) => a + Number(b.tutar), 0) || 50000;
-      const expenses = tx.filter(t => t.tur === 'gider' && !t.kategori?.toLowerCase().includes('kredi')).reduce((a,b) => a + Number(b.tutar), 0) || 25000;
+      const incomes = tx.filter(t => t && t.tur === 'gelir').reduce((a,b) => a + Number(b.tutar), 0) || 50000;
+      const expenses = tx.filter(t => t && t.tur === 'gider' && !t.kategori?.toLowerCase().includes('kredi')).reduce((a,b) => a + Number(b.tutar), 0) || 25000;
       const calculatedBudget = Math.max(5000, incomes - expenses); // At least 5000 budget
 
       // Sort debts based on strategy
@@ -72,7 +72,7 @@ export default function DebtSnowballPage() {
       if (extraPayment < 0) {
          aiAdvice = `ALARM: Asgari ödemeleriniz (₺${fmt(totalMinPayment)}), bütçenizi (₺${fmt(calculatedBudget)}) aşıyor. Acilen harcamaları kısmalı veya borç yapılandırması (konsolidasyon) yapmalısınız.`;
       } else {
-         const target = workingDebts[0];
+         const target = workingDebts[0] || { name: 'Mevcut Borç', interestRate: 0 };
          if (strategy === 'snowball') {
            aiAdvice = `Karar: Kartopu Stratejisi. Psikolojik zafer için önce en küçük borç olan '${target.name}' kapatılacak. Asgarileri ödedikten sonra kalan ₺${fmt(extraPayment)} tutarındaki fazlalığı tamamen bu karta yatırın.`;
          } else {

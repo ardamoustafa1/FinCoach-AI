@@ -13,6 +13,7 @@ export function calculatePrediction(transactions) {
 
   // Bu ayki işlemler
   const currentMonthTx = (transactions || []).filter(t => {
+    if (!t) return false;
     const d = new Date(t.tarih || t.createdAt);
     return d >= startOfMonth && d <= endOfMonth;
   });

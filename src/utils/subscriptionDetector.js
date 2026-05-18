@@ -41,6 +41,7 @@ function islemleriGrupla(islemler) {
 
   const safeIslemler = islemler || [];
   safeIslemler.forEach(tx => {
+    if (!tx) return;
     // Sadece gider işlemleri (veya tur belirtilmemişse tutar'ı pozitif olanları gider say)
     const isGider = tx.tur === 'gider' || (!tx.tur && tx.tutar > 0);
     if (!isGider) return;

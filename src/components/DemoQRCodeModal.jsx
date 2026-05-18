@@ -1,7 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { X, ExternalLink } from 'lucide-react';
 
-export default function DemoQRCodeModal({ onClose }) {
+export default function DemoQRCodeModal({ onClose = () => {} }) {
   return (
     <div
       onClick={onClose}

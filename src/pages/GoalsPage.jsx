@@ -15,7 +15,7 @@ import GoalModal from '../components/goals/GoalModal';
 import KesintiSimulator from '../components/goals/KesintiSimulator';
 
 export default function GoalsPage() {
-  const [goals, setGoals] = useState(() => useStore.getState().goals);
+  const [goals, setGoals] = useState(() => useStore.getState().goals || []);
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [completedModal, setCompletedModal] = useState(null);
@@ -25,7 +25,7 @@ export default function GoalsPage() {
   const handleOpenModal = (g = null) => { setDuzenlenen(g); setModalAcik(true); };
 
   const refreshGoals = () => {
-    setGoals(useStore.getState().goals);
+    setGoals(useStore.getState().goals || []);
   };
 
   const handleSave = async (yeniHedef) => {
@@ -91,7 +91,7 @@ export default function GoalsPage() {
     toast.success(`${goal.name} hedefine ${amount}₺ eklendi!`);
   };
 
-  const safeGoals = goals || [];
+  const safeGoals = (goals || []).filter(Boolean);
   const aktif = safeGoals.filter(g => Number(g.currentAmount) < Number(g.targetAmount));
   const tamamlanan = safeGoals.filter(g => Number(g.currentAmount) >= Number(g.targetAmount));
   const totalCurrent = safeGoals.reduce((s, g) => s + Number(g.currentAmount), 0);

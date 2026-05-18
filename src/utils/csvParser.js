@@ -101,7 +101,7 @@ const BANKA_FORMATLARI = [
     gerekliSutunlar: [],
     // Daha esnek eşleşme
     detect: (headers) => {
-      const h = headers.map(s => s.toLowerCase().trim());
+      const h = (headers || []).filter(Boolean).map(s => String(s).toLowerCase().trim());
       const hasTarih = h.some(c => ['date', 'tarih', 'datum'].includes(c));
       const hasAciklama = h.some(c => ['description', 'açıklama', 'aciklama', 'desc'].includes(c));
       const hasTutar = h.some(c => ['amount', 'tutar', 'miktar', 'total'].includes(c));
@@ -215,7 +215,7 @@ function confidenceScore(tx) {
 
 // ─── Format Algılama ─────────────────────────────────────────
 function formatAlgila(headers) {
-  const normalHeaders = headers.map(h => h.toLowerCase().trim());
+  const normalHeaders = (headers || []).filter(Boolean).map(h => String(h).toLowerCase().trim());
 
   for (const format of BANKA_FORMATLARI) {
     // Özel detect fonksiyonu varsa onu kullan
@@ -260,7 +260,7 @@ export function parseCSV(file) {
     }
 
     // Dosya uzantısını kontrol et
-    const ext = file.name?.split('.').pop()?.toLowerCase();
+    const ext = (file?.name || '').split('.').pop()?.toLowerCase();
     if (ext && !['csv', 'txt', 'tsv'].includes(ext)) {
       reject({ type: 'format', message: 'Bu format desteklenmiyor. Lütfen CSV olarak dışa aktarın.' });
       return;

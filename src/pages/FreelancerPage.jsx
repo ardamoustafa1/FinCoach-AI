@@ -29,9 +29,8 @@ export default function FreelancerPage() {
     setTimeout(() => {
       if (!isMounted) return;
 
-      // Derive monthly income from real transactions
-      const tx = useStore.getState().transactions;
-      const incomeTx = (tx || []).filter(t => t.tur === 'gelir');
+      const tx = useStore.getState().transactions || [];
+      const incomeTx = tx.filter(t => t && t.tur === 'gelir');
 
       let monthlyIncome;
 
@@ -58,7 +57,7 @@ export default function FreelancerPage() {
         monthlyIncome = DEMO_INCOME;
       }
       const totalIncome = monthlyIncome.reduce((a, b) => a + b.gercekGelir, 0);
-      const avgIncome = totalIncome / monthlyIncome.length;
+      const avgIncome = totalIncome / (monthlyIncome.length || 1);
       const safeSalary = avgIncome * 0.85; // 85% of average to build buffer
       
       let vaultBalance = 0;

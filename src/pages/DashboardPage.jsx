@@ -104,8 +104,8 @@ export default function DashboardPage() {
     const buAyPrefix = `${bugun.getFullYear()}-${String(bugun.getMonth() + 1).padStart(2, '0')}`;
     const gecenAyPrefix = `${bugun.getFullYear()}-${String(bugun.getMonth()).padStart(2, '0')}`;
 
-    const buAyIs = transactions.filter(t => t.tarih.startsWith(buAyPrefix));
-    const gecenAyIs = transactions.filter(t => t.tarih.startsWith(gecenAyPrefix));
+    const buAyIs = transactions.filter(t => t && typeof t.tarih === 'string' && t.tarih.startsWith(buAyPrefix));
+    const gecenAyIs = transactions.filter(t => t && typeof t.tarih === 'string' && t.tarih.startsWith(gecenAyPrefix));
 
     const buAyGelir = buAyIs.filter(t => t.tur === 'gelir').reduce((s, t) => s + t.tutar, 0);
     const buAyGider = buAyIs.filter(t => t.tur === 'gider').reduce((s, t) => s + t.tutar, 0);
@@ -253,7 +253,7 @@ export default function DashboardPage() {
         )}
 
         <LimitBanner asimlar={asimlar} persistent />
-        <HealthScore islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
+        <HealthScore islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
         <PersonalityCard islemler={transactions} />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}>
@@ -262,7 +262,7 @@ export default function DashboardPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <CategoryPieChart islemler={transactions} />
-          <TrendLineChart islemler={transactions} gelirler={transactions.filter(t => t.tur === 'gelir')} />
+          <TrendLineChart islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>

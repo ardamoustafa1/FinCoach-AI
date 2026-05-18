@@ -21,15 +21,15 @@ export default function TaxOptimizerPage() {
   const [data, setData] = useState({ items: [], totalExpense: 0, totalDeductible: 0, taxSaved: 0 });
 
   useEffect(() => {
-    setTimeout(() => {
-      const tx = useStore.getState().transactions;
+    const timer = setTimeout(() => {
+      const tx = useStore.getState().transactions || [];
       const currentMonth = new Date();
       
       // Calculate date 3 months ago (first day of that month)
       const threeMonthsAgo = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 2, 1);
       const minDateStr = threeMonthsAgo.toISOString().slice(0, 10); // YYYY-MM-DD
       
-      const eligibleTx = (tx || []).filter(t => t.tur === 'gider' && t.tarih >= minDateStr);
+      const eligibleTx = tx.filter(t => t && t.tur === 'gider' && t.tarih >= minDateStr);
       
       let totalExpense = 0;
       let totalDeductible = 0;
@@ -63,6 +63,7 @@ export default function TaxOptimizerPage() {
       setData({ items, totalExpense, totalDeductible, taxSaved });
       setLoading(false);
     }, 800);
+    return () => clearTimeout(timer);
   }, []);
 
   const generateReport = async () => {
@@ -271,8 +272,8 @@ export default function TaxOptimizerPage() {
               {data.items.map(item => (
                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: P.bg3, borderRadius: 16, border: `1px solid ${P.border}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${item.info.color}15`, border: `1px solid ${item.info.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <item.info.icon size={18} color={item.info.color} />
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${item.info?.color || P.purple}15`, border: `1px solid ${item.info?.color || P.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {item.info?.icon && <item.info.icon size={18} color={item.info?.color || P.purple} />}
                     </div>
                     <div>
                       <p style={{ fontSize: 14, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>{item.magaza}</p>

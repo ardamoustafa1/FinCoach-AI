@@ -60,7 +60,7 @@ export default function FederatedLearningPage() {
 
     // Build real data from actual user transactions
     const txs = useStore.getState().transactions || [];
-    const spendings = txs.filter(t => t.tur === 'gider' || Number(t.tutar) < 0).map(t => Math.abs(Number(t.tutar)));
+    const spendings = txs.filter(t => t && (t.tur === 'gider' || Number(t.tutar) < 0)).map(t => Math.abs(Number(t.tutar)));
     
     // Normalization & Tensor generation
     let inputData = [0.1, 0.2, 0.3, 0.4, 0.5];
@@ -82,7 +82,7 @@ export default function FederatedLearningPage() {
       callbacks: {
         onEpochEnd: async (epochIndex, logs) => {
           setEpoch(epochIndex + 1);
-          addLog(`[TF.js] Epoch ${epochIndex + 1}/${selectedEpochs} - Real Loss: ${logs.loss.toFixed(4)} - Device GPU/CPU active`, P.text2);
+          addLog(`[TF.js] Epoch ${epochIndex + 1}/${selectedEpochs} - Real Loss: ${(logs?.loss || 0).toFixed(4)} - Device GPU/CPU active`, P.text2);
           await tf.nextFrame(); // UI responsive lock protection (prevents main thread freezing)
         }
       }

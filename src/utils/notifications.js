@@ -24,7 +24,7 @@ export function readExpenses() {
 }
 
 export function latestMonthKey(expenses = readExpenses()) {
-  const keys = expenses.map(tx => tx.tarih.slice(0, 7)).sort();
+  const keys = (expenses || []).filter(tx => tx && tx.tarih).map(tx => String(tx.tarih).slice(0, 7)).sort();
   return keys[keys.length - 1] || new Date().toISOString().slice(0, 7);
 }
 

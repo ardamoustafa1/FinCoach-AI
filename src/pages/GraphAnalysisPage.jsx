@@ -10,7 +10,7 @@ function runAprioriAnalysis(transactions) {
   const edges = [];
   const nodesMap = new Map();
   const txSorted = [...(transactions || [])]
-    .filter(t => t.tur === 'gider' && t.magaza)
+    .filter(t => t && t.tur === 'gider' && t.magaza && t.tarih)
     .sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
 
   // Node ekleme yardımcı fonksiyon

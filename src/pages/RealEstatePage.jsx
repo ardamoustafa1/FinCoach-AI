@@ -21,12 +21,12 @@ export default function RealEstatePage() {
     setTimeout(() => { if (isMounted) setLoading(true); }, 0);
     const timer = setTimeout(() => {
       if (!isMounted) return;
-      const tx = useStore.getState().transactions;
-      const monthlyIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
+      const tx = useStore.getState().transactions || [];
+      const monthlyIncome = tx.filter(t => t && t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       
       const principal = housePrice - downPayment;
       const r = interestRate / 100;
-      const n = termMonths;
+      const n = termMonths || 12;
       
       // Amortization formula: M = P[r(1+r)^n]/[(1+r)^n-1]
       let monthlyPayment;

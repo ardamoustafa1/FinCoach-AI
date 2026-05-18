@@ -174,7 +174,7 @@ const TOUR_CONTENT = {
 };
 
 export default function FeatureTourModal({ pathname, forceShow = false, onClose }) {
-  const seenTours = useStore(state => state.seenTours);
+  const seenTours = useStore(state => state.seenTours) || [];
   const markTourSeen = useStore(state => state.markTourSeen);
   
   const content = TOUR_CONTENT[pathname];
@@ -182,10 +182,10 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
   // If no content for this route, don't show
   if (!content) return null;
   // If already seen and not forced open, skip
-  if (!forceShow && seenTours.includes(pathname)) return null;
+  if (!forceShow && (seenTours || []).includes(pathname)) return null;
 
   const handleClose = () => {
-    if (!forceShow) markTourSeen(pathname);
+    if (!forceShow && typeof markTourSeen === 'function') markTourSeen(pathname);
     if (onClose) onClose();
   };
 

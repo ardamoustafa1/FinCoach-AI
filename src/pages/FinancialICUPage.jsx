@@ -18,8 +18,14 @@ export default function FinancialICUPage() {
   const [step, setStep] = useState(0); 
   const [dynamicChartData, setDynamicChartData] = useState([]);
   const hasTrained = useRef(false);
+  const isMountedRef = useRef(true);
   // 0: Scanning/Predicting, 1: NPL Detected (Red Alert), 2: ICU Activating, 3: Stabilized
   
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
   const startAnalysis = async () => {
     if (hasTrained.current) return;
     hasTrained.current = true;
@@ -81,6 +87,8 @@ export default function FinancialICUPage() {
       predictions = [-8000, -21000];
     }
 
+    if (!isMountedRef.current) return;
+
     setDynamicChartData([
       { month: 'Şub', liquidity: 45000, threshold: 0 },
       { month: 'Mar', liquidity: 32000, threshold: 0 },
@@ -95,7 +103,9 @@ export default function FinancialICUPage() {
 
   useEffect(() => {
     if (step === 3) {
-      const timer = setTimeout(() => setStep(4), 3000);
+      const timer = setTimeout(() => {
+        if (isMountedRef.current) setStep(4);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [step]);

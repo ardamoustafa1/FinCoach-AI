@@ -152,7 +152,7 @@ export default function SyntheticDataGeneratorPage() {
                   Üretim bekliyor...
                 </div>
               ) : (
-                profiles.map((p, i) => (
+                profiles.filter(Boolean).map((p, i) => (
                   <div key={i} className="json-text animate-enter" style={{ background: 'rgba(59,130,246,0.05)', padding: 16, borderRadius: 12, border: '1px solid rgba(59,130,246,0.1)' }}>
                     {`{`} <br/>
                     &nbsp;&nbsp;"id": <span style={{ color: P.green }}>"{p.id}"</span>, <br/>

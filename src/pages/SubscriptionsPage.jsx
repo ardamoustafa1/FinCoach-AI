@@ -25,9 +25,9 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     // 1. Identify subscriptions from real transactions
-    const tx = useStore.getState().transactions;
+    const tx = useStore.getState().transactions || [];
     const subTransactions = tx.filter(t => 
-      t.tur === 'gider' && 
+      t && t.tur === 'gider' && 
       (t.kategori === 'Abonelik' || t.kategori === 'Dijital' || t.aciklama?.toLowerCase().includes('abonelik'))
     );
 

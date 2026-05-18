@@ -199,7 +199,9 @@ export default function AuthPage({ onAuth }) {
     });
 
     if (authError) {
-      setError(authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message); if (authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message && !String(authError.message === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : authError.message).startsWith('✅')) triggerShake();
+      const msg = authError?.message || 'Bir hata oluştu.';
+      setError(msg === 'Invalid login credentials' ? 'E-posta veya şifre hatalı.' : msg);
+      if (!String(msg).startsWith('✅')) triggerShake();
       setLoading(false);
       return;
     }
@@ -212,7 +214,7 @@ export default function AuthPage({ onAuth }) {
       if (!profile) {
         const { data: createdProfile } = await supabase.from('profiles').upsert([{
           id: data.user.id,
-          full_name: data.user.email.split('@')[0],
+          full_name: (data.user.email || 'Kullanıcı').split('@')[0],
           email: data.user.email,
           onboarding_completed: false
         }]).select().single();
@@ -220,12 +222,12 @@ export default function AuthPage({ onAuth }) {
       }
       
 	    const authData = { 
-        name: profile?.full_name || data.user.email.split('@')[0], 
+        name: profile?.full_name || (data.user.email || 'Kullanıcı').split('@')[0], 
         email: data.user.email,
         id: data.user.id,
         phone: profile?.phone_text || '',
         onboardingCompleted: Boolean(profile?.onboarding_completed),
-        isDemo: data.user.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()
+        isDemo: (data.user.email || '').toLowerCase() === DEMO_EMAIL.toLowerCase()
       };
       
       onAuth(authData);

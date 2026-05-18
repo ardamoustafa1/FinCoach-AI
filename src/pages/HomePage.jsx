@@ -114,7 +114,7 @@ export default function HomePage() {
     }
   };
 
-  const safeTx = transactions || [];
+  const safeTx = (transactions || []).filter(Boolean);
 
   const totalIncome = safeTx
     .filter(t => t.type === 'income' || t.tur === 'gelir')

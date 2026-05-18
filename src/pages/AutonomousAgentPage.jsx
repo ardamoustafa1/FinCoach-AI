@@ -16,25 +16,24 @@ const LOG_MESSAGES = [
   "[EXEC] Kullanıcı onayıyla sandbox ledger güncellendi."
 ];
 
+const CHART_DATA = [
+  { month: '1. Ay', bleeding: -825, optimized: 155 },
+  { month: '2. Ay', bleeding: -1650, optimized: 310 },
+  { month: '3. Ay', bleeding: -2475, optimized: 465 },
+  { month: '4. Ay', bleeding: -3300, optimized: 620 },
+];
+
 export default function AutonomousAgentPage() {
   const [step, setStep] = useState(0); 
   // 0: Scanning, 1: Asymmetry Found, 2: Executing, 3: Completed
   const [logs, setLogs] = useState([]);
-  
-  // Fake chart data to show the "Bleeding" vs "Optimized"
-  const chartData = [
-    { month: '1. Ay', bleeding: -825, optimized: 155 },
-    { month: '2. Ay', bleeding: -1650, optimized: 310 },
-    { month: '3. Ay', bleeding: -2475, optimized: 465 },
-    { month: '4. Ay', bleeding: -3300, optimized: 620 },
-  ];
 
   useEffect(() => {
     let t1, t2, interval;
     if (step === 0) {
       let currentLogIndex = 0;
       interval = setInterval(() => {
-        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]]);
+        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]].filter(Boolean));
         currentLogIndex++;
         if (currentLogIndex === 5) { // Pause at "Asymmetry detected"
           clearInterval(interval);
@@ -47,7 +46,7 @@ export default function AutonomousAgentPage() {
       // Execute Arbitrage
       let currentLogIndex = 5;
       interval = setInterval(() => {
-        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]]);
+        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]].filter(Boolean));
         currentLogIndex++;
         if (currentLogIndex >= LOG_MESSAGES.length) {
           clearInterval(interval);
@@ -167,7 +166,7 @@ export default function AutonomousAgentPage() {
                 </h3>
                 <div style={{ height: 180, width: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <AreaChart data={CHART_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorBleed" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={P.red} stopOpacity={0.5}/>

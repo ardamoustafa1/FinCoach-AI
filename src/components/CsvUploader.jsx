@@ -78,7 +78,7 @@ export default function CsvUploader({ onImport, onKapat }) {
     setAiSummary(null);
 
     // Kategoriye ihtiyacı olan işlemleri bul (Diğer olanlar veya boş olanlar)
-    const uncategorized = sonuc.islemler.filter(tx => !tx.kategori || tx.kategori === 'Diğer');
+    const uncategorized = (sonuc.islemler || []).filter(tx => tx && (!tx.kategori || tx.kategori === 'Diğer'));
     setAiTotal(uncategorized.length);
     setAiProgress(0);
 
@@ -88,7 +88,7 @@ export default function CsvUploader({ onImport, onKapat }) {
       return;
     }
 
-    let islenenIslemler = [...sonuc.islemler];
+    let islenenIslemler = [...(sonuc.islemler || [])].filter(Boolean);
     let basariliCount = 0;
     let basarisizCount = 0;
 
@@ -110,7 +110,7 @@ export default function CsvUploader({ onImport, onKapat }) {
         // Gelen JSON sonucunu islemlere uygula
         if (Array.isArray(data)) {
           islenenIslemler = islenenIslemler.map(tx => {
-            const aiCevap = data.find(d => d.id === tx.id);
+            const aiCevap = data.find(d => d && d.id === tx.id);
             if (aiCevap && aiCevap.kategori) {
               basariliCount++;
               return { ...tx, kategori: aiCevap.kategori };

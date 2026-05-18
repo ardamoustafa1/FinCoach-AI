@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Camera, Lock, ShieldAlert, BrainCircuit, Activity, Eye, ShieldCheck, HeartPulse, Clock } from 'lucide-react';
 
-export default function AntiImpulseModal({ tx, onCancel, onConfirm, onCoolOff }) {
+export default function AntiImpulseModal({ tx = {}, onCancel, onConfirm, onCoolOff }) {
   const [step, setStep] = useState(0); 
   // 0: Intercepted Warning, 1: Camera Access & Scanning, 2: Analysis Results (Blocked)
 
@@ -44,7 +44,7 @@ export default function AntiImpulseModal({ tx, onCancel, onConfirm, onCoolOff })
             </div>
             <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: 12 }}>Dürtüsel Harcama Koruması</h2>
             <p style={{ fontSize: 15, color: '#94a3b8', lineHeight: 1.6, marginBottom: 24 }}>
-              Gece saatlerinde <strong>{tx.magaza || 'bu mağazadan'}</strong> tek seferde <strong>₺{Number(tx.tutar).toLocaleString('tr-TR')}</strong> değerinde bir işlem deniyorsun. Bu bir "Dürtüsel Alışveriş (Dopamine-hunting)" olabilir.
+              Gece saatlerinde <strong>{tx?.magaza || 'bu mağazadan'}</strong> tek seferde <strong>₺{Number(tx?.tutar || 0).toLocaleString('tr-TR')}</strong> değerinde bir işlem deniyorsun. Bu bir "Dürtüsel Alışveriş (Dopamine-hunting)" olabilir.
             </p>
             <div style={{ padding: 16, borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
                <BrainCircuit size={24} color="#a78bfa" style={{ flexShrink: 0 }} />

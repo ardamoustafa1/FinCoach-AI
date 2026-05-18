@@ -178,9 +178,11 @@ export async function fetchBudgetLimits() {
   }
 
   const limits = {};
-  const dataList = data || [];
+  const dataList = (data || []).filter(Boolean);
   dataList.forEach(item => {
-    limits[item.category] = Number(item.limit_amount);
+    if (item && item.category) {
+      limits[item.category] = Number(item.limit_amount);
+    }
   });
   return limits;
 }

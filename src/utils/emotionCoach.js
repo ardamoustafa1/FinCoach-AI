@@ -54,24 +54,25 @@ export function getRiskLevel(arousal, valence) {
  * logs: [{date, hour, valence, arousal, amount, category}]
  */
 export function computeEmotionMetrics(logs) {
-  if (!logs || logs.length === 0) {
+  const safeLogs = (logs || []).filter(Boolean);
+  if (safeLogs.length === 0) {
     return { pearsonR: 0, riskiestHour: null, dopamineCategory: null, dopaminePct: 0, stressMultiplier: 1 };
   }
 
   // Pearson r: arousal vs amount
-  const arousalArr = logs.map(l => l.arousal);
-  const amountArr  = logs.map(l => l.amount);
+  const arousalArr = safeLogs.map(l => l.arousal);
+  const amountArr  = safeLogs.map(l => l.amount);
   const r = pearsonR(arousalArr, amountArr);
 
   // En riskli saat dilimi (negatif/stresli anlar)
-  const negLogs = logs.filter(l => l.valence === 'stresli' || l.valence === 'negatif');
+  const negLogs = safeLogs.filter(l => l.valence === 'stresli' || l.valence === 'negatif');
   const hourCounts = {};
   negLogs.forEach(l => { hourCounts[l.hour] = (hourCounts[l.hour] || 0) + 1; });
   const riskiestHour = Object.keys(hourCounts).sort((a, b) => hourCounts[b] - hourCounts[a])[0] ?? null;
 
   // Dopamine kategorisi
   const catStats = {};
-  logs.forEach(l => {
+  safeLogs.forEach(l => {
     if (!catStats[l.category]) catStats[l.category] = { total: 0, neg: 0 };
     catStats[l.category].total++;
     if (l.valence === 'stresli' || l.valence === 'negatif') catStats[l.category].neg++;
@@ -84,7 +85,7 @@ export function computeEmotionMetrics(logs) {
 
   // Stres çarpanı: negatif anlarda harcama / pozitif anlarda harcama
   const negAvg = negLogs.length ? negLogs.reduce((a, b) => a + b.amount, 0) / negLogs.length : 0;
-  const posLogs = logs.filter(l => l.valence === 'pozitif' || l.valence === 'sakin');
+  const posLogs = safeLogs.filter(l => l.valence === 'pozitif' || l.valence === 'sakin');
   const posAvg = posLogs.length ? posLogs.reduce((a, b) => a + b.amount, 0) / posLogs.length : 1;
   const stressMultiplier = posAvg > 0 ? +(negAvg / posAvg).toFixed(2) : 1;
 
@@ -163,11 +164,12 @@ Geçmiş bağlam:
  * Haftalık rapor için sistem promptu oluşturur.
  */
 export function buildWeeklyReportPrompt(logs, metrics) {
-  const entries = logs.slice(-7).map(l =>
+  const safeLogs = Array.isArray(logs) ? logs : [];
+  const entries = safeLogs.slice(-7).map(l =>
     `- ${l.date} ${l.hour}:00 | Duygu: ${l.valence} (arousal: ${l.arousal}) | ${l.amount}₺ | ${l.category}`
   ).join('\n');
 
-  const healthiest = logs
+  const healthiest = safeLogs
     .filter(l => l.valence === 'pozitif' || l.valence === 'sakin')
     .sort((a, b) => a.arousal - b.arousal)[0];
 
