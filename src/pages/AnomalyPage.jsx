@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ZAxis } from 'recharts';
 import { ShieldAlert, Clock, Lock, CheckCircle2, Search } from 'lucide-react';
 import { fmt } from '../utils/categories';
@@ -60,9 +60,14 @@ export default function AnomalyPage() {
     return () => { isMounted = false; };
   }, []);
 
+  const lockTimerRef = useRef(null);
+  useEffect(() => {
+    return () => clearTimeout(lockTimerRef.current);
+  }, []);
+
   const handleLock = () => {
     setWalletLocked(true);
-    setTimeout(() => setWalletLocked(false), 3000); // auto unlock for demo
+    lockTimerRef.current = setTimeout(() => setWalletLocked(false), 3000); // auto unlock for demo
   };
 
   if (loading || data.length === 0) return <PageLoader message="Unsupervised ML: Isolation Forest modeli eğitiliyor..." />;
