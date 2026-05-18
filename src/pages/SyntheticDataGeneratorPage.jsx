@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Database, Zap, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
@@ -15,6 +15,17 @@ export default function SyntheticDataGeneratorPage() {
   // 0: Setup, 1: Generating, 2: Complete
   const [progress, setProgress] = useState(0);
   const [profiles, setProfiles] = useState([]);
+  
+  const timersRef = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(id => {
+        clearInterval(id);
+        clearTimeout(id);
+      });
+    };
+  }, []);
 
   const handleGenerate = () => {
     setStep(1);
@@ -27,10 +38,11 @@ export default function SyntheticDataGeneratorPage() {
       if (currentProgress >= 100) {
         currentProgress = 100;
         clearInterval(interval);
-        setTimeout(() => {
+        const tId = setTimeout(() => {
           setProfiles(FAKE_PROFILES);
           setStep(2);
         }, 500);
+        timersRef.current.push(tId);
       }
       setProgress(currentProgress);
       
@@ -38,6 +50,7 @@ export default function SyntheticDataGeneratorPage() {
         setProfiles(prev => [...prev, FAKE_PROFILES[prev.length % FAKE_PROFILES.length]]);
       }
     }, 300);
+    timersRef.current.push(interval);
   };
 
   return (
