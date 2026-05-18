@@ -102,8 +102,9 @@ export default function StressTestPage() {
 
     function calculateMetrics() {
       const tx = useStore.getState().transactions;
-      const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
-      const totalExpense = tx.filter(t => t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
+      const txList = tx || [];
+      const totalIncome = txList.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
+      const totalExpense = txList.filter(t => t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
       const currentSavingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
       const emergencyFund = 85000; 
       
