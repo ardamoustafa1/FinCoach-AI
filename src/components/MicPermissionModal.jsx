@@ -28,8 +28,8 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
           to   { opacity: 1; }
         }
         @keyframes mic-modal-in {
-          from { opacity: 0; transform: translateY(32px) scale(0.95); }
-          to   { opacity: 1; transform: translateY(0)    scale(1); }
+          from { opacity: 0; transform: translate(-50%, -50%) translateY(32px) scale(0.95); }
+          to   { opacity: 1; transform: translate(-50%, -50%) translateY(0)    scale(1); }
         }
         @keyframes mic-ring {
           0%,100% { transform: scale(1);   opacity: 0.6; }
