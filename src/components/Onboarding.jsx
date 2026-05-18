@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const STEPS = [
   {
@@ -34,16 +34,21 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete }) {
 
   const s = STEPS[step - 1];
 
+  const timerRef = useRef(null);
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
+
   function next(n) {
     setLeaving(true);
-    setTimeout(() => { setStep(n); setLeaving(false); }, 220);
+    timerRef.current = setTimeout(() => { setStep(n); setLeaving(false); }, 220);
   }
 
   function finish() {
     const finalBank = bank === "Diğer" ? customBank : bank;
     const profile = { name: userName, income: Number(income), goal, bank: finalBank };
     setLeaving(true);
-    setTimeout(() => onComplete(profile), 350);
+    timerRef.current = setTimeout(() => onComplete(profile), 350);
   }
 
   return (
