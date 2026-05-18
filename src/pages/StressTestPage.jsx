@@ -105,12 +105,12 @@ export default function StressTestPage() {
       const txList = tx || [];
       const totalIncome = txList.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
       const totalExpense = txList.filter(t => t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
-      const currentSavingsRate = ((totalIncome - totalExpense) / totalIncome) * 100;
+      const currentSavingsRate = ((totalIncome - totalExpense) / (totalIncome || 1)) * 100;
       const emergencyFund = 85000; 
       
       const scenarioIncome = totalIncome * (1 + activeScenario.incomeGrowth);
       const scenarioExpense = totalExpense * activeScenario.expenseMultiplier;
-      const scenarioSavingsRate = ((scenarioIncome - scenarioExpense) / scenarioIncome) * 100;
+      const scenarioSavingsRate = ((scenarioIncome - scenarioExpense) / (scenarioIncome || 1)) * 100;
       
       const purchasingPowerBase = 100000;
       let data = [];
@@ -120,10 +120,10 @@ export default function StressTestPage() {
         data.push({ month: month === 0 ? 'Bugün' : month + '. Ay', power: Math.round(currentPower), nominal: purchasingPowerBase });
       }
 
-      const currentRunway = emergencyFund / totalExpense;
+      const currentRunway = emergencyFund / (totalExpense || 1);
       // Doomsday means income drops to 0 basically, or just surviving on emergency fund + whatever small income
-      const doomsdayRunwayDays = Math.round((emergencyFund / (totalExpense * 1.5)) * 30);
-      const scenarioRunway = emergencyFund / scenarioExpense;
+      const doomsdayRunwayDays = Math.round((emergencyFund / ((totalExpense || 1) * 1.5)) * 30);
+      const scenarioRunway = emergencyFund / (scenarioExpense || 1);
 
       setMetrics({
         totalIncome, scenarioIncome,
