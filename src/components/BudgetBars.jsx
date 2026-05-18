@@ -79,7 +79,7 @@ export default function BudgetBars({ harcamalar, limitler }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em' }}>Bütçe Limitleri</h2>
         <span style={{ fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa', letterSpacing: '0.08em' }}>
-          Mayıs 2025
+          {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
         </span>
       </div>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 4 }}>Kategorilere göre aylık harcama takibi</p>

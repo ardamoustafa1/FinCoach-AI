@@ -53,7 +53,8 @@ function getUserContext() {
     const txs = useStore.getState().transactions;
     const goals = useStore.getState().goals;
     const limits = useStore.getState().budgetLimits;
-    const { toplam: totalScore } = aySkoru(txs, [], 2025, 5, limits);
+    const now = new Date();
+    const { toplam: totalScore } = aySkoru(txs, [], now.getFullYear(), now.getMonth() + 1, limits);
     const { ad: personalityTitle } = kisilikTipiBelirle(txs);
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

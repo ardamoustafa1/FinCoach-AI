@@ -22,12 +22,17 @@ function getCellStyle(tutar, maxTutar, isSelected) {
 export default function HeatmapCalendar({ islemler }) {
   const [seciliGun, setSeciliGun] = useState(null);
 
-  const { gunler, maxTutar } = useMemo(() => {
-    const yil = 2025, ay = 5;
+  const { gunler, maxTutar, currentDate, prefixBase } = useMemo(() => {
+    const now = new Date();
+    const yil = now.getFullYear();
+    const ay = now.getMonth() + 1; // 1-12
+    const prefixBase = `${yil}-${String(ay).padStart(2, '0')}`;
+    
     const gunSayisi = new Date(yil, ay, 0).getDate();
     const ilkGunHafta = (new Date(yil, ay - 1, 1).getDay() + 6) % 7;
     const gunMap = {};
-    islemler.filter(i => i.tarih.startsWith('2025-05')).forEach(i => {
+    
+    islemler.filter(i => i.tarih.startsWith(prefixBase)).forEach(i => {
       const gun = parseInt(i.tarih.split('-')[2], 10);
       gunMap[gun] = (gunMap[gun] || 0) + i.tutar;
     });
@@ -39,20 +44,25 @@ export default function HeatmapCalendar({ islemler }) {
       if (t > max) max = t;
       arr.push({ gun: d, tutar: t });
     }
-    return { gunler: arr, maxTutar: max || 1 };
+    return { 
+      gunler: arr, 
+      maxTutar: max || 1,
+      currentDate: new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
+      prefixBase
+    };
   }, [islemler]);
 
   const gunIslemleri = useMemo(() => {
     if (!seciliGun) return [];
-    const prefix = `2025-05-${String(seciliGun).padStart(2, '0')}`;
+    const prefix = `${prefixBase}-${String(seciliGun).padStart(2, '0')}`;
     return islemler.filter(i => i.tarih === prefix).sort((a, b) => b.tutar - a.tutar);
-  }, [islemler, seciliGun]);
+  }, [islemler, seciliGun, prefixBase]);
 
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', bottom: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>Günlük Harcama Haritası</h2>
-      <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Mayıs 2025 · Güne tıklayarak detay görün</p>
+      <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>{currentDate} · Güne tıklayarak detay görün</p>
 
       {/* Day headers */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 6 }}>
@@ -104,7 +114,7 @@ export default function HeatmapCalendar({ islemler }) {
         <div onClick={() => setSeciliGun(null)} style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)' }}>
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 440, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 24, padding: 28, boxShadow: '0 40px 120px rgba(0,0,0,0.8)', animation: 'slideUp 0.22s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1 }}>{seciliGun} Mayıs 2025</h3>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1 }}>{seciliGun} {currentDate}</h3>
               <button onClick={() => setSeciliGun(null)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.text2 }}>
                 <X size={15} />
               </button>

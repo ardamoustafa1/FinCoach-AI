@@ -8,11 +8,6 @@ import {
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
 const AY_ISIMLERI = ['', 'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-const DEMO_GIDER_SERISI = {
-  '2024-12': 14000,
-  '2025-01': 12600,
-  '2025-02': 14850,
-};
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -33,18 +28,21 @@ function CustomTooltip({ active, payload, label }) {
 
 export default function TrendLineChart({ islemler, gelirler }) {
   const chartData = useMemo(() => {
-    const aylar = [
-      { yil: 2024, ay: 12 }, { yil: 2025, ay: 1 }, { yil: 2025, ay: 2 },
-      { yil: 2025, ay: 3 },  { yil: 2025, ay: 4 }, { yil: 2025, ay: 5 },
-    ];
+    const aylar = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      aylar.push({ yil: d.getFullYear(), ay: d.getMonth() + 1 });
+    }
+
     return aylar.map(({ yil, ay }) => {
       const prefix = `${yil}-${String(ay).padStart(2, '0')}`;
       const gider = islemler.filter(i => i.tarih.startsWith(prefix)).reduce((s, i) => s + i.tutar, 0);
       const gelir = gelirler.filter(g => g.tarih.startsWith(prefix)).reduce((s, g) => s + g.tutar, 0);
       return {
-        name: `${AY_ISIMLERI[ay]} ${yil === 2024 ? "'24" : "'25"}`,
-        gelir: gelir || (ay <= 2 && yil === 2025 ? 18000 : gelir) || (yil === 2024 ? 17500 : 0),
-        gider: gider || DEMO_GIDER_SERISI[prefix] || 0,
+        name: `${AY_ISIMLERI[ay]} '${String(yil).slice(-2)}`,
+        gelir: gelir || 0,
+        gider: gider || 0,
         ay,
       };
     });

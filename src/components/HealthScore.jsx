@@ -105,7 +105,8 @@ function SkorTooltip({ active, payload }) {
 export default function HealthScore({ islemler, gelirler }) {
   const { skor100, metrikler, gecmis } = useMemo(() => {
     const limitler = useStore.getState().budgetLimits;
-    const { toplam, metrikler } = aySkoru(islemler, gelirler, 2025, 5, limitler);
+    const now = new Date();
+    const { toplam, metrikler } = aySkoru(islemler, gelirler, now.getFullYear(), now.getMonth() + 1, limitler);
     const gecmis = skorGecmisi(islemler, gelirler);
     return { skor100: toplam, metrikler, gecmis };
   }, [islemler, gelirler]);
