@@ -222,9 +222,10 @@ export default function ChatPage() {
     const cleanInput = trimInput(text); // HTML entity encode etmeden temizle (KRİTİK-05)
     if (!cleanInput || isLoading) return;
 
-    // Real client-side Cosine Similarity semantic search
+    // Real client-side Cosine Similarity semantic search (limited to 200 recent txs for performance)
     const txs = useStore.getState().transactions || [];
-    const semanticMatches = calculateCosineSimilarity(cleanInput, txs);
+    const recentTxs = txs.slice(-200);
+    const semanticMatches = calculateCosineSimilarity(cleanInput, recentTxs);
     setRagMatches(semanticMatches);
 
     const userMsg = { role: 'user', content: cleanInput };

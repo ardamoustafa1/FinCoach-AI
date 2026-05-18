@@ -469,6 +469,11 @@ app.get('/health', (req, res) => {
 });
 
 async function requireAuth(req, res, next) {
+  if (process.env.DEMO_MODE === 'true') {
+    req.user = { id: 'demo-local-123', email: 'demo@fincoach.app' };
+    return next();
+  }
+
   if (!supabaseAdmin) {
     return res.status(503).json({ error: 'Supabase admin yapılandırması eksik.' });
   }
@@ -500,7 +505,7 @@ app.post('/api/events', (req, res) => {
 
   analyticsEvents.push(...cleanEvents);
   if (analyticsEvents.length > 500) analyticsEvents.splice(0, analyticsEvents.length - 500);
-  if (cleanEvents.length) {
+  if (cleanEvents.length && supabaseAdmin) {
     supabaseAdmin
       .from('app_events')
       .insert(cleanEvents.map((event) => ({

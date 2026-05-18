@@ -56,17 +56,9 @@ function runAprioriAnalysis(transactions) {
 }
 
 export default function GraphAnalysisPage() {
-  const [loading, setLoading] = useState(true);
-  const [graphData, setGraphData] = useState({ nodes: [], edges: [] });
+  const transactions = useStore(state => state.transactions);
+  const graphData = useMemo(() => runAprioriAnalysis(transactions), [transactions]);
   const [selectedNode, setSelectedNode] = useState(null);
-
-  useEffect(() => {
-    // Apriori senkron ve hızlı — yapay gecikme olmadan doğrudan çalıştır
-    const tx = useStore.getState().transactions;
-    const data = runAprioriAnalysis(tx);
-    setGraphData(data);
-    setLoading(false);
-  }, []);
 
   // ─── BASİT SVG FORCE LAYOUT SİMÜLASYONU ───
   // Gerçek D3 yerine, çembersel (circular) yerleşim kullanıyoruz.
@@ -101,7 +93,7 @@ export default function GraphAnalysisPage() {
     }).filter(Boolean);
   }, [graphData.edges, visualNodes]);
 
-  if (loading) return <PageLoader message="Apriori Algoritması Çalışıyor. Harcama bağımlılıkları çıkarılıyor..." />;
+
 
   return (
     <>
