@@ -18,7 +18,7 @@ const AY_ADLARI = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','A
 const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 
 function normalizeTransactions(rawTransactions) {
-  return rawTransactions.map((tx) => ({
+  return (rawTransactions || []).map((tx) => ({
     id: tx.id, tarih: tx.tarih || tx.date, magaza: tx.magaza || tx.title || tx.aciklama || 'İşlem',
     kategori: tx.kategori || tx.category || 'Diğer', tutar: Number(tx.tutar ?? tx.amount ?? 0),
     not: tx.not || tx.note || tx.aciklama || '', tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
