@@ -153,7 +153,7 @@ export default function HomePage() {
     { month: 'Kas', bakiye: 14200 }, { month: 'Ara', bakiye: 18600 },
   ];
 
-  const userName = useStore(state => state.userProfile.name) || 'Kullanıcı';
+  const userName = useStore(state => state.userProfile?.name) || 'Kullanıcı';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
 
