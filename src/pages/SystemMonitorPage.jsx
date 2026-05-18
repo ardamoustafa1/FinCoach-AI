@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key, Filter } from 'lucide-react';
 import { fmt } from '../utils/categories';
 import PageHeader from '../components/PageHeader';
@@ -20,8 +20,15 @@ const getRandomTx = () => {
 export default function SystemMonitorPage() {
   const [logs, setLogs] = useState([]);
   const [activeNodes, setActiveNodes] = useState({ kafka: false, fraud: false, cashflow: false, rag: false });
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const addLog = (msg, color = 'default') => {
+    if (!isMountedRef.current) return;
     setLogs(prev => {
       const newLogs = [{ msg, color, id: Math.random() }, ...prev];
       return newLogs.slice(0, 8); // Keep last 8
@@ -37,13 +44,13 @@ export default function SystemMonitorPage() {
       const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
       
       // 1. Transaction arrives
-      setActiveNodes({ kafka: true, fraud: false, cashflow: false, rag: false });
+      if (isMountedRef.current) setActiveNodes({ kafka: true, fraud: false, cashflow: false, rag: false });
       addLog(`[${time}] [API] Yeni İşlem: ${tx.merchant} - ${fmt(tx.amount)}`);
       
       // 2. Embedded event bus distribution
       const t1 = setTimeout(() => {
         addLog(`[${time}] [EVENT_BUS] Event ${tx.id} embedded stream kuyruğuna alındı.`);
-        setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
+        if (isMountedRef.current) setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
         
         // 3. ML Nodes process in parallel
         const t2 = setTimeout(() => {
@@ -55,7 +62,7 @@ export default function SystemMonitorPage() {
           addLog(`[${time}] [CASHFLOW] EWMA nakit akışı projeksiyonu güncellendi.`, 'blue');
           addLog(`[${time}] [LOCAL_RAG] İşlem semantik indeks kuyruğuna yazıldı.`, 'purple');
           
-          setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
+          if (isMountedRef.current) setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
         }, 600);
         activeTimeouts.push(t2);
       }, 400);
