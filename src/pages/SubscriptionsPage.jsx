@@ -83,21 +83,26 @@ export default function SubscriptionsPage() {
       { delay: 8500, step: 6, log: `[TRACKER] ${sub.name} aboneliği FinCoach içinde iptal edildi olarak işaretlendi.` },
     ];
 
-    const timeouts = steps.map(s => setTimeout(() => {
-      setAgentStep(s.step);
-      setAgentLogs(prev => [...prev, s.log]);
-      if (s.step === 6) {
-        setTimeout(() => {
-          setSubs(prev => prev.map(item => item.id === cancelingId ? { ...item, canceled: true } : item));
-          setCancelingId(null);
-          setAgentStep(0);
-          setAgentLogs([]);
-          toast.success(`${sub.name} için iptal takip kaydı tamamlandı.`);
-        }, 3000);
-      }
-    }, s.delay));
+    const scheduledTimeouts = [];
+    steps.forEach(s => {
+      const id = setTimeout(() => {
+        setAgentStep(s.step);
+        setAgentLogs(prev => [...prev, s.log]);
+        if (s.step === 6) {
+          const nestedId = setTimeout(() => {
+            setSubs(prev => prev.map(item => item.id === cancelingId ? { ...item, canceled: true } : item));
+            setCancelingId(null);
+            setAgentStep(0);
+            setAgentLogs([]);
+            toast.success(`${sub.name} için iptal takip kaydı tamamlandı.`);
+          }, 3000);
+          scheduledTimeouts.push(nestedId);
+        }
+      }, s.delay);
+      scheduledTimeouts.push(id);
+    });
 
-    return () => timeouts.forEach(clearTimeout);
+    return () => scheduledTimeouts.forEach(clearTimeout);
   }, [agentStep, cancelingId, subs, toast]);
 
   return (
