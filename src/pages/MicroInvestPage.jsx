@@ -88,7 +88,7 @@ export default function MicroInvestPage() {
   useEffect(() => {
     if (loading) return;
 
-    const protocols = ['Aave v3', 'Compound', 'Curve Finance', 'Uniswap V3', 'Lido'];
+    const protocols = ['FinCoach Vault', 'Round-up Pool', 'Stable Yield Sandbox', 'Risk Guard', 'Auto Compound'];
     const actions = ['Routing', 'Swapping', 'Staking', 'Compounding'];
     const assets = ['USDC', 'ETH', 'DAI', 'USDT'];
 
@@ -152,8 +152,8 @@ export default function MicroInvestPage() {
           icon={<Layers size={24} />}
           color={P.green}
           title="Küsürat Kumbarası"
-          subtitle="Her harcamanızdan arta kalan küsüratlar otomatik olarak DeFi havuzlarında değerlendirilir."
-          badge="DeFi Yield"
+          subtitle="Her harcamanızdan arta kalan küsüratlar sandbox yatırım havuzunda izlenir ve bileşik getiriyle projekte edilir."
+          badge="Sandbox Yield"
         />
 
         {/* LIVE YIELD DASHBOARD */}
@@ -169,14 +169,14 @@ export default function MicroInvestPage() {
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16, background: 'rgba(16,185,129,0.1)', padding: '6px 12px', borderRadius: 12 }}>
                <RefreshCw size={14} color={P.green} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
-               <span style={{ fontSize: 12, fontWeight: 700, color: P.green }}>Ethereum Ağında Çalışıyor</span>
+               <span style={{ fontSize: 12, fontWeight: 700, color: P.green }}>FinCoach Sandbox Ledger Aktif</span>
             </div>
           </div>
 
           <div style={{ background: '#050505', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${P.border}` }}>
               <Terminal size={18} color={P.text2} />
-              <span style={{ fontSize: 13, fontWeight: 800, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Smart Contract Execution Logs</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sandbox Ledger Execution Logs</span>
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden', fontFamily: 'monospace', fontSize: 12 }}>
               {logs.map((log, i) => (
@@ -208,7 +208,7 @@ export default function MicroInvestPage() {
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: 14, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>{fmt(item.rounded)}</p>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16,185,129,0.1)', color: P.green, padding: '2px 8px', borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
-                      +{fmt(item.change)} DeFi
+                      +{fmt(item.change)} Havuz
                     </div>
                   </div>
                 </div>
@@ -220,7 +220,7 @@ export default function MicroInvestPage() {
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>DeFi Bileşik Getiri Projeksiyonu</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>Sandbox Bileşik Getiri Projeksiyonu</h3>
                 <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Ortalama %12.5 APY ile 1 yıllık tahmini havuz büyümesi.</p>
               </div>
               <div style={{ textAlign: 'right' }}>
