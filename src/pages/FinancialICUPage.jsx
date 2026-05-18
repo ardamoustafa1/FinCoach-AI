@@ -25,54 +25,60 @@ export default function FinancialICUPage() {
     hasTrained.current = true;
     setStep(1); // Scanning state
 
-    // Build or load a real sequential model for Linear Regression
-    const tf = await import('@tensorflow/tfjs');
-    let model;
     let predictions;
 
     try {
-      // Try loading existing trained model from IndexedDB
-      model = await tf.loadLayersModel('indexeddb://icu-model');
-      const input = tf.tensor2d([5, 6], [2, 1]);
-      const output = model.predict(input);
-      predictions = output.dataSync();
-      input.dispose();
-      output.dispose();
-    } catch {
-      // Model not trained yet, build and compile a new sequential network
-      model = tf.sequential();
-      model.add(tf.layers.dense({units: 1, inputShape: [1]}));
-      model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
+      // Build or load a real sequential model for Linear Regression
+      const tf = await import('@tensorflow/tfjs');
+      let model;
 
-      // Training Data: X = Month (1 to 4), Y = Liquidity
-      const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
-      const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
-
-      // Train neural network client-side with timeout guard
       try {
-        await Promise.race([
-          model.fit(xs, ys, { epochs: 200 }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-        ]);
-
-        // Save trained weights into browser IndexedDB for subsequent zero-overhead runs
-        try {
-          await model.save('indexeddb://icu-model');
-        } catch (saveErr) {
-          console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
-        }
+        // Try loading existing trained model from IndexedDB
+        model = await tf.loadLayersModel('indexeddb://icu-model');
         const input = tf.tensor2d([5, 6], [2, 1]);
         const output = model.predict(input);
         predictions = output.dataSync();
         input.dispose();
         output.dispose();
-      } catch (err) {
-        console.warn('Eğitim zaman aşımı veya hatası. Sandbox risk eğrisine geçiliyor.', err);
-        predictions = [-8000, -21000];
-      } finally {
-        xs.dispose();
-        ys.dispose();
+      } catch {
+        // Model not trained yet, build and compile a new sequential network
+        model = tf.sequential();
+        model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+        model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(0.01)});
+
+        // Training Data: X = Month (1 to 4), Y = Liquidity
+        const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
+        const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
+
+        // Train neural network client-side with timeout guard
+        try {
+          await Promise.race([
+            model.fit(xs, ys, { epochs: 200 }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]);
+
+          // Save trained weights into browser IndexedDB for subsequent zero-overhead runs
+          try {
+            await model.save('indexeddb://icu-model');
+          } catch (saveErr) {
+            console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
+          }
+          const input = tf.tensor2d([5, 6], [2, 1]);
+          const output = model.predict(input);
+          predictions = output.dataSync();
+          input.dispose();
+          output.dispose();
+        } catch (err) {
+          console.warn('Eğitim zaman aşımı veya hatası. Sandbox risk eğrisine geçiliyor.', err);
+          predictions = [-8000, -21000];
+        } finally {
+          xs.dispose();
+          ys.dispose();
+        }
       }
+    } catch (err) {
+      console.warn('TensorFlow.js yüklenemedi veya eğitilemedi. Sandbox risk eğrisine geçiliyor.', err);
+      predictions = [-8000, -21000];
     }
 
     setDynamicChartData([
