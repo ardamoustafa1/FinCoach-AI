@@ -30,32 +30,36 @@ export default function AutonomousAgentPage() {
   ];
 
   useEffect(() => {
+    let t1, t2, interval;
     if (step === 0) {
       let currentLogIndex = 0;
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]]);
         currentLogIndex++;
         if (currentLogIndex === 5) { // Pause at "Asymmetry detected"
           clearInterval(interval);
-          setTimeout(() => setStep(1), 1000);
+          t1 = setTimeout(() => setStep(1), 1000);
         }
       }, 800);
-      return () => clearInterval(interval);
     }
     
     if (step === 2) {
       // Execute Arbitrage
       let currentLogIndex = 5;
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]]);
         currentLogIndex++;
         if (currentLogIndex >= LOG_MESSAGES.length) {
           clearInterval(interval);
-          setTimeout(() => setStep(3), 1500);
+          t2 = setTimeout(() => setStep(3), 1500);
         }
       }, 600);
-      return () => clearInterval(interval);
     }
+    return () => {
+      clearInterval(interval);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [step]);
 
   return (
