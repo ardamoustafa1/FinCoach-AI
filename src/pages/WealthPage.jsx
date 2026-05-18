@@ -54,7 +54,7 @@ export default function WealthPage() {
       
       const totalIncome = tx.filter(t => t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 50000;
       const totalExpense = avgExpense * (expenses.length || 1) || 30000;
-      const monthlySavings = Math.max(1000, (totalIncome - totalExpense));
+      const monthlySavings = Math.max(1000, isNaN(totalIncome - totalExpense) ? 20000 : (totalIncome - totalExpense));
 
       // 2. Goal Analysis (Robo-Advisor Logic)
       let activeGoal = null;
