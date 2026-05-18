@@ -12,7 +12,8 @@ export function useSupabaseData() {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const response = await supabase.auth.getUser();
+      const user = response?.data?.user;
       if (!user) {
         setLoading(false);
         return;
