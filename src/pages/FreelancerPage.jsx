@@ -31,7 +31,7 @@ export default function FreelancerPage() {
 
       // Derive monthly income from real transactions
       const tx = useStore.getState().transactions;
-      const incomeTx = tx.filter(t => t.tur === 'gelir');
+      const incomeTx = (tx || []).filter(t => t.tur === 'gelir');
 
       let monthlyIncome;
 
