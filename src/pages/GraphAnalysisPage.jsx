@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Network, Search, Link as LinkIcon, Zap } from 'lucide-react';
 import useStore from '../store/useStore';
-import PageHeader, { PageLoader } from '../components/PageHeader';
+import PageHeader from '../components/PageHeader';
 
 import { P } from '../styles/palette';
 // ─── APRIORI ALGORITHM (Market Basket Analysis) ───

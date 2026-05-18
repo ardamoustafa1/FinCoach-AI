@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Target, Bot, BarChart3, Settings,
   Wallet, Trophy, Clock, ShieldAlert, BarChart4, Globe, Landmark,
   Calculator, Home, Coins, Snowflake, Waves, Lock, Server, ShieldCheck,
-  Network, Menu, X, ChevronRight
+  Network, Menu, X, ChevronRight, Cpu, HeartPulse, Skull, Mic, Layers
 } from 'lucide-react';
 
 const navSections = [
@@ -12,6 +12,7 @@ const navSections = [
     title: 'Ana Menü',
     items: [
       { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
+      { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
       { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
     ]
   },
@@ -30,6 +31,7 @@ const navSections = [
       { to: '/tax', label: 'Vergi Asistanı', icon: Calculator },
       { to: '/real-estate', label: 'Ev & Kredi AI', icon: Home },
       { to: '/anomaly', label: 'Anomali & Fraud AI', icon: Lock },
+      { to: '/shop-sim', label: 'Harcama Simülatörü', icon: Target },
       { to: '/graph-analysis', label: 'Market Basket Graph', icon: Network },
       { to: '/cashflow', label: 'Nakit Akışı', icon: BarChart4 },
       { to: '/stress-test', label: 'Stres Testi', icon: Globe },
@@ -41,6 +43,11 @@ const navSections = [
       { to: '/system-monitor', label: 'Sistem Mimarisi', icon: Server },
       { to: '/federated', label: 'Federated AI', icon: ShieldCheck },
       { to: '/escrow', label: 'Web3 Escrow', icon: Lock },
+      { to: '/autonomous-agent', label: 'Self-Driving Money', icon: Cpu },
+      { to: '/financial-icu', label: 'Financial ICU', icon: HeartPulse },
+      { to: '/dead-mans-switch', label: 'Web3 Vasiyet', icon: Skull },
+      { to: '/voice-escrow', label: 'Voice Biometric', icon: Mic },
+      { to: '/synthetic-data', label: 'Data GAN', icon: Layers },
     ]
   },
   {

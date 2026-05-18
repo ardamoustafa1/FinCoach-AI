@@ -8,6 +8,7 @@ import useStore from '../store/useStore';
 import { P } from '../styles/palette';
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { to: '/transactions', label: 'İşlemler', icon: ArrowLeftRight },
   { to: '/wealth', label: 'Varlık Yönetimi', icon: Landmark },
   { to: '/micro-invest', label: 'Küsürat Yatırımı', icon: Coins },

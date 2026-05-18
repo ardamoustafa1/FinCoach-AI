@@ -15,6 +15,7 @@ const USER_SCOPED_KEYS = [
   'fincoach_income',
   'fincoach_bank',
   'fincoach_emotion_logs',
+  'fincoach_demo_session',
 ];
 
 function clearUserScopedCache() {
@@ -176,6 +177,20 @@ export default function AuthPage({ onAuth }) {
     setError('');
     if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.');
     if (!'Lütfen tüm alanları doldurun.'.startsWith('✅')) triggerShake(); return; }
+
+    if (loginEmail.toLowerCase() === DEMO_EMAIL.toLowerCase() && loginPassword === DEMO_PASSWORD) {
+      clearUserScopedCache();
+      localStorage.setItem('fincoach_demo_session', 'true');
+      onAuth({
+        id: 'demo-local-123',
+        email: DEMO_EMAIL,
+        name: 'Demo Kullanıcı',
+        phone: '+90 555 000 00 00',
+        onboardingCompleted: true,
+        isDemo: true,
+      });
+      return;
+    }
     
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -222,7 +237,16 @@ export default function AuthPage({ onAuth }) {
     setMode('login');
     setEmail(DEMO_EMAIL);
     setPassword(DEMO_PASSWORD);
-    handleLogin({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
+    clearUserScopedCache();
+    localStorage.setItem('fincoach_demo_session', 'true');
+    onAuth({
+      id: 'demo-local-123',
+      email: DEMO_EMAIL,
+      name: 'Demo Kullanıcı',
+      phone: '+90 555 000 00 00',
+      onboardingCompleted: true,
+      isDemo: true,
+    });
   };
 
   const handleRegister = async () => {

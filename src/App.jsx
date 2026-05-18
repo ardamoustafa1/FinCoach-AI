@@ -8,6 +8,9 @@ import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
 import { supabase } from './utils/supabase';
 import ErrorBoundary from './components/ErrorBoundary';
+import { DEMO_EMAIL } from './config/demoAccount';
+import { mockGelir, mockTransactions } from './data/mockData';
+import { sampleGoals } from './utils/seedData';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -38,6 +41,47 @@ const FinancialICUPage = lazy(() => import('./pages/FinancialICUPage'));
 const DeadMansSwitchPage = lazy(() => import('./pages/DeadMansSwitchPage'));
 const VoiceBiometricEscrowPage = lazy(() => import('./pages/VoiceBiometricEscrowPage'));
 const SyntheticDataGeneratorPage = lazy(() => import('./pages/SyntheticDataGeneratorPage'));
+
+const demoBudgetLimits = {
+  Market: 3000,
+  'Yemek Siparişi': 2000,
+  Ulaşım: 1000,
+  Abonelik: 500,
+  Fatura: 1500,
+  Alışveriş: 2000,
+  Eğlence: 800,
+  Sağlık: 1000,
+};
+
+function hydrateDemoWorkspace() {
+  useStore.getState().setUserProfile({
+    name: 'Demo Kullanıcı',
+    email: DEMO_EMAIL,
+    phone: '+90 555 000 00 00',
+    bank: 'Finansal Koç',
+  });
+  useStore.getState().setTransactions([...mockTransactions, ...mockGelir].map((tx) => ({
+    id: tx.id,
+    aciklama: tx.aciklama || tx.title || '',
+    tutar: Number(tx.tutar ?? tx.amount ?? 0),
+    tarih: tx.tarih || tx.date || new Date().toISOString().slice(0, 10),
+    kategori: tx.kategori || tx.category || 'Diğer',
+    magaza: tx.magaza || '',
+    tur: tx.tur || (tx.type === 'income' ? 'gelir' : 'gider'),
+    createdAt: tx.createdAt || new Date().toISOString(),
+  })));
+  useStore.getState().setGoals(sampleGoals.map((goal) => ({
+    id: goal.id,
+    name: goal.title || goal.name,
+    targetAmount: Number(goal.targetAmount || 0),
+    currentAmount: Number(goal.currentAmount || 0),
+    deadline: goal.deadline,
+    icon: goal.icon,
+    color: goal.color,
+    createdAt: goal.createdAt,
+  })));
+  useStore.getState().setBudgetLimits(demoBudgetLimits);
+}
 
 /** Inner component so it can use useLocation (must be inside BrowserRouter) */
 function TourOverlay() {
@@ -167,6 +211,18 @@ export default function App() {
 
   const checkUserStatus = useCallback(async (user) => {
     try {
+      if (user?.isDemo || user?.id === 'demo-local-123' || user?.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()) {
+        hydrateDemoWorkspace();
+        setAuthUser({
+          id: 'demo-local-123',
+          email: DEMO_EMAIL,
+          name: 'Demo Kullanıcı'
+        });
+        setOnboardingCompleted(true);
+        setSyncError(null);
+        return;
+      }
+
       // 1. Profil bilgisini çek
       const { data: existingProfile } = await supabase
         .from('profiles')
@@ -259,6 +315,20 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (localStorage.getItem('fincoach_demo_session') === 'true') {
+      Promise.resolve().then(() => {
+        hydrateDemoWorkspace();
+        setAuthUser({
+          id: 'demo-local-123',
+          email: DEMO_EMAIL,
+          name: 'Demo Kullanıcı'
+        });
+        setOnboardingCompleted(true);
+        setLoading(false);
+      });
+      return undefined;
+    }
+
     // 1. Mevcut session'ı kontrol et
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -305,6 +375,17 @@ export default function App() {
     return (
       <ToastProvider>
         <AuthPage onAuth={(user) => {
+          if (user?.isDemo || user?.id === 'demo-local-123' || user?.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()) {
+            hydrateDemoWorkspace();
+            setAuthUser({
+              id: 'demo-local-123',
+              email: DEMO_EMAIL,
+              name: 'Demo Kullanıcı'
+            });
+            setOnboardingCompleted(true);
+            setLoading(false);
+            return;
+          }
           setLoading(true);
           checkUserStatus({ id: user.id, email: user.email });
         }} />

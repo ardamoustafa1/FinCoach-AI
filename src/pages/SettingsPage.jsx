@@ -241,6 +241,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
     localStorage.removeItem('fincoach_user_name');
     localStorage.removeItem('fincoach_phone');
     localStorage.removeItem('fincoach_emotion_logs');
+    localStorage.removeItem('fincoach_demo_session');
     window.location.replace('/');
   };
 

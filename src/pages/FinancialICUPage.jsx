@@ -33,7 +33,11 @@ export default function FinancialICUPage() {
     try {
       // Try loading existing trained model from IndexedDB
       model = await tf.loadLayersModel('indexeddb://icu-model');
-      predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+      const input = tf.tensor2d([5, 6], [2, 1]);
+      const output = model.predict(input);
+      predictions = output.dataSync();
+      input.dispose();
+      output.dispose();
     } catch {
       // Model not trained yet, build and compile a new sequential network
       model = tf.sequential();
@@ -57,12 +61,20 @@ export default function FinancialICUPage() {
         } catch (saveErr) {
           console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
         }
-        predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+        const input = tf.tensor2d([5, 6], [2, 1]);
+        const output = model.predict(input);
+        predictions = output.dataSync();
+        input.dispose();
+        output.dispose();
       } catch (err) {
         console.warn('Eğitim zaman aşımı veya hatası. Demo verisine geçiliyor.', err);
         predictions = [-8000, -21000];
+      } finally {
+        xs.dispose();
+        ys.dispose();
       }
-    
+    }
+
     setDynamicChartData([
       { month: 'Şub', liquidity: 45000, threshold: 0 },
       { month: 'Mar', liquidity: 32000, threshold: 0 },
