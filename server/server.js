@@ -102,8 +102,11 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,ht
 app.use(cors({
   origin: (origin, cb) => {
     // Allow non-browser requests (Postman, WhatsApp bot internal calls) and whitelisted origins
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS: ${origin} izinli değil.`));
+    if (!origin || allowedOrigins.includes(origin) || origin.includes('railway.app') || origin.includes('vercel.app')) {
+      return cb(null, true);
+    }
+    // Safe reject instead of throwing a 500 crash exception
+    cb(null, false);
   },
   credentials: true,
 }));
