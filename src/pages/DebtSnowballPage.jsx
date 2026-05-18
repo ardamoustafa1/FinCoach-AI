@@ -26,7 +26,7 @@ export default function DebtSnowballPage() {
       // Try to find debt-related transactions to build real data
       const debtPayments = tx.filter(t => 
         t.tur === 'gider' && 
-        (t.kategori?.toLowerCase().includes('kredi') || t.kategori?.toLowerCase().includes('borç'))
+        ((t.kategori || '').toLowerCase().includes('kredi') || (t.kategori || '').toLowerCase().includes('borç'))
       );
 
       let workingDebts = [...MOCK_DEBTS];
