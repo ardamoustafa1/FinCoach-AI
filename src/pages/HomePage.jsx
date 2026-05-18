@@ -114,17 +114,19 @@ export default function HomePage() {
     }
   };
 
-  const totalIncome = transactions
+  const safeTx = transactions || [];
+
+  const totalIncome = safeTx
     .filter(t => t.type === 'income' || t.tur === 'gelir')
     .reduce((s, t) => s + Math.abs(Number(t.amount || t.tutar || 0)), 0);
 
-  const totalExpense = transactions
+  const totalExpense = safeTx
     .filter(t => t.type === 'expense' || t.tur === 'gider' || (!t.tur && Number(t.tutar) < 0))
     .reduce((s, t) => s + Math.abs(Number(t.amount || t.tutar || 0)), 0);
 
   const balance = totalIncome - totalExpense;
 
-  const categoryExpenses = transactions
+  const categoryExpenses = safeTx
     .filter(t => t.type === 'expense' || t.tur === 'gider' || (!t.tur && Number(t.tutar) < 0))
     .reduce((acc, t) => {
       const cat = t.category || t.kategori || 'Diğer';
