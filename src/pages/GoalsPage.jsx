@@ -91,9 +91,10 @@ export default function GoalsPage() {
     toast.success(`${goal.name} hedefine ${amount}₺ eklendi!`);
   };
 
-  const aktif = goals.filter(g => Number(g.currentAmount) < Number(g.targetAmount));
-  const tamamlanan = goals.filter(g => Number(g.currentAmount) >= Number(g.targetAmount));
-  const totalCurrent = goals.reduce((s, g) => s + Number(g.currentAmount), 0);
+  const safeGoals = goals || [];
+  const aktif = safeGoals.filter(g => Number(g.currentAmount) < Number(g.targetAmount));
+  const tamamlanan = safeGoals.filter(g => Number(g.currentAmount) >= Number(g.targetAmount));
+  const totalCurrent = safeGoals.reduce((s, g) => s + Number(g.currentAmount), 0);
 
   return (
     <div className="pt-24 pb-32 px-6 max-w-7xl mx-auto animate-fade-in-up">
