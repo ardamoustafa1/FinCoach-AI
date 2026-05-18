@@ -475,7 +475,7 @@ export default function ChatPage() {
                   {isBot ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <div style={{ color: P.text1 }}>
-                        <TypewriterMarkdown text={text} isLatest={idx === messages.length - 1} />
+                        <TypewriterMarkdown text={text} isLatest={i === messages.length - 1} />
                       </div>
                       
                       {simulationData && (
