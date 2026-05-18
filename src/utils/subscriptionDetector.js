@@ -140,7 +140,7 @@ export function yaklasanYenilemeler(abonelikler) {
   const yediGunSonra = new Date(bugun);
   yediGunSonra.setDate(yediGunSonra.getDate() + 7);
 
-  return abonelikler.filter(ab => {
+  return (abonelikler || []).filter(ab => {
     const sonraki = new Date(ab.sonrakiOdeme);
     return sonraki >= bugun && sonraki <= yediGunSonra;
   }).map(ab => {
