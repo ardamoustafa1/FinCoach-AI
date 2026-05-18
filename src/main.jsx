@@ -1,3 +1,21 @@
+// Polyfill crypto.randomUUID for non-secure contexts (e.g. http://192.168.x.x during local hackathon demo)
+if (typeof window !== 'undefined') {
+  if (!window.crypto) {
+    window.crypto = {
+      getRandomValues: (arr) => arr.map(() => Math.floor(Math.random() * 256))
+    };
+  }
+  if (!window.crypto.randomUUID) {
+    window.crypto.randomUUID = function () {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+  }
+}
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
