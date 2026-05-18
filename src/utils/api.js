@@ -92,7 +92,12 @@ async function localApiFallback(path, options = {}) {
   }
 
   if (path === '/api/ocr') {
-    return jsonResponse({ tutar: null, tarih: '', magaza: '' });
+    return jsonResponse({
+      tutar: 249.9,
+      tarih: new Date().toISOString().slice(0, 10),
+      magaza: 'Fiş Okuma Sandbox',
+      kaynak: 'local-demo',
+    });
   }
 
   if (path === '/api/whatsapp/status') {
