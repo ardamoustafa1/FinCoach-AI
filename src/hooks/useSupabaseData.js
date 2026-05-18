@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 import { fetchTransactions, fetchGoals, fetchBudgetLimits } from '../utils/supabaseStorage';
 
@@ -8,6 +8,12 @@ export function useSupabaseData() {
   const [goals, setGoals] = useState([]);
   const [limits, setLimits] = useState({});
   const [error, setError] = useState(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
@@ -15,7 +21,7 @@ export function useSupabaseData() {
       const response = await supabase.auth.getUser();
       const user = response?.data?.user;
       if (!user) {
-        setLoading(false);
+        if (isMountedRef.current) setLoading(false);
         return;
       }
 
@@ -25,14 +31,16 @@ export function useSupabaseData() {
         fetchBudgetLimits()
       ]);
 
-      setTransactions(tData);
-      setGoals(gData);
-      setLimits(lData);
+      if (isMountedRef.current) {
+        setTransactions(tData);
+        setGoals(gData);
+        setLimits(lData);
+      }
     } catch (err) {
       console.error('[useSupabaseData] Yükleme hatası:', err);
-      setError(err);
+      if (isMountedRef.current) setError(err);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     }
   }, []);
 

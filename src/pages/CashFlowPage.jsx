@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingDown, AlertCircle, CalendarClock, BarChart4, ArrowUpRight, BrainCircuit, Upload, FileText } from 'lucide-react';
 import useStore from '../store/useStore';
@@ -44,6 +44,12 @@ export default function CashFlowPage() {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
   const [contractData, setContractData] = useState(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const runSimulation = (contractPenalty = 0) => {
     // ─── MONTE CARLO SIMULATION ───
@@ -77,6 +83,7 @@ export default function CashFlowPage() {
     };
 
     setTimeout(() => {
+      if (!isMountedRef.current) return;
       const NUM_SIMULATIONS = 500;
       const MONTHS_AHEAD = 12;
       let initialBalance = 25000; // Gerçekte kullanıcının banka API'sinden gelir
@@ -165,6 +172,7 @@ export default function CashFlowPage() {
     toast.info('PDF Sözleşme analiz ediliyor (Zero-Shot NER)...');
     
     setTimeout(() => {
+      if (!isMountedRef.current) return;
       setUploading(false);
       setContractData({
         title: 'Araç Kredisi & Rehin Sözleşmesi',
