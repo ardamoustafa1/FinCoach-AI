@@ -91,7 +91,7 @@ export default function Layout({ theme, onToggleTheme }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-main)', transition: 'background-color 0.3s' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-main)', transition: 'background-color 0.3s', overflowX: 'hidden' }}>
       {/* Çevrimdışı Mod Bildirimi — tüm sayfalarda otomatik görünür */}
       <OfflineBanner />
 
@@ -104,29 +104,29 @@ export default function Layout({ theme, onToggleTheme }) {
       <MobileNav />
 
       {/* Main Content */}
-      <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden', paddingBottom: '96px', position: 'relative' }}>
+      <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden', paddingBottom: 'calc(80px + env(safe-area-inset-bottom))', position: 'relative' }}>
         {/* Top Bar */}
         <header style={{
-          position: 'sticky', top: 0, zIndex: 30, height: 72,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-          padding: '0 24px', background: 'var(--header-bg)', backdropFilter: 'blur(24px)',
-          borderBottom: `1px solid ${P.border}`
+          position: 'sticky', top: 0, zIndex: 30, minHeight: 60,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '0 12px', background: 'var(--header-bg)', backdropFilter: 'blur(24px)',
+          borderBottom: `1px solid ${P.border}`, flexWrap: 'nowrap'
         }}>
           <div style={{ minWidth: 0 }}>
             <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#a78bfa', margin: 0 }}>FinCoach AI</p>
             <p className="hidden sm:block" style={{ fontSize: 13, color: P.text2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Akıllı bütçe, hedef ve harcama koçu</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <button
               onClick={startListeningGlobal}
               disabled={isListening}
               style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10,
+                display: 'flex', alignItems: 'center', gap: 4, padding: '8px 10px', borderRadius: 10,
                 border: `1px solid ${isListening ? P.red : 'rgba(124,58,237,0.2)'}`,
                 background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(124,58,237,0.1)',
                 color: isListening ? P.red : '#c4b5fd',
                 cursor: isListening ? 'wait' : 'pointer', transition: 'background 0.2s',
-                fontWeight: 700, fontSize: 12
+                fontWeight: 700, fontSize: 12, flexShrink: 0
               }}
             >
               {isListening ? <Mic className="animate-pulse" size={16} /> : <Mic size={16} />}
@@ -197,7 +197,7 @@ export default function Layout({ theme, onToggleTheme }) {
         )}
 
         {/* Page Content */}
-        <div style={{ maxWidth: 1540, margin: '0 auto', padding: '0 24px', width: '100%' }}>
+        <div className="page-content" style={{ maxWidth: 1540, margin: '0 auto', padding: '0 16px', width: '100%' }}>
           <Outlet />
         </div>
       </main>
