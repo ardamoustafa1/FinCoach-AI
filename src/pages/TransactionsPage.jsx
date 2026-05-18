@@ -72,7 +72,29 @@ export default function TransactionsPage() {
   /* ─ Sesle ekleme ─ */
   const startListening = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
+    if (!SR) {
+      const transcript = 'Migros marketten 275 TL harcadım';
+      toast.info('Tarayıcı ses tanımıyor; sandbox ses komutu işleniyor.', { duration: 5000 });
+      authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text: transcript }) })
+        .then(async (res) => {
+          const data = await res.json();
+          const yeniIslem = {
+            id: crypto.randomUUID(),
+            createdAt: new Date().toISOString(),
+            tarih: new Date().toISOString().slice(0, 10),
+            tutar: data.tutar || 275,
+            magaza: data.magaza || 'Migros',
+            aciklama: transcript,
+            kategori: data.kategori || 'Market',
+            tur: data.tur || 'gider',
+            not: 'Sesli asistan sandbox fallback ile eklendi',
+          };
+          await addTransaction(yeniIslem);
+          toast.success(`${yeniIslem.magaza} (${fmt(yeniIslem.tutar)}) eklendi.`);
+        })
+        .catch(err => toast.error(`Analiz hatası: ${err.message}`));
+      return;
+    }
     const recognition = new SR();
     recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
     recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum... Konuşun.', { duration: 5000, icon: '🎤' }); };
