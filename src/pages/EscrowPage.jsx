@@ -39,7 +39,7 @@ export default function EscrowPage() {
       recognition.lang = 'tr-TR';
       recognition.interimResults = true;
       recognition.onresult = (e) => {
-        setTranscript(e.results[0][0].transcript);
+        setTranscript(e.results?.[0]?.[0]?.transcript || '');
       };
       recognition.onend = () => {
         setIsListening(false);
