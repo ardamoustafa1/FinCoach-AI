@@ -28,6 +28,7 @@ export default function DeadMansSwitchPage() {
     
     if (step === 2) {
       let currentLogIndex = 0;
+      let timer;
       const interval = setInterval(() => {
         const nextMsg = LOG_MESSAGES[currentLogIndex];
         if (nextMsg) {
@@ -36,10 +37,10 @@ export default function DeadMansSwitchPage() {
         currentLogIndex++;
         if (currentLogIndex >= LOG_MESSAGES.length) {
           clearInterval(interval);
-          setTimeout(() => setStep(3), 1500);
+          timer = setTimeout(() => setStep(3), 1500);
         }
       }, 700);
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); clearTimeout(timer); };
     }
   }, [step]);
 
