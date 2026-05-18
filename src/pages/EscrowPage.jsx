@@ -45,6 +45,10 @@ export default function EscrowPage() {
         setIsListening(false);
         simulateNLPProcessing(transcript || MOCK_TRANSCRIPT);
       };
+      recognition.onerror = () => {
+        setIsListening(false);
+        setNlpStep(0);
+      };
       recognition.start();
     } else {
       // Fallback for browsers without Web Speech API
