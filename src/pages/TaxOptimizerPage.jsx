@@ -7,8 +7,12 @@ import PageHeader, { PageLoader } from '../components/PageHeader';
 import { P } from '../styles/palette';
 const DEDUCTIBLE_CATEGORIES = {
   'Ulaşım': { icon: Car, rate: 0.18, name: 'Ulaşım & Yakıt', color: P.blue },
+  'Yemek Siparişi': { icon: Coffee, rate: 0.10, name: 'Temsil & Ağırlama', color: P.amber },
+  'Restoran': { icon: Coffee, rate: 0.10, name: 'Temsil & Ağırlama', color: P.amber },
   'Yemek': { icon: Coffee, rate: 0.10, name: 'Temsil & Ağırlama', color: P.amber },
-  'Fatura': { icon: Building2, rate: 0.20, name: 'Ofis & İletişim', color: P.green }
+  'Fatura': { icon: Building2, rate: 0.20, name: 'Ofis & İletişim', color: P.green },
+  'Sağlık': { icon: Receipt, rate: 0.08, name: 'Sağlık Gideri', color: P.red },
+  'Alışveriş': { icon: Receipt, rate: 0.05, name: 'İşletme Gideri Adayı', color: P.purple }
 };
 
 export default function TaxOptimizerPage() {
@@ -207,8 +211,8 @@ export default function TaxOptimizerPage() {
           icon={<Calculator size={24} />}
           color="#EC4899"
           title="Vergi Asistanı"
-          subtitle="Maaşınızdan hak ettiğiniz indirimleri bulun ve yasal olarak geri alın."
-          badge="AI Destekli"
+          subtitle="Giderlerinizi sınıflandırıp vergi tasarrufu adaylarını PDF rapora dönüştürün."
+          badge="Kural Motoru"
         >
           <button 
             onClick={generateReport}
@@ -256,7 +260,7 @@ export default function TaxOptimizerPage() {
             <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: 0 }}>Giderleştirilebilir Kalemler (Bu Ay)</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg3, padding: '6px 12px', borderRadius: 999, border: `1px solid ${P.border}` }}>
                <Info size={14} color={P.text3} />
-               <span style={{ fontSize: 11, fontWeight: 600, color: P.text2 }}>KDV ve Kurumlar Vergisi Tahminidir</span>
+               <span style={{ fontSize: 11, fontWeight: 600, color: P.text2 }}>Sandbox vergi sınıflandırma motoru</span>
             </div>
           </div>
 
