@@ -134,6 +134,37 @@ function extractTaggedPayload(text, tag) {
   return { text, payload: null };
 }
 
+const TypewriterMarkdown = ({ text, delay = 8, isLatest }) => {
+  const [currentText, setCurrentText] = useState(isLatest ? '' : text);
+  const [currentIndex, setCurrentIndex] = useState(isLatest ? 0 : text.length);
+
+  useEffect(() => {
+    if (!isLatest) {
+      setCurrentText(text);
+      setCurrentIndex(text.length);
+      return;
+    }
+    if (currentIndex > text.length || !text.startsWith(currentText)) {
+      setCurrentText('');
+      setCurrentIndex(0);
+    }
+  }, [text, isLatest]);
+
+  useEffect(() => {
+    if (isLatest && currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        const chunkSize = 3; // Harf harf çok hızlı akması için (ChatGPT gibi)
+        const nextIndex = Math.min(currentIndex + chunkSize, text.length);
+        setCurrentText(text.slice(0, nextIndex));
+        setCurrentIndex(nextIndex);
+      }, delay);
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, delay, text, isLatest]);
+
+  return <ReactMarkdown>{currentText}</ReactMarkdown>;
+};
+
 export default function ChatPage() {
   const location = useLocation();
   const toast = useToast();
@@ -444,7 +475,7 @@ export default function ChatPage() {
                   {isBot ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <div style={{ color: P.text1 }}>
-                        <ReactMarkdown>{text}</ReactMarkdown>
+                        <TypewriterMarkdown text={text} isLatest={idx === messages.length - 1} />
                       </div>
                       
                       {simulationData && (
