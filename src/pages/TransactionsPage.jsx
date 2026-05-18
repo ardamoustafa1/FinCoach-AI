@@ -27,7 +27,7 @@ import { P } from '../styles/palette';
 export default function TransactionsPage() {
   const toast = useToast();
   const storeTransactions = useStore(state => state.transactions);
-  const ham = useMemo(() => [...storeTransactions].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')), [storeTransactions]);
+  const ham = useMemo(() => [...(storeTransactions || [])].sort((a, b) => (b.tarih || '').localeCompare(a.tarih || '')), [storeTransactions]);
   const addTransaction = useStore(state => state.addTransaction);
   const updateTransaction = useStore(state => state.updateTransaction);
   const removeTransaction = useStore(state => state.removeTransaction);
