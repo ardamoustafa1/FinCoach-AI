@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Lock, ShieldCheck, Activity, ShieldAlert, Cpu, CheckCircle2, Mic, Code, Send, Check } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
@@ -11,11 +11,33 @@ export default function EscrowPage() {
   // Emergency State
   const [unlockStatus, setUnlockStatus] = useState('idle');
 
+  const timersRef = useRef([]);
+  const intervalsRef = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      intervalsRef.current.forEach(clearInterval);
+    };
+  }, []);
+
+  const safeTimeout = (cb, delay) => {
+    const t = setTimeout(cb, delay);
+    timersRef.current.push(t);
+    return t;
+  };
+
+  const safeInterval = (cb, delay) => {
+    const i = setInterval(cb, delay);
+    intervalsRef.current.push(i);
+    return i;
+  };
+
   const handleUnlock = () => {
     setUnlockStatus('requesting');
-    setTimeout(() => {
+    safeTimeout(() => {
       setUnlockStatus('verifying');
-      setTimeout(() => {
+      safeTimeout(() => {
         setUnlockStatus('rejected');
       }, 4000);
     }, 2000);
@@ -54,7 +76,7 @@ export default function EscrowPage() {
       // Fallback for browsers without Web Speech API
       let text = '';
       let i = 0;
-      const interval = setInterval(() => {
+      const interval = safeInterval(() => {
         text += MOCK_TRANSCRIPT[i];
         setTranscript(text);
         i++;
@@ -71,7 +93,7 @@ export default function EscrowPage() {
     if (!finalText) finalText = MOCK_TRANSCRIPT;
     setTranscript(finalText);
     setNlpStep(2);
-    setTimeout(() => {
+    safeTimeout(() => {
       setParsedData({
         to: 'Can',
         amount: '1.000 ₺',
@@ -85,7 +107,7 @@ export default function EscrowPage() {
 
   const deployContract = () => {
     setNlpStep(4);
-    setTimeout(() => {
+    safeTimeout(() => {
       setNlpStep(5);
     }, 4000);
   };
