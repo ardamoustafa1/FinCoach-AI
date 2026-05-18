@@ -6,13 +6,13 @@ import { P } from '../styles/palette';
 const PHASES = [
   "Awaiting voice input...",
   "Listening to user command...",
-  "Processing Speech-to-Text via Whisper API...",
+  "Processing Speech-to-Text via local sandbox parser...",
   "Analyzing NLP intent for Web3 execution...",
   "Voice Biometrics: Comparing frequency signatures...",
   "Deepfake Scan: Liveness verification complete.",
   "Biometric Match: 99.87% (Authorized: ARDA)",
   "Compiling Solidity Smart Contract dynamically...",
-  "Deploying Time-Locked Escrow to Ethereum Mainnet...",
+  "Writing Time-Locked Escrow to FinCoach Sandbox Ledger...",
   "Transaction Confirmed."
 ];
 
@@ -111,8 +111,8 @@ export default function VoiceBiometricEscrowPage() {
           icon={<Waves size={24} />}
           color="#7C3AED"
           title="Voice Biometric Smart Escrow"
-          subtitle="Sadece sesinizi kullanarak bankacılık ve Web3 işlemlerini biyometrik olarak doğrulayın ve yürütün."
-          badge="DeepTech & Web3"
+          subtitle="Ses komutunu, liveness kontrolünü ve şartlı ödeme kaydını FinCoach sandbox ledger üzerinde tamamlayın."
+          badge="Voice Sandbox"
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, flexWrap: 'wrap' }}>
