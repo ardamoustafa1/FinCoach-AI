@@ -11,6 +11,7 @@ import SpeechFallbackModal from './SpeechFallbackModal';
 import { useToast } from '../hooks/useToast';
 import { fmt } from '../utils/categories';
 import useStore from '../store/useStore';
+import MicPermissionModal from './MicPermissionModal';
 import {
   markWeeklySummarySeen,
   shouldShowWeeklySummary,
@@ -25,6 +26,7 @@ import { P } from '../styles/palette';
 export default function Layout({ theme, onToggleTheme }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showMicModal, setShowMicModal] = useState(false);
   const [showWeeklySummary, setShowWeeklySummary] = useState(() => shouldShowWeeklySummary());
   const [showQrModal, setShowQrModal] = useState(false);
   const [fallbackModalOpen, setFallbackModalOpen] = useState(false);
@@ -48,9 +50,33 @@ export default function Layout({ theme, onToggleTheme }) {
     setShowWeeklySummary(false);
   };
 
-  const startListeningGlobal = () => {
+  const startListeningGlobal = async () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { toast.error('Tarayıcınız ses tanımayı desteklemiyor.'); return; }
+
+    // Check existing permission state
+    let permState = 'prompt';
+    try {
+      const result = await navigator.permissions.query({ name: 'microphone' });
+      permState = result.state; // 'granted' | 'denied' | 'prompt'
+    } catch { /* Firefox doesn't support permissions.query for microphone */ }
+
+    if (permState === 'denied') {
+      toast.error('Mikrofon erişimi engellendi. Tarayıcı ayarlarından izin vermeniz gerekiyor.');
+      return;
+    }
+
+    // Show our beautiful modal first if permission not yet granted
+    if (permState === 'prompt') {
+      setShowMicModal(true);
+      return;
+    }
+
+    // Permission already granted — start directly
+    doStartListening();
+  };
+
+  const doStartListening = () => {
     const recognition = new SR();
     recognition.lang = 'tr-TR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
     recognition.onstart = () => { setIsListening(true); toast.info('Dinliyorum... Konuşun.', { duration: 5000, icon: '🎤' }); };
@@ -88,6 +114,15 @@ export default function Layout({ theme, onToggleTheme }) {
     recognition.onerror = (e) => { setIsListening(false); if (e.error !== 'no-speech') toast.error('Mikrofon hatası: ' + e.error); };
     recognition.onend = () => { setIsListening(false); };
     recognition.start();
+  };
+
+  const handleMicAllow = () => {
+    setShowMicModal(false);
+    doStartListening();
+  };
+
+  const handleMicDeny = () => {
+    setShowMicModal(false);
   };
 
   return (
@@ -204,6 +239,13 @@ export default function Layout({ theme, onToggleTheme }) {
 
       {showQrModal && (
         <DemoQRCodeModal onClose={() => setShowQrModal(false)} />
+      )}
+
+      {showMicModal && (
+        <MicPermissionModal
+          onAllow={handleMicAllow}
+          onDeny={handleMicDeny}
+        />
       )}
       
       <FeatureTourModal pathname={location.pathname} />
