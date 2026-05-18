@@ -8,11 +8,11 @@ const LOG_MESSAGES = [
   "[ORACLE] Polling e-Devlet & National Health DB APIs...",
   "[ORACLE] WARNING: Critical status confirmed via Medical API.",
   "[SYS] Condition Met: 'No heartbeat / No login > 180 Days'",
-  "[WEB3] Fetching encrypted Dead Man's Switch contract (0x7F9a...2B4)",
-  "[WEB3] Verifying heir signature... (Address: 0x9B2c...1D4)",
-  "[EVM] Unlocking 2.45 BTC and 14,500 USDC from cold storage...",
-  "[EVM] Bypassing probate and legal friction... Executing transaction.",
-  "[SYS] Asset transfer completed successfully on-chain."
+  "[SANDBOX] Fetching encrypted Dead Man's Switch contract (0x7F9a...2B4)",
+  "[SANDBOX] Verifying heir signature... (Address: 0x9B2c...1D4)",
+  "[LEDGER] Unlocking 2.45 BTC and 14,500 USDC sandbox custody record...",
+  "[LEDGER] Probate checklist attached; transfer package executed in sandbox.",
+  "[SYS] Asset transfer package completed successfully."
 ];
 
 export default function DeadMansSwitchPage() {
@@ -76,8 +76,8 @@ export default function DeadMansSwitchPage() {
           icon={<Skull size={24} />}
           color="#EF4444"
           title="Dead Man's Switch (Web3 Vasiyet)"
-          subtitle="Ölüm veya koma durumunda dijital varlıkları hukuki engele takılmadan saniyeler içinde yasal varise aktaran Akıllı Sözleşme."
-          badge="DeFi & Oracles"
+          subtitle="İnaktiflik ve oracle sinyallerine göre dijital varlık devir paketini sandbox custody ledger üzerinde çalıştırır."
+          badge="Custody Sandbox"
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
@@ -91,7 +91,7 @@ export default function DeadMansSwitchPage() {
                 </div>
                 <div>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>Smart Contract 0x7F9a...2B4</h2>
-                  <p className="code-font" style={{ fontSize: 12, color: P.text3, margin: 0 }}>Network: Ethereum Mainnet</p>
+                  <p className="code-font" style={{ fontSize: 12, color: P.text3, margin: 0 }}>Network: FinCoach Sandbox Ledger</p>
                 </div>
               </div>
               <div style={{ padding: '6px 12px', borderRadius: 99, background: step === 3 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
@@ -122,12 +122,12 @@ export default function DeadMansSwitchPage() {
                 onClick={() => setStep(2)}
                 style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #EF4444, #991B1B)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(239,68,68,0.4)' }}
               >
-                <Fingerprint size={18} /> Otonom Transferi Onayla (Bypass Probate)
+                <Fingerprint size={18} /> Otonom Transfer Paketini Onayla
               </button>
             )}
             {step === 3 && (
               <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: P.green, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <Lock size={18} /> Varlıklar Başarıyla Varise Aktarıldı
+                <Lock size={18} /> Varlık Devir Paketi Tamamlandı
               </div>
             )}
             {step === 0 && (
@@ -140,11 +140,11 @@ export default function DeadMansSwitchPage() {
           {/* RIGHT: EVM EXECUTION TERMINAL */}
           <div className="animate-enter" style={{ background: '#050714', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', display: 'flex', flexDirection: 'column', animationDelay: '0.1s' }}>
             <h3 style={{ fontSize: 14, fontWeight: 800, color: P.text2, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid rgba(255,255,255,0.1)`, paddingBottom: 16 }}>
-              <Terminal size={16} /> EVM Execution Console
+              <Terminal size={16} /> Sandbox Execution Console
             </h3>
 
             <div className="code-font" style={{ flex: 1, fontSize: 13, lineHeight: 1.8, color: '#a1a1aa' }}>
-              {step === 0 && <span style={{ opacity: 0.5 }}>Standby. Listening to Chainlink Oracles...</span>}
+              {step === 0 && <span style={{ opacity: 0.5 }}>Standby. Listening to sandbox oracle checks...</span>}
               {step === 1 && (
                 <div style={{ color: P.red, fontWeight: 700, marginBottom: 16 }}>
                   [FATAL] Oracle triggered. User inactive &gt; 180 days.<br/>
@@ -165,7 +165,7 @@ export default function DeadMansSwitchPage() {
               {step === 2 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: P.purple, marginTop: 16 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.purple, animation: 'pulse 1s infinite' }} />
-                  Processing on blockchain...
+                  Processing sandbox ledger package...
                 </div>
               )}
             </div>
