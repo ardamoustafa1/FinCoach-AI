@@ -27,7 +27,7 @@ export async function fetchTransactions() {
   }
 
   // Frontend formatına dönüştür (gerekirse)
-  return data.map(t => ({
+  return (data || []).map(t => ({
     id: t.id,
     aciklama: t.aciklama,
     tutar: Number(t.tutar),
