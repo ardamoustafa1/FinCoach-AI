@@ -44,18 +44,24 @@ export default function FinancialICUPage() {
       const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]); 
       const ys = tf.tensor2d([45000, 32000, 18000, 5000], [4, 1]); 
 
-      // Train neural network client-side
-      await model.fit(xs, ys, { epochs: 200 });
-
-      // Save trained weights into browser IndexedDB for subsequent zero-overhead runs
+      // Train neural network client-side with timeout guard
       try {
-        await model.save('indexeddb://icu-model');
-      } catch (saveErr) {
-        console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
-      }
+        await Promise.race([
+          model.fit(xs, ys, { epochs: 200 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
 
-      predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
-    }
+        // Save trained weights into browser IndexedDB for subsequent zero-overhead runs
+        try {
+          await model.save('indexeddb://icu-model');
+        } catch (saveErr) {
+          console.warn('Model IndexedDB persistence blocked or unavailable:', saveErr);
+        }
+        predictions = model.predict(tf.tensor2d([5, 6], [2, 1])).dataSync();
+      } catch (err) {
+        console.warn('Eğitim zaman aşımı veya hatası. Demo verisine geçiliyor.', err);
+        predictions = [-8000, -21000];
+      }
     
     setDynamicChartData([
       { month: 'Şub', liquidity: 45000, threshold: 0 },

@@ -71,7 +71,7 @@ const SCRAPER_ALLOWED_HOSTS = (process.env.SCRAPER_ALLOWED_HOSTS || [
   .map(host => host.trim().toLowerCase())
   .filter(Boolean);
 const whatsappStatus = {
-  enabled: process.env.WHATSAPP_ENABLED !== 'false',
+  enabled: process.env.WHATSAPP_ENABLED === 'true',
   ready: false,
   authenticated: false,
   lastEventAt: null,
@@ -735,7 +735,7 @@ Cümle: "${text}"
 });
 
 // ─── WHATSAPP BOT ────────────────────────────────────────────────
-if (process.env.WHATSAPP_ENABLED === 'false') {
+if (process.env.WHATSAPP_ENABLED !== 'true') {
   console.log('[FinCoach AI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
 } else {
   if (!supabaseAdmin) {

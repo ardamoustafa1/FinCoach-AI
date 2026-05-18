@@ -180,7 +180,10 @@ export default function ChatPage() {
     authFetch('/api/chat', {
       method: 'POST',
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
-    }).then(r => r.json()).then(data => {
+    }).then(async r => {
+      if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || 'Sunucu hatası');
+      return r.json();
+    }).then(data => {
       setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Şu an yanıt alınamadı.' }]);
     }).catch(() => {
       setMessages(prev => [...prev, { role: 'bot', content: 'Duygu koçuna bağlanılamadı.' }]);
@@ -205,7 +208,10 @@ export default function ChatPage() {
     authFetch('/api/chat', {
       method: 'POST',
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], userContext: {} }),
-    }).then(r => r.json()).then(data => {
+    }).then(async r => {
+      if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || 'Sunucu hatası');
+      return r.json();
+    }).then(data => {
       setMessages(prev => [...prev, { role: 'bot', content: data.response ?? 'Rapor alınamadı.' }]);
     }).catch(() => {
       setMessages(prev => [...prev, { role: 'bot', content: 'Rapor oluşturulamadı.' }]);
