@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import FeatureTourModal from './components/FeatureTourModal';
+import CommandMenu from './components/CommandMenu';
 import AuthPage from './pages/AuthPage';
 import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
@@ -448,6 +449,7 @@ export default function App() {
       <BrowserRouter>
         <RouteHandler />
         <TourOverlay />
+        <CommandMenu />
         {syncError && (
           <div style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', padding: '12px 24px', borderRadius: 12, boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500, animation: 'fadeSlideDown 0.3s ease-out' }}>
             <span style={{ fontSize: 18 }}>⚠️</span>

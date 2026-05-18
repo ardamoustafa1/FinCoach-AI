@@ -65,7 +65,7 @@ export default function CategoryPieChart({ islemler }) {
             {pieData.map((_, i) => <Cell key={i} fill={RENKLER[i % RENKLER.length]} stroke="none" />)}
           </Pie>
           <Tooltip
-            contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, color: P.text1 }}
+            contentStyle={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, boxShadow: '0 8px 32px rgba(124,58,237,0.2)', color: P.text1 }}
             formatter={(v, name) => [fmt(v), name]}
           />
         </PieChart>

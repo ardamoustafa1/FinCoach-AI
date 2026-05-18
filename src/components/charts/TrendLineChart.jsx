@@ -15,12 +15,12 @@ function CustomTooltip({ active, payload, label }) {
   const gider = payload.find(p => p.dataKey === 'gider')?.value || 0;
   const fark = gelir - gider;
   return (
-    <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12, padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', fontSize: 13 }}>
-      <p style={{ fontWeight: 700, color: P.text1, marginBottom: 8 }}>{label}</p>
-      <p style={{ color: '#818cf8', marginBottom: 3 }}>Gelir: {fmt(gelir)}</p>
-      <p style={{ color: '#f87171', marginBottom: 6 }}>Gider: {fmt(gider)}</p>
-      <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 6 }}>
-        <p style={{ color: fark >= 0 ? P.green : P.red, fontWeight: 700 }}>Net: {fmt(fark)}</p>
+    <div style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 8px 32px rgba(124,58,237,0.2), inset 0 0 16px rgba(124,58,237,0.05)', fontSize: 13 }}>
+      <p style={{ fontWeight: 800, color: P.text1, marginBottom: 8, fontSize: 14 }}>{label}</p>
+      <p style={{ color: '#818cf8', marginBottom: 3, fontWeight: 500 }}>Gelir: {fmt(gelir)}</p>
+      <p style={{ color: '#f87171', marginBottom: 6, fontWeight: 500 }}>Gider: {fmt(gider)}</p>
+      <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 8, marginTop: 4 }}>
+        <p style={{ color: fark >= 0 ? P.green : P.red, fontWeight: 800 }}>Net Bakiye: {fmt(fark)}</p>
       </div>
     </div>
   );
