@@ -122,7 +122,7 @@ export function abonelikleriTespit(islemler, dismisList = []) {
       kategori: grup.kategori || 'Abonelik',
       aylikTutar: ortTutar,
       sonOdeme: sonOdeme.tarih,
-      sonrakiOdeme: sonrakiTarih.toISOString().slice(0, 10),
+      sonrakiOdeme: !isNaN(sonrakiTarih.getTime()) ? sonrakiTarih.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
       tekrarSayisi: sirali.length,
       islemler: sirali,
     });
