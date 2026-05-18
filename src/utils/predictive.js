@@ -12,7 +12,7 @@ export function calculatePrediction(transactions) {
   const remainingDays = totalDays - currentDay;
 
   // Bu ayki işlemler
-  const currentMonthTx = transactions.filter(t => {
+  const currentMonthTx = (transactions || []).filter(t => {
     const d = new Date(t.tarih || t.createdAt);
     return d >= startOfMonth && d <= endOfMonth;
   });
