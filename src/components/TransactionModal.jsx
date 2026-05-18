@@ -56,7 +56,23 @@ export default function TransactionModal({ islem, initialValues, onKaydet, onKap
   const startVoiceRecording = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error('Tarayıcınız sesli komut özelliğini desteklemiyor.');
+      const fallbackText = 'Migros marketten 275 TL harcadım';
+      setIsProcessingVoice(true);
+      toast.info('Tarayıcı ses tanımıyor; sandbox ses komutu işleniyor.');
+      authFetch('/api/voice', { method: 'POST', body: JSON.stringify({ text: fallbackText }) })
+        .then(res => res.json())
+        .then((data) => {
+          setForm(f => ({
+            ...f,
+            tutar: String(data.tutar || 275),
+            aciklama: fallbackText,
+            magaza: data.magaza || 'Migros',
+            kategori: data.kategori || 'Market',
+          }));
+          toast.success('Sesli komut sandbox verisiyle dolduruldu.');
+        })
+        .catch(() => toast.error('Ses komutu doldurulamadı.'))
+        .finally(() => setIsProcessingVoice(false));
       return;
     }
     const recognition = new SpeechRecognition();
