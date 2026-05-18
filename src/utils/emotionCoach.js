@@ -106,19 +106,21 @@ export function buildCheckinPrompt(log, metrics, recentLogs) {
   const { valence, arousal, amount, category, hour, dayOfWeek } = log;
   const risk = getRiskLevel(arousal, valence);
 
+  const safeRecent = Array.isArray(recentLogs) ? recentLogs : [];
+
   // Geçmişteki benzer an (aynı kategori, negatif)
-  const similarPast = recentLogs
+  const similarPast = safeRecent
     .filter(l => l.category === category && (l.valence === 'stresli' || l.valence === 'negatif') && l.id !== log.id)
     .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
   // İptal oranı (24s sonra iptal edilen similar category logs)
-  const cancelRate = recentLogs.filter(l => l.category === category && l.cancelled).length;
-  const cancelRatio = recentLogs.filter(l => l.category === category).length > 0
-    ? Math.round((cancelRate / recentLogs.filter(l => l.category === category).length) * 100)
+  const cancelRate = safeRecent.filter(l => l.category === category && l.cancelled).length;
+  const cancelRatio = safeRecent.filter(l => l.category === category).length > 0
+    ? Math.round((cancelRate / safeRecent.filter(l => l.category === category).length) * 100)
     : 0;
 
   // Pişmanlık geçmişi
-  const regretLogs = recentLogs.filter(l => l.regretScore && l.regretScore >= 6);
+  const regretLogs = safeRecent.filter(l => l.regretScore && l.regretScore >= 6);
   const avgRegretDays = regretLogs.length
     ? Math.round(regretLogs.reduce((a, b) => a + (b.regretDays ?? 3), 0) / regretLogs.length)
     : 3;
