@@ -148,6 +148,8 @@ export default function ConfirmModal({
           top: '50%', left: '50%',
           zIndex: 10001,
           width: 'min(420px, calc(100vw - 32px))',
+          maxHeight: 'calc(100vh - 40px)',
+          overflowY: 'auto',
           background: 'linear-gradient(160deg, #141728 0%, #0d0f1e 100%)',
           border: `1px solid ${cfg.border}`,
           borderRadius: 28,
