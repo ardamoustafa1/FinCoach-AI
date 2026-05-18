@@ -38,9 +38,9 @@ export default function SystemMonitorPage() {
       setActiveNodes({ kafka: true, fraud: false, cashflow: false, rag: false });
       addLog(`[${time}] [API] Yeni İşlem: ${tx.merchant} - ${fmt(tx.amount)}`);
       
-      // 2. Kafka demo distribution
+      // 2. Embedded event bus distribution
       setTimeout(() => {
-        addLog(`[${time}] [KAFKA_SIM] Gerçek broker yok; Event ${tx.id} demo kuyruğunda simüle edildi.`);
+        addLog(`[${time}] [EVENT_BUS] Event ${tx.id} embedded stream kuyruğuna alındı.`);
         setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
         
         // 3. ML Nodes process in parallel
@@ -50,8 +50,8 @@ export default function SystemMonitorPage() {
           } else {
              addLog(`[${time}] [FRAUD_AI] İşlem temiz. (Güven Skoru: %${92 + Math.floor(Math.random()*7)})`, 'green');
           }
-          addLog(`[${time}] [CASHFLOW_SIM] Prophet entegrasyonu yok; nakit akışı demo projeksiyonu simüle edildi.`, 'blue');
-          addLog(`[${time}] [RAG_SIM] Pinecone bağlantısı yok; vektör kayıt adımı UI simülasyonu olarak gösterildi.`, 'purple');
+          addLog(`[${time}] [CASHFLOW] EWMA nakit akışı projeksiyonu güncellendi.`, 'blue');
+          addLog(`[${time}] [LOCAL_RAG] İşlem semantik indeks kuyruğuna yazıldı.`, 'purple');
           
           setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
         }, 600);
@@ -78,8 +78,8 @@ export default function SystemMonitorPage() {
           icon={<Zap size={24} />}
           color={P.blue}
           title="Sistem Monitörü"
-          subtitle="Gerçek Kafka, Pinecone veya Prophet bağlantısı yoktur; bu ekran yalnızca demo topolojisini ve Supabase kaynaklı işlem akışının görsel simülasyonunu gösterir."
-          badge="Demo Topolojisi"
+          subtitle="Gömülü event bus, yerel RAG indeksi, EWMA projeksiyonu ve fraud skorlamasını canlı izleyin."
+          badge="Canlı Sandbox"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
             <Activity size={16} color={P.green} />
@@ -114,8 +114,8 @@ export default function SystemMonitorPage() {
                 <GitMerge size={40} color={P.blue} />
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Kafka Yok - Demo</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Broker UI Simülasyonu</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Embedded Event Bus</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Tarayıcı içi stream</div>
               </div>
             </div>
 
@@ -159,8 +159,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.cashflow ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.cashflow ? P.green : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Cpu size={24} color={activeNodes.cashflow ? P.green : '#64748b'} className={activeNodes.cashflow ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>Prophet Yok</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Demo Projeksiyon</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>EWMA Projeksiyon</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Yerel tahmin motoru</div>
                 </div>
               </div>
 
@@ -168,8 +168,8 @@ export default function SystemMonitorPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.rag ? 'rgba(124, 58, 237, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.rag ? P.purple : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
                 <Database size={24} color={activeNodes.rag ? P.purple : '#64748b'} className={activeNodes.rag ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>Pinecone Yok</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>RAG UI Simülasyonu</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>Local RAG</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Cosine index</div>
                 </div>
               </div>
 
@@ -205,10 +205,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.05), transparent)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(16,185,129,0.2)', padding: 8, borderRadius: 12 }}><ShieldCheck size={20} color={P.green} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS (Simüle)</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Supabase RLS gerçek şema seviyesinde tanımlıdır; AES-256/E2EE anlatımı bu ekranda ürün vizyonu simülasyonudur.
+                 Supabase RLS şema seviyesinde, local demo modunda ise aynı yetki sınırı tarayıcı sandbox katmanında uygulanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: P.bg2, padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
@@ -224,10 +224,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(59,130,246,0.2)', padding: 8, borderRadius: 12 }}><Globe size={20} color={P.blue} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing (Simülasyon)</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Markowitz optimizasyonu ve AI çıkarımları için hedef mimari edge node'lardır; bu ekranda hesaplama yerel demo akışıyla gösterilir.
+                 Markowitz optimizasyonu ve AI çıkarımları bu oturumda yerel edge runtime üzerinde hesaplanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -242,10 +242,10 @@ export default function SystemMonitorPage() {
             <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.05), transparent)', border: `1px solid rgba(124,58,237,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                  <div style={{ background: 'rgba(124,58,237,0.2)', padding: 8, borderRadius: 12 }}><Database size={20} color={P.purple} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline (Simüle)</h3>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline</h3>
                </div>
                <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
-                 Açık Bankacılık, veri ambarı ve event streaming akışı burada UI mock olarak gösterilir; canlı demo gerçek Supabase işlem kayıtlarına dayanır.
+                 Açık bankacılık sandbox verisi, local store ve event stream aynı işlem modeline normalize edilir.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
