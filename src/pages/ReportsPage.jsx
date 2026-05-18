@@ -26,8 +26,9 @@ function normalizeTransactions(rawTransactions) {
 }
 
 function monthKey(dateLike) { return String(dateLike || '').slice(0, 7); }
-function monthLabel(key) { const [year, month] = key.split('-').map(Number); return `${AY_ADLARI[month - 1]} ${year}`; }
+function monthLabel(key) { if (!key || typeof key !== 'string' || !key.includes('-')) return ''; const [year, month] = key.split('-').map(Number); return `${AY_ADLARI[month - 1] || 'Bilinmeyen'} ${year || ''}`; }
 function addMonths(key, delta) {
+  if (!key || typeof key !== 'string' || !key.includes('-')) return new Date().toISOString().slice(0, 7);
   const [year, month] = key.split('-').map(Number);
   const date = new Date(year, month - 1 + delta, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
