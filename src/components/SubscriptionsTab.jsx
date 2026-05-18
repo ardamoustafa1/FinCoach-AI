@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   RefreshCw, X, Calendar, TrendingUp,
   Bell, CreditCard, Clock, ChevronRight, Zap, ArrowRightLeft, CheckCircle2, Loader2
@@ -171,9 +171,14 @@ function AbonelikKarti({ abonelik, onDismiss }) {
   const [swapped, setSwapped] = useState(false);
   const isNetflix = abonelik.magaza.toLowerCase().includes('netflix');
 
+  const timerRef = useRef(null);
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
+
   const handleSwap = () => {
     setSwapping(true);
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       setSwapping(false);
       setSwapped(true);
     }, 2500);
