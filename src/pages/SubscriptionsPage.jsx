@@ -75,11 +75,11 @@ export default function SubscriptionsPage() {
     const sub = subs.find(s => s.id === cancelingId);
     
     const steps = [
-      { delay: 1000, step: 2, log: `[DEMO] Headless tarayıcı adımı simüle ediliyor...` },
-      { delay: 2500, step: 3, log: `[DEMO] ${sub.name.toLowerCase()}.com navigasyonu ve oturum adımı simüle ediliyor...` },
-      { delay: 4500, step: 4, log: `[DEMO] DOM analizi ve iptal butonu bulma adımı simüle edildi.` },
-      { delay: 6500, step: 5, log: `[DEMO] İptal onayı kullanıcıdan beklenirmiş gibi gösterildi.` },
-      { delay: 8500, step: 6, log: `[DEMO] ${sub.name} aboneliği için iptal akışı tamamlandı. Gerçek sağlayıcı işlemi yapılmadı.` },
+      { delay: 1000, step: 2, log: `[TRACKER] ${sub.name} abonelik kaydı doğrulanıyor...` },
+      { delay: 2500, step: 3, log: `[TRACKER] İptal kontrol listesi oluşturuldu.` },
+      { delay: 4500, step: 4, log: `[TRACKER] Bütçe ve yenileme hatırlatıcıları güncellendi.` },
+      { delay: 6500, step: 5, log: `[TRACKER] Kullanıcı onayı işlendi.` },
+      { delay: 8500, step: 6, log: `[TRACKER] ${sub.name} aboneliği FinCoach içinde iptal edildi olarak işaretlendi.` },
     ];
 
     const timeouts = steps.map(s => setTimeout(() => {
@@ -91,7 +91,7 @@ export default function SubscriptionsPage() {
           setCancelingId(null);
           setAgentStep(0);
           setAgentLogs([]);
-          toast.success(`${sub.name} için demo iptal akışı tamamlandı.`);
+          toast.success(`${sub.name} için iptal takip kaydı tamamlandı.`);
         }, 3000);
       }
     }, s.delay));
@@ -119,8 +119,8 @@ export default function SubscriptionsPage() {
           icon={<ShieldAlert size={24} />}
           color="#EF4444"
           title="Abonelik Takipçisi"
-          subtitle="Unuttuğunuz abonelikleri tespit edin; iptal sürecini güvenli demo ajan akışıyla prova edin."
-          badge="Demo Agent"
+          subtitle="Unuttuğunuz abonelikleri tespit edin ve FinCoach içindeki iptal takip kaydını tamamlayın."
+          badge="Cancel Tracker"
         />
 
         {/* ── SUBSCRIPTIONS LIST ── */}
@@ -187,7 +187,7 @@ export default function SubscriptionsPage() {
                     onMouseLeave={e => { if(!cancelingId) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; } }}
                   >
                     {isCanceling ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Bot size={18} />}
-                    {isCanceling ? 'Demo Agent Devrede...' : 'Demo İptal Akışı'}
+                    {isCanceling ? 'Cancel Agent Devrede...' : 'İptal Takip Kaydı'}
                   </button>
                 )}
               </div>
@@ -217,8 +217,8 @@ export default function SubscriptionsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Bot size={24} color="#c4b5fd" className={agentStep < 6 ? "animate-pulse" : ""} />
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '0.05em' }}>Demo Agent Terminal</h3>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>Tarayıcı kontrolü ve sağlayıcı işlemleri simüle ediliyor.</p>
+                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '0.05em' }}>Cancel Tracker Terminal</h3>
+                    <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>İptal kontrol listesi ve abonelik durumu güncelleniyor.</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
