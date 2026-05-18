@@ -1,9 +1,8 @@
 /**
  * FinCoach AI - Mock Banka İşlem Verileri
- * Son 3 aya ait 120 adet Türkiye'ye özel gerçekçi banka işlemi
+ * Son 6 aya ait dinamik olarak oluşturulan gerçekçi banka işlemleri
  */
 
-// ─── Yardımcı: basit UUID üreteci ────────────────────────────
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -11,7 +10,6 @@ function uuid() {
   });
 }
 
-// ─── Kategori → Mağaza & tutar aralığı tanımları ─────────────
 const kategoriler = {
   Market: {
     magazalar: [
@@ -39,7 +37,7 @@ const kategoriler = {
   },
   Abonelik: {
     magazalar: [
-      { ad: 'Netflix', min: 139, max: 139 },
+      { ad: 'Netflix', min: 149, max: 149 },
       { ad: 'Spotify', min: 59, max: 59 },
       { ad: 'YouTube Premium', min: 79, max: 79 },
       { ad: 'Exxen', min: 69, max: 69 },
@@ -76,7 +74,6 @@ const kategoriler = {
   },
 };
 
-// ─── Açıklama kalıpları ──────────────────────────────────────
 const aciklamaKaliplari = {
   Market: (m) => `${m} market alışverişi`,
   'Yemek Siparişi': (m) => `${m} sipariş ödemesi`,
@@ -92,9 +89,21 @@ const aciklamaKaliplari = {
   },
 };
 
-// ─── Rastgele tarih üreteci (3 ay: Mart-Nisan-Mayıs 2025) ───
-function rastgeleTarih(ay) {
-  const yil = 2025;
+// ─── DİNAMİK ZAMAN YÖNETİMİ ───
+// Son 6 ayın yıl ve ay bilgisini üretir (Şu anki ay dahil)
+function getRecentMonths(count = 6) {
+  const result = [];
+  const now = new Date();
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push({ yil: d.getFullYear(), ay: d.getMonth() + 1 });
+  }
+  return result;
+}
+
+const MONTHS_DATA = getRecentMonths(6);
+
+function rastgeleTarih(yil, ay) {
   const gunSayisi = new Date(yil, ay, 0).getDate();
   const gun = Math.floor(Math.random() * gunSayisi) + 1;
   return `${yil}-${String(ay).padStart(2, '0')}-${String(gun).padStart(2, '0')}`;
@@ -104,14 +113,13 @@ function rastgeleTutar(min, max) {
   return Math.round((Math.random() * (max - min) + min) * 100) / 100;
 }
 
-// ─── İşlem üreteci ───────────────────────────────────────────
-function islemUret(ay) {
+function islemUret(yil, ay) {
   const katKeys = Object.keys(kategoriler);
   const kat = katKeys[Math.floor(Math.random() * katKeys.length)];
   const magazaList = kategoriler[kat].magazalar;
   const magaza = magazaList[Math.floor(Math.random() * magazaList.length)];
   const tutar = rastgeleTutar(magaza.min, magaza.max);
-  const tarih = rastgeleTarih(ay);
+  const tarih = rastgeleTarih(yil, ay);
   const aciklama = aciklamaKaliplari[kat](magaza.ad);
 
   return {
@@ -121,41 +129,56 @@ function islemUret(ay) {
     aciklama,
     magaza: magaza.ad,
     kategori: kat,
+    tur: 'gider'
   };
 }
 
-// ─── Abonelik işlemlerini her ay düzenli ekle (4 adet × 3 ay = 12) ─
+// ─── Abonelik işlemlerini her ay düzenli ekle (4 adet × 6 ay = 24)
 function abonelikIslemleriUret() {
   const sonuc = [];
   const abonelikler = kategoriler.Abonelik.magazalar;
-  [3, 4, 5].forEach((ay) => {
+  MONTHS_DATA.forEach(({ yil, ay }) => {
     abonelikler.forEach((ab) => {
       sonuc.push({
         id: uuid(),
-        tarih: `2025-${String(ay).padStart(2, '0')}-01`,
+        tarih: `${yil}-${String(ay).padStart(2, '0')}-01`,
         tutar: ab.min,
         aciklama: `${ab.ad} aylık abonelik`,
         magaza: ab.ad,
         kategori: 'Abonelik',
+        tur: 'gider'
       });
     });
   });
   return sonuc;
 }
 
-// ─── 120 İşlem Üret ──────────────────────────────────────────
+// ─── Gelir Verilerini Dinamik Üret (Son 6 ay için her ay başı maaş)
+function gelirUret() {
+  const aylarIsimleri = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  return MONTHS_DATA.map(({ yil, ay }) => ({
+    id: uuid(),
+    tarih: `${yil}-${String(ay).padStart(2, '0')}-01`,
+    tutar: 32500, // Biraz daha gerçekçi/güncel bir maaş
+    aciklama: `Maaş ödemesi - ${aylarIsimleri[ay - 1]} ${yil}`,
+    magaza: 'İşveren',
+    kategori: 'Maaş',
+    tur: 'gelir'
+  }));
+}
+
+// ─── 200 İşlem Üret (6 Ay İçin)
 function tumIslemleriUret() {
-  const abonelikler = abonelikIslemleriUret(); // 12 adet
-  const kalanAdet = 120 - abonelikler.length;  // 108 adet rastgele
-  const aylar = [3, 4, 5]; // Mart, Nisan, Mayıs
+  const abonelikler = abonelikIslemleriUret(); // 24 adet
+  const kalanAdet = 200 - abonelikler.length;  // 176 adet rastgele
 
   const rastgeleler = [];
   for (let i = 0; i < kalanAdet; i++) {
-    const ay = aylar[i % aylar.length];
+    const { yil, ay } = MONTHS_DATA[i % MONTHS_DATA.length];
     let islem;
     do {
-      islem = islemUret(ay);
-    } while (islem.kategori === 'Abonelik'); // Abonelikler zaten eklendi
+      islem = islemUret(yil, ay);
+    } while (islem.kategori === 'Abonelik'); 
     rastgeleler.push(islem);
   }
 
@@ -164,40 +187,12 @@ function tumIslemleriUret() {
   );
 }
 
-// ─── Gelir Verileri (3 aylık maaş) ───────────────────────────
-export const mockGelir = [
-  {
-    id: uuid(),
-    tarih: '2025-03-01',
-    tutar: 18000,
-    aciklama: 'Maaş ödemesi - Mart 2025',
-    magaza: 'İşveren',
-    kategori: 'Maaş',
-  },
-  {
-    id: uuid(),
-    tarih: '2025-04-01',
-    tutar: 18000,
-    aciklama: 'Maaş ödemesi - Nisan 2025',
-    magaza: 'İşveren',
-    kategori: 'Maaş',
-  },
-  {
-    id: uuid(),
-    tarih: '2025-05-01',
-    tutar: 18000,
-    aciklama: 'Maaş ödemesi - Mayıs 2025',
-    magaza: 'İşveren',
-    kategori: 'Maaş',
-  },
-];
-
-// ─── Üretilmiş işlemler ──────────────────────────────────────
+// Dışarı aktarılan dinamik değişkenler
+export const mockGelir = gelirUret();
 export const mockTransactions = tumIslemleriUret();
 
-// ─── Demo verisini session store'a aktarılmak üzere döndür ─────────────────
 export function initMockData() {
-  console.info('[FinCoach AI] Demo veri hazırlandı: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
+  console.info('[FinCoach AI] Dinamik demo veri hazırlandı: %d işlem, %d gelir kaydı', mockTransactions.length, mockGelir.length);
   return {
     transactions: mockTransactions,
     gelir: mockGelir,
