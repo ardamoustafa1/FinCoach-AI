@@ -18,8 +18,12 @@ export default function SyntheticDataGeneratorPage() {
   
   const timersRef = useRef([]);
 
+  const isMountedRef = useRef(true);
+
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       timersRef.current.forEach(id => {
         clearInterval(id);
         clearTimeout(id);
@@ -34,20 +38,22 @@ export default function SyntheticDataGeneratorPage() {
     
     let currentProgress = 0;
     const interval = setInterval(() => {
+      if (!isMountedRef.current) return;
       currentProgress += Math.floor(Math.random() * 15) + 5;
       if (currentProgress >= 100) {
         currentProgress = 100;
         clearInterval(interval);
         const tId = setTimeout(() => {
+          if (!isMountedRef.current) return;
           setProfiles(FAKE_PROFILES);
           setStep(2);
         }, 500);
         timersRef.current.push(tId);
       }
-      setProgress(currentProgress);
+      if (isMountedRef.current) setProgress(currentProgress);
       
       if (currentProgress % 20 === 0 && currentProgress < 100) {
-        setProfiles(prev => [...prev, FAKE_PROFILES[prev.length % FAKE_PROFILES.length]]);
+        if (isMountedRef.current) setProfiles(prev => [...prev, FAKE_PROFILES[prev.length % FAKE_PROFILES.length]]);
       }
     }, 300);
     timersRef.current.push(interval);
