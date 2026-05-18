@@ -39,7 +39,8 @@ function normalizeName(raw) {
 function islemleriGrupla(islemler) {
   const gruplar = {};
 
-  islemler.forEach(tx => {
+  const safeIslemler = islemler || [];
+  safeIslemler.forEach(tx => {
     // Sadece gider işlemleri (veya tur belirtilmemişse tutar'ı pozitif olanları gider say)
     const isGider = tx.tur === 'gider' || (!tx.tur && tx.tutar > 0);
     if (!isGider) return;
