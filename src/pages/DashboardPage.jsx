@@ -152,13 +152,13 @@ export default function DashboardPage() {
         <SkeletonLoader.CardGrid count={4} />
 
         {/* Charts Row Skeleton */}
-        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Pie size={160} /></GlassCard>
           <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={200} /></GlassCard>
         </div>
 
         {/* Calendar and Geo Map Row Skeleton */}
-        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={160} /></GlassCard>
           <GlassCard hover={false} style={{ padding: 28 }}><SkeletonLoader.Chart height={160} /></GlassCard>
         </div>
@@ -256,23 +256,23 @@ export default function DashboardPage() {
         <HealthScore islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
         <PersonalityCard islemler={transactions} />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 14 }}>
           {kartlar.map(k => <StatCard key={k.label} {...k} />)}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <CategoryPieChart islemler={transactions} />
           <TrendLineChart islemler={transactions || []} gelirler={(transactions || []).filter(t => t && t.tur === 'gelir')} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <HeatmapCalendar islemler={transactions} />
           <GeoHeatmap />
         </div>
         <BudgetBars harcamalar={stats.harcamaMap} limitler={limits} />
 
         {/* ── KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {/* Otomatik küsurat hesabı — gerçek hesaplama */}
           <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />

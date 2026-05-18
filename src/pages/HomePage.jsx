@@ -221,7 +221,7 @@ export default function HomePage() {
           backgroundSize: '48px 48px',
         }} />
 
-        <div style={{ position: 'relative', zIndex: 1, padding: '28px 32px', maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(16px, 4vw, 32px) clamp(12px, 3vw, 32px)', maxWidth: 1400, margin: '0 auto' }}>
 
           {/* ── HERO HEADER ── */}
           <div style={{
@@ -240,7 +240,7 @@ export default function HomePage() {
                 borderRadius: '20px 20px 0 0',
               }} />
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                     <PulsingDot color={P.green} />
@@ -289,7 +289,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Status badges */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 180 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0, width: '100%', maxWidth: 240 }}>
                   {[
                     { icon: Zap, label: 'AI Motor', value: 'Aktif', color: P.purple },
                     { icon: Activity, label: 'OCR Tarama', value: 'Hazır', color: P.green },
@@ -321,9 +321,9 @@ export default function HomePage() {
           {/* ── STAT CARDS ── */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 16,
-            marginBottom: 24,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))',
+            gap: 12,
+            marginBottom: 20,
           }}>
             {!chartsReady ? (
               <SkeletonLoader.CardGrid count={4} />
@@ -335,7 +335,7 @@ export default function HomePage() {
           </div>
 
           {/* ── AI BANNERS ROW ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 14, marginBottom: 20 }}>
 
             {/* Zaman Makinesi */}
             <div style={{ position: 'relative', borderRadius: 20, padding: 1, background: `linear-gradient(135deg, #7C3AED, #3B82F6, #7C3AED)`, backgroundSize: '200%', animation: 'gradientShift 4s ease infinite' }}>
@@ -461,7 +461,7 @@ export default function HomePage() {
           )}
 
           {/* ── CHARTS ROW ── */}
-          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 24 }}>
+          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 14, marginBottom: 20 }}>
 
             {/* Bar Chart */}
             <GlassCard style={{ padding: '28px 32px' }}>
@@ -542,7 +542,7 @@ export default function HomePage() {
           </div>
 
           {/* ── GOALS PROGRESS + TRANSACTIONS ── */}
-          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 16, marginBottom: 32 }}>
+          <div className="chart-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 14, marginBottom: 28 }}>
 
             {/* Goals */}
             <GlassCard style={{ padding: '28px 28px' }}>
@@ -634,7 +634,7 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
               {/* Sen */}
               <div style={{ background: P.bg3, border: `1px solid ${P.purple}40`, borderRadius: 16, padding: '20px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: P.purple }} />
