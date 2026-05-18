@@ -54,6 +54,9 @@ export default function FreelancerPage() {
       }
 
       // AI calculates the "Safe Salary" (average of last 6 months with a 15% safety buffer)
+      if (!monthlyIncome || monthlyIncome.length === 0) {
+        monthlyIncome = DEMO_INCOME;
+      }
       const totalIncome = monthlyIncome.reduce((a, b) => a + b.gercekGelir, 0);
       const avgIncome = totalIncome / monthlyIncome.length;
       const safeSalary = avgIncome * 0.85; // 85% of average to build buffer
