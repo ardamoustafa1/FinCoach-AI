@@ -73,6 +73,7 @@ export default function SubscriptionsPage() {
     if (agentStep === 0 || !cancelingId) return;
 
     const sub = subs.find(s => s.id === cancelingId);
+    if (!sub) return;
     
     const steps = [
       { delay: 1000, step: 2, log: `[TRACKER] ${sub.name} abonelik kaydı doğrulanıyor...` },
