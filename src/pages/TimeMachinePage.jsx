@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RefreshCw, ArrowRight, Smartphone, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { fmt } from '../utils/categories';
@@ -16,11 +16,16 @@ export default function TimeMachinePage() {
   const [spentValue, setSpentValue] = useState(0);
   const [investedValue, setInvestedValue] = useState(0);
 
+  const timerRef = useRef(null);
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
+
   const simulate = () => {
     setSimulating(true);
     setHasSimulated(false);
 
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       // 10 years projection
       const years = 10;
       let data = [];
