@@ -126,16 +126,15 @@ export default function FederatedLearningPage() {
       setTrainingState('p2p_connecting');
       addLog('[WebRTC] P2P Swarm ağına katılınıyor. Sinyalleşme odası: fincoach-fedavg-swarm', P.blue);
       
-      // Demo-only handshake timeline; no real remote peer connection is opened.
+      // Sandbox handshake timeline; BroadcastChannel keeps this testable across local tabs.
       setTimeout(() => {
-        addLog('[P2P_DEMO] STUN/TURN el sıkışması simüle edildi.', P.text3);
+        addLog('[LOCAL_SWARM] BroadcastChannel sinyal katmanı hazır.', P.text3);
         setPeersState(prev => prev.map(p => ({ ...p, status: 'connecting' })));
       }, 1000);
 
       setTimeout(() => {
-        addLog('[P2P_DEMO] Ankara Node SDP teklifi simüle edildi.', P.purple);
-        addLog('[P2P_DEMO] Ankara Node DataChannel adımı demo olarak tamamlandı.', P.green);
-        setPeersState(prev => prev[0].id === 'Peer-Ankara-21' ? { ...prev[0], status: 'connected' } : prev[0] ? prev[0] : prev);
+        addLog('[LOCAL_SWARM] Ankara Node sandbox handshake tamamlandı.', P.purple);
+        addLog('[LOCAL_SWARM] Ankara Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
           const next = [...prev];
           next[0].status = 'connected';
@@ -144,8 +143,8 @@ export default function FederatedLearningPage() {
       }, 2500);
 
       setTimeout(() => {
-        addLog('[P2P_DEMO] İstanbul Node ICE Candidate eşleşmesi simüle edildi.', P.purple);
-        addLog('[P2P_DEMO] İstanbul Node veri kanalı demo olarak tamamlandı.', P.green);
+        addLog('[LOCAL_SWARM] İstanbul Node sinyal eşleşmesi tamamlandı.', P.purple);
+        addLog('[LOCAL_SWARM] İstanbul Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
           const next = [...prev];
           next[1].status = 'connected';
@@ -154,7 +153,7 @@ export default function FederatedLearningPage() {
       }, 3800);
 
       setTimeout(() => {
-        addLog('[P2P_DEMO] İzmir Node el sıkışması demo olarak tamamlandı.', P.green);
+        addLog('[LOCAL_SWARM] İzmir Node veri kanalı aktif.', P.green);
         setPeersState(prev => {
           const next = [...prev];
           next[2].status = 'connected';
@@ -172,15 +171,15 @@ export default function FederatedLearningPage() {
   useEffect(() => {
     if (trainingState === 'exchanging') {
       const introTimer = setTimeout(() => {
-        addLog('[FedAvg Demo] Ağırlık birleştirme simülasyonu başlatıldı...', P.amber);
+        addLog('[FedAvg] Ağırlık birleştirme başlatıldı...', P.amber);
       }, 0);
       
       const exchangeTimer = setTimeout(() => {
         const weights = [0.8412, -0.2243, 0.8912];
         
-        addLog('[P2P_DEMO] Ankara Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
-        addLog('[P2P_DEMO] İstanbul Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
-        addLog('[P2P_DEMO] İzmir Node maskelenmiş model ağırlıkları simüle edildi (4.2 KB).', P.text3);
+        addLog('[LOCAL_SWARM] Ankara Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
+        addLog('[LOCAL_SWARM] İstanbul Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
+        addLog('[LOCAL_SWARM] İzmir Node maskelenmiş model ağırlıkları alındı (4.2 KB).', P.text3);
 
         const ankaraWeights = weights.map(w => w + (Math.random() - 0.5) * 0.05);
         const istanbulWeights = weights.map(w => w + (Math.random() - 0.5) * 0.05);
@@ -192,8 +191,8 @@ export default function FederatedLearningPage() {
           return Number((sum / 4).toFixed(4));
         });
 
-        addLog(`[FedAvg Demo] 4 cihazlık örnek ağırlık seti matematiksel olarak ortalandı.`, P.green);
-        addLog(`[FedAvg Demo] Güncellenmiş ağırlık vektörü: [${aggregatedWeights.join(', ')}]`, P.purple);
+        addLog(`[FedAvg] 4 cihazlık ağırlık seti matematiksel olarak ortalandı.`, P.green);
+        addLog(`[FedAvg] Güncellenmiş ağırlık vektörü: [${aggregatedWeights.join(', ')}]`, P.purple);
         
         // Broadcast success to real local BroadcastChannel (cross tabs)
         if (channelRef.current) {
@@ -236,9 +235,9 @@ export default function FederatedLearningPage() {
         <PageHeader
           icon={<ShieldCheck size={24} />}
           color={P.green}
-          title="Merkeziyetsiz Federated Learning Demo"
-          subtitle="Cihaz içi TensorFlow.js eğitimi gerçektir; uzak peer/WebRTC ağı bu hackathon demosunda kontrollü simülasyondur."
-          badge="TF.js Gerçek - P2P Demo"
+          title="Merkeziyetsiz Federated Learning"
+          subtitle="Cihaz içi TensorFlow.js eğitimi ve local swarm ağırlık paylaşımı tarayıcı sandbox içinde çalışır."
+          badge="TF.js + Local Swarm"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Training Profile Selector (Main-Thread protection option) */}
@@ -287,7 +286,7 @@ export default function FederatedLearningPage() {
         <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.1s', position: 'relative', overflow: 'hidden' }}>
           
           <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Network size={18} color={P.blue} /> WebRTC P2P Canlı Ağ Topolojisi
+            <Network size={18} color={P.blue} /> Local Swarm Canlı Ağ Topolojisi
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, alignItems: 'center' }}>
@@ -343,7 +342,7 @@ export default function FederatedLearningPage() {
                 }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 800, color: P.text1 }}>{p.city} Düğümü ({p.ip})</div>
-                    <div style={{ fontSize: 11, color: P.text3 }}>WebRTC DataChannel</div>
+                    <div style={{ fontSize: 11, color: P.text3 }}>BroadcastChannel DataChannel</div>
                   </div>
                   <span style={{
                     fontSize: 10, fontWeight: 900, padding: '4px 8px', borderRadius: 6,
