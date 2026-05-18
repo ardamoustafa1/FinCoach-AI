@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AlertTriangle, ArrowRightLeft, Briefcase, Zap, Cpu, Activity, ShieldAlert, Skull } from 'lucide-react';
 import useStore from '../store/useStore';
@@ -58,14 +58,19 @@ export default function StressTestPage() {
   // Monte Carlo Animation States
   const [isMonteCarloRunning, setIsMonteCarloRunning] = useState(false);
   const [mcIteration, setMcIteration] = useState(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const activeScenario = SCENARIOS.find(s => s.id === activeScenarioId) || SCENARIOS[0];
 
   useEffect(() => {
-    let isMounted = true;
-    
     if (activeScenarioId === 'doomsday') {
       setTimeout(() => {
+        if (!isMountedRef.current) return;
         setIsMonteCarloRunning(true);
         setMetrics(null); // hide metrics while running
       }, 0);
@@ -75,29 +80,30 @@ export default function StressTestPage() {
         count += 333; // fast counter
         if (count >= 10000) {
           clearInterval(interval);
-          if (isMounted) {
+          if (isMountedRef.current) {
             setMcIteration(10000);
             setIsMonteCarloRunning(false);
             calculateMetrics();
           }
         } else {
-          if (isMounted) setMcIteration(count);
+          if (isMountedRef.current) setMcIteration(count);
         }
       }, 50);
 
-      return () => { isMounted = false; clearInterval(interval); };
+      return () => { clearInterval(interval); };
     } else {
       setTimeout(() => {
+        if (!isMountedRef.current) return;
         setIsMonteCarloRunning(false);
         setLoading(true);
       }, 0);
       const timer = setTimeout(() => {
-        if (isMounted) {
+        if (isMountedRef.current) {
           calculateMetrics();
           setLoading(false);
         }
       }, 600);
-      return () => { isMounted = false; clearTimeout(timer); };
+      return () => { clearTimeout(timer); };
     }
 
     function calculateMetrics() {
