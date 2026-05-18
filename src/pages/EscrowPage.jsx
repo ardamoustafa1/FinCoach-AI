@@ -106,9 +106,9 @@ export default function EscrowPage() {
         <PageHeader
           icon={<Cpu size={24} />}
           color={P.purple}
-          title="Blockchain Güvenlik Ağı"
-          subtitle="Doğal dil işleme (NLP) ile konuşarak akıllı sözleşmeler oluşturun veya acil durum fonunuzu güvence altına alın."
-          badge="Smart Contract"
+          title="Sandbox Güvenlik Ağı"
+          subtitle="Doğal dil işleme ile şartlı ödeme sözleşmesi oluşturun ve fonları FinCoach sandbox kasasında izleyin."
+          badge="Sandbox Contract"
         >
           <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: 4, borderRadius: 12, border: `1px solid ${P.border}`, width: 'fit-content' }}>
             <button onClick={() => setActiveTab('voice')} style={{ padding: '8px 20px', borderRadius: 10, background: activeTab === 'voice' ? P.purple : 'transparent', color: activeTab === 'voice' ? '#fff' : P.text2, fontSize: 13, fontWeight: 800, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
@@ -153,7 +153,7 @@ export default function EscrowPage() {
                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: P.blue, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Activity size={20} color="#fff" /></div>
                      <div>
                        <p style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: 0 }}>Para Çekme Talebi Alındı</p>
-                       <p style={{ fontSize: 13, color: P.text2, margin: '4px 0 0' }}>Akıllı Sözleşmeye (Smart Contract) talep iletildi.</p>
+                       <p style={{ fontSize: 13, color: P.text2, margin: '4px 0 0' }}>Sandbox sözleşme kasasına talep iletildi.</p>
                      </div>
                      <CheckCircle2 size={24} color={P.blue} style={{ marginLeft: 'auto' }} />
                   </div>
@@ -249,7 +249,7 @@ export default function EscrowPage() {
 
               {nlpStep === 3 && (
                 <button onClick={deployContract} className="animate-enter" style={{ width: '100%', padding: '18px', borderRadius: 16, background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 32px rgba(16,185,129,0.3)' }}>
-                  <Code size={20} /> Smart Contract Üret ve Ağa Yükle
+                  <Code size={20} /> Sandbox Contract Üret ve Kilitle
                 </button>
               )}
 
@@ -258,9 +258,9 @@ export default function EscrowPage() {
                   <div style={{ background: 'rgba(16,185,129,0.1)', padding: '12px 20px', borderBottom: `1px solid rgba(16,185,129,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                        <Code size={16} color={P.green} />
-                       <span style={{ fontSize: 13, fontWeight: 800, color: P.green }}>Solidity Compiler v0.8.20</span>
+                       <span style={{ fontSize: 13, fontWeight: 800, color: P.green }}>FinCoach Contract Sandbox</span>
                      </div>
-                     {nlpStep === 4 ? <span style={{ fontSize: 12, color: P.green, animation: 'pulse 1.5s infinite' }}>Deploying to Ethereum...</span> : <span style={{ fontSize: 12, color: P.green, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Deployed successfully</span>}
+                     {nlpStep === 4 ? <span style={{ fontSize: 12, color: P.green, animation: 'pulse 1.5s infinite' }}>Sandbox ledger'a yazılıyor...</span> : <span style={{ fontSize: 12, color: P.green, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Ledger kaydı oluşturuldu</span>}
                   </div>
                   <div style={{ padding: 20, height: 160, overflow: 'hidden', position: 'relative' }}>
                     <pre style={{ margin: 0, color: '#10b981', fontSize: 12, fontFamily: 'monospace', lineHeight: 1.6, animation: nlpStep === 4 ? 'codeScroll 10s linear infinite' : 'none', opacity: 0.8 }}>
@@ -303,8 +303,8 @@ contract ConditionalEscrow {
                 <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(16,185,129,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(16,185,129,0.3)`, marginTop: 24 }}>
                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: P.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Send size={20} color="#fff" style={{ marginLeft: -2 }} /></div>
                    <div>
-                     <p style={{ fontSize: 16, fontWeight: 900, color: P.green, margin: '0 0 4px' }}>Fon Kilitlendi ve Ağa Yüklendi!</p>
-                     <p style={{ fontSize: 14, color: P.text2, margin: 0 }}>Can adlı kişiye 1.000 ₺ gönderildi. Ancak "Projeyi teslim etmesi" şartı gerçekleşene kadar para Smart Contract kasasında bekleyecektir.</p>
+                     <p style={{ fontSize: 16, fontWeight: 900, color: P.green, margin: '0 0 4px' }}>Fon Sandbox Kasasında Kilitlendi!</p>
+                     <p style={{ fontSize: 14, color: P.text2, margin: 0 }}>Can adlı kişi için 1.000 ₺ şartlı ödeme kaydı oluşturuldu; "Projeyi teslim etmesi" şartı gerçekleşene kadar para sandbox contract kasasında bekler.</p>
                    </div>
                 </div>
               )}
