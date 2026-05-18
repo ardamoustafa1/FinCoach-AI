@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Target, TrendingUp, Cpu, Gauge, Globe2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import useStore from '../store/useStore';
@@ -42,12 +42,19 @@ export default function WealthPage() {
   const [cloud, setCloud] = useState([]);
   const [optimalPoint, setOptimalPoint] = useState(null);
   const [goalAnalysis, setGoalAnalysis] = useState(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     const tx = useStore.getState().transactions || [];
     const goals = useStore.getState().goals || [];
     
     setTimeout(() => {
+      if (!isMountedRef.current) return;
       // 1. Calculate Monthly Cashflow (Savings Capacity)
       const expenses = tx.filter(t => t && t.tur === 'gider').map(t => Number(t.tutar));
       const avgExpense = expenses.reduce((a, b) => a + b, 0) / (expenses.length || 1);
