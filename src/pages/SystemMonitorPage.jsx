@@ -29,6 +29,8 @@ export default function SystemMonitorPage() {
   };
 
   useEffect(() => {
+    const activeTimeouts = [];
+
     // Event Stream Simulator
     const interval = setInterval(() => {
       const tx = getRandomTx();
@@ -39,12 +41,12 @@ export default function SystemMonitorPage() {
       addLog(`[${time}] [API] Yeni İşlem: ${tx.merchant} - ${fmt(tx.amount)}`);
       
       // 2. Embedded event bus distribution
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         addLog(`[${time}] [EVENT_BUS] Event ${tx.id} embedded stream kuyruğuna alındı.`);
         setActiveNodes({ kafka: true, fraud: true, cashflow: true, rag: true });
         
         // 3. ML Nodes process in parallel
-        setTimeout(() => {
+        const t2 = setTimeout(() => {
           if (tx.isFraud) {
              addLog(`[${time}] [FRAUD_AI] UYARI: İzolasyon Ormanı anomali tespit etti! Cüzdan bloke ediliyor.`, 'red');
           } else {
@@ -55,11 +57,16 @@ export default function SystemMonitorPage() {
           
           setActiveNodes({ kafka: false, fraud: false, cashflow: false, rag: false });
         }, 600);
+        activeTimeouts.push(t2);
       }, 400);
+      activeTimeouts.push(t1);
 
     }, 3500); // New event every 3.5s
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      activeTimeouts.forEach(clearTimeout);
+    };
   }, []);
 
   return (
