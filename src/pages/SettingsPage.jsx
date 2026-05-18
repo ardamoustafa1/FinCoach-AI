@@ -13,6 +13,7 @@ import { supabase } from '../utils/supabase';
 import { authFetch } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 import { P } from '../styles/palette';
+import ConfirmModal from '../components/ConfirmModal';
 
 import PageHeader from '../components/PageHeader';
 import SettingRow from '../components/settings/SettingRow';
@@ -247,93 +248,33 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
   return (
     <>
-      {confirmAction && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'rgba(5,7,20,0.85)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-        }}>
-          <div style={{
-            background: '#141728',
-            border: `1px solid ${confirmAction === 'clear' ? 'rgba(239,68,68,0.25)' : 'rgba(124,58,237,0.28)'}`,
-            borderRadius: 24, padding: '34px 32px', maxWidth: 420, width: '100%',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
-            animation: 'fadeSlideUp 0.2s ease',
-          }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 16,
-              background: confirmAction === 'clear' ? 'rgba(239,68,68,0.12)' : 'rgba(124,58,237,0.14)',
-              border: `1px solid ${confirmAction === 'clear' ? 'rgba(239,68,68,0.25)' : 'rgba(124,58,237,0.3)'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px'
-            }}>
-              {confirmAction === 'clear' ? <Database size={24} color={P.red} /> : <Sparkles size={24} color={P.purpleLight} />}
-            </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#F1F5F9', textAlign: 'center', marginBottom: 10 }}>
-              {confirmAction === 'clear' ? 'Yerel Veriler Temizlensin mi?' : 'Demo Verileri Yüklensin mi?'}
-            </h3>
-            <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
-              {confirmAction === 'clear'
-                ? 'Bu işlem cihazdaki FinCoach AI işlem, hedef ve tercih verilerini temizler. Supabase oturumunuz korunur.'
-                : 'Mevcut yerel işlem ve hedef verileri demo veri setiyle değiştirilecek. Supabase oturumunuz korunur.'}
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                onClick={() => setConfirmAction(null)}
-                style={{ flex: 1, padding: '13px 0', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', fontWeight: 700, cursor: 'pointer' }}
-              >
-                Vazgeç
-              </button>
-              <button
-                onClick={executeDataAction}
-                style={{
-                  flex: 1, padding: '13px 0', borderRadius: 14, border: 'none',
-                  background: confirmAction === 'clear' ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                  color: '#fff', fontWeight: 800, cursor: 'pointer'
-                }}
-              >
-                {confirmAction === 'clear' ? 'Temizle' : 'Yükle'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Onay Modalı (Demo / Temizle) ── */}
+      <ConfirmModal
+        isOpen={!!confirmAction}
+        onConfirm={executeDataAction}
+        onCancel={() => setConfirmAction(null)}
+        variant={confirmAction === 'clear' ? 'danger' : 'purple'}
+        title={confirmAction === 'clear' ? 'Yerel Veriler Temizlensin mi?' : 'Demo Verileri Yüklensin mi?'}
+        description={
+          confirmAction === 'clear'
+            ? 'Bu işlem cihazdaki FinCoach AI işlem, hedef ve tercih verilerini temizler. Supabase oturumunuz korunur.'
+            : 'Mevcut yerel işlem ve hedef verileri demo veri setiyle değiştirilecek. Supabase oturumunuz korunur.'
+        }
+        confirmLabel={confirmAction === 'clear' ? 'Temizle' : 'Yükle'}
+        cancelLabel="Vazgeç"
+      />
 
-      {showLogoutModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'rgba(5,7,20,0.85)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-        }}>
-          <div style={{
-            background: '#141728', border: '1px solid rgba(239,68,68,0.25)',
-            borderRadius: 24, padding: '36px 32px', maxWidth: 400, width: '100%',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
-            animation: 'fadeSlideUp 0.2s ease',
-          }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <LogOut size={24} color='#EF4444' />
-            </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#F1F5F9', textAlign: 'center', marginBottom: 10 }}>Çıkış Yapmak İstiyor Musunuz?</h3>
-            <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
-              Oturumunuz sonlandırılacak ve tekrar giriş ekranına yönlendirileceksiniz.
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-              >İptal</button>
-              <button
-                onClick={confirmLogout}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #EF4444, #DC2626)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 20px rgba(239,68,68,0.35)', transition: 'opacity 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-              >Çıkış Yap</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Çıkış Onay Modalı ── */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        variant="logout"
+        title="Çıkış Yapmak İstiyor Musunuz?"
+        description="Oturumunuz sonlandırılacak ve tekrar giriş ekranına yönlendirileceksiniz."
+        confirmLabel="Çıkış Yap"
+        cancelLabel="İptal"
+      />
 
       <style>{`
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
