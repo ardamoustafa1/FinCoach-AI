@@ -8,6 +8,7 @@ import { P } from '../styles/palette';
 export default function TimeMachinePage() {
   const [purchaseName, setPurchaseName] = useState('iPhone 16 Pro Max');
   const [purchaseAmount, setPurchaseAmount] = useState(80000);
+  const [investmentRate, setInvestmentRate] = useState(1.45); // Default 45%
   const [simulating, setSimulating] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
   const [chartData, setChartData] = useState([]);
@@ -40,8 +41,8 @@ export default function TimeMachinePage() {
           spent: Math.round(currentDepreciation)
         });
 
-        // Investment grows ~20% annually (Compound S&P 500 / Tech funds)
-        currentInvestment = currentInvestment * 1.45; // 45% annual growth to match 4M TL after 10 years roughly
+        // Dynamic growth based on selected investment
+        currentInvestment = currentInvestment * Number(investmentRate);
         
         // Electronics depreciate fast
         if (i < 3) {
@@ -54,7 +55,7 @@ export default function TimeMachinePage() {
       }
 
       setSpentValue(0);
-      setInvestedValue(Math.round(currentInvestment / 1.45)); // Last value
+      setInvestedValue(Math.round(currentInvestment / Number(investmentRate))); // Last value
 
       setChartData(data);
       setSimulating(false);
@@ -104,6 +105,14 @@ export default function TimeMachinePage() {
           <div style={{ flex: 1, minWidth: 150 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Tutar (₺)</label>
             <input type="number" value={purchaseAmount} onChange={e => setPurchaseAmount(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 800 }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Yatırım Tipi</label>
+            <select value={investmentRate} onChange={e => setInvestmentRate(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 800, cursor: 'pointer' }}>
+              <option value="1.25">Mevduat / Risksiz (Yıllık %25)</option>
+              <option value="1.45">S&P 500 / Borsa (Yıllık %45)</option>
+              <option value="1.75">Kripto / Yüksek Risk (Yıllık %75)</option>
+            </select>
           </div>
           <button onClick={simulate} disabled={simulating} style={{ flex: 1, minWidth: 200, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', border: 'none', color: '#fff', fontSize: 16, fontWeight: 800, cursor: simulating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 26, boxShadow: '0 8px 32px rgba(59,130,246,0.3)', transition: 'transform 0.2s' }}>
             {simulating ? <RefreshCw size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowRight size={20} />}
