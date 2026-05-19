@@ -4,51 +4,76 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import PageHeader from '../components/PageHeader';
 
 import { P } from '../styles/palette';
-const LOG_MESSAGES = [
-  "[SYS] Initializing Self-Driving Money Sandbox Engine...",
-  "[SANDBOX_API] Open Banking sandbox balances loaded (Akbank, Garanti)...",
-  "[SCAN] Analyzing Vadesiz (Idle) Accounts... 20,000 TL detected.",
-  "[SCAN] Analyzing Credit Card Debt... 15,000 TL debt detected at %5.5 APR.",
-  "[AI] Asymmetry detected: Negative spread of -%5.5. Capital destruction imminent.",
-  "[PLAN] 15,000 TL vadesiz bakiyeden kredi kartı borcuna ayrıldı.",
-  "[LEDGER] Sandbox EFT: Credit Card 44** **** **** 1982 kaydı oluşturuldu.",
-  "[LEDGER] Kalan 5,000 TL gecelik repo sandbox havuzuna yönlendirildi.",
-  "[EXEC] Kullanıcı onayıyla sandbox ledger güncellendi."
-];
-
-const CHART_DATA = [
-  { month: '1. Ay', bleeding: -825, optimized: 155 },
-  { month: '2. Ay', bleeding: -1650, optimized: 310 },
-  { month: '3. Ay', bleeding: -2475, optimized: 465 },
-  { month: '4. Ay', bleeding: -3300, optimized: 620 },
-];
-
 export default function AutonomousAgentPage() {
   const [step, setStep] = useState(0); 
-  // 0: Scanning, 1: Asymmetry Found, 2: Executing, 3: Completed
   const [logs, setLogs] = useState([]);
+  
+  // Dynamic User Inputs
+  const [idleCash, setIdleCash] = useState(20000);
+  const [debtAmount, setDebtAmount] = useState(15000);
+  const [debtRate, setDebtRate] = useState(5.5); // Monthly %
+  const [depositRate, setDepositRate] = useState(3.5); // Monthly %
+
+  const generateLogsAndChart = () => {
+    const monthlyBleed = Math.round(debtAmount * (debtRate / 100));
+    const optimizedCash = idleCash - debtAmount;
+    const monthlyGain = optimizedCash > 0 ? Math.round(optimizedCash * (depositRate / 100)) : 0;
+    const netDifference = monthlyBleed + monthlyGain;
+
+    const dynamicLogs = [
+      "[SYS] Initializing Self-Driving Money Sandbox Engine...",
+      "[SANDBOX_API] Open Banking sandbox balances loaded...",
+      `[SCAN] Analyzing Vadesiz (Idle) Accounts... ${fmt(idleCash)} detected.`,
+      `[SCAN] Analyzing Credit Card Debt... ${fmt(debtAmount)} debt detected at %${debtRate} APR.`,
+      `[AI] Asymmetry detected: Negative spread of -%${(debtRate - depositRate).toFixed(1)}. Capital destruction imminent.`,
+      `[PLAN] ${fmt(Math.min(idleCash, debtAmount))} vadesiz bakiyeden kredi kartı borcuna ayrıldı.`,
+      `[LEDGER] Sandbox EFT: Credit Card 44** **** **** 1982 kaydı oluşturuldu.`,
+      optimizedCash > 0 ? `[LEDGER] Kalan ${fmt(optimizedCash)} gecelik repo sandbox havuzuna yönlendirildi.` : `[LEDGER] Kalan borç yapılandırıldı.`,
+      "[EXEC] Kullanıcı onayıyla sandbox ledger güncellendi."
+    ];
+
+    const dynamicChart = [
+      { month: '1. Ay', bleeding: -monthlyBleed, optimized: monthlyGain },
+      { month: '2. Ay', bleeding: -(monthlyBleed * 2), optimized: monthlyGain * 2 },
+      { month: '3. Ay', bleeding: -(monthlyBleed * 3), optimized: monthlyGain * 3 },
+      { month: '4. Ay', bleeding: -(monthlyBleed * 4), optimized: monthlyGain * 4 },
+    ];
+
+    return { dynamicLogs, dynamicChart, monthlyBleed, monthlyGain, netDifference };
+  };
+
+  const [simulationData, setSimulationData] = useState({ logs: [], chart: [], bleed: 0, gain: 0, net: 0 });
+
+  const startSimulation = () => {
+    setStep(0);
+    setLogs([]);
+    const data = generateLogsAndChart();
+    setSimulationData(data);
+
+    let t1;
+    let currentLogIndex = 0;
+    const interval = setInterval(() => {
+      setLogs(prev => [...prev, data.dynamicLogs[currentLogIndex]].filter(Boolean));
+      currentLogIndex++;
+      if (currentLogIndex === 5) {
+        clearInterval(interval);
+        t1 = setTimeout(() => setStep(1), 1000);
+      }
+    }, 800);
+  };
 
   useEffect(() => {
-    let t1, t2, interval;
-    if (step === 0) {
-      let currentLogIndex = 0;
-      interval = setInterval(() => {
-        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]].filter(Boolean));
-        currentLogIndex++;
-        if (currentLogIndex === 5) { // Pause at "Asymmetry detected"
-          clearInterval(interval);
-          t1 = setTimeout(() => setStep(1), 1000);
-        }
-      }, 800);
-    }
-    
+    startSimulation();
+  }, []);
+
+  useEffect(() => {
+    let t2, interval;
     if (step === 2) {
-      // Execute Arbitrage
       let currentLogIndex = 5;
       interval = setInterval(() => {
-        setLogs(prev => [...prev, LOG_MESSAGES[currentLogIndex]].filter(Boolean));
+        setLogs(prev => [...prev, simulationData.logs[currentLogIndex] || generateLogsAndChart().dynamicLogs[currentLogIndex]].filter(Boolean));
         currentLogIndex++;
-        if (currentLogIndex >= LOG_MESSAGES.length) {
+        if (currentLogIndex >= 9) {
           clearInterval(interval);
           t2 = setTimeout(() => setStep(3), 1500);
         }
@@ -56,7 +81,6 @@ export default function AutonomousAgentPage() {
     }
     return () => {
       clearInterval(interval);
-      clearTimeout(t1);
       clearTimeout(t2);
     };
   }, [step]);
@@ -112,9 +136,35 @@ export default function AutonomousAgentPage() {
             </div>
           </div>
 
-          {/* RIGHT: ACTION CARDS */}
+          {/* RIGHT: ACTION CARDS & SETTINGS */}
           <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, animationDelay: '0.1s' }}>
             
+            {/* INPUTS */}
+            <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: '0 0 16px' }}>Otonom Ajan Parametreleri</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 12, color: P.text2, fontWeight: 700, display: 'block', marginBottom: 4 }}>Boşta Nakit (TL)</label>
+                  <input type="number" value={idleCash} onChange={e => setIdleCash(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg0, color: P.text1, fontSize: 14 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: P.text2, fontWeight: 700, display: 'block', marginBottom: 4 }}>Gecelik Faiz (%)</label>
+                  <input type="number" step="0.1" value={depositRate} onChange={e => setDepositRate(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg0, color: P.text1, fontSize: 14 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: P.text2, fontWeight: 700, display: 'block', marginBottom: 4 }}>KK Borcu (TL)</label>
+                  <input type="number" value={debtAmount} onChange={e => setDebtAmount(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg0, color: P.text1, fontSize: 14 }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, color: P.text2, fontWeight: 700, display: 'block', marginBottom: 4 }}>KK Faizi (%)</label>
+                  <input type="number" step="0.1" value={debtRate} onChange={e => setDebtRate(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: `1px solid ${P.border}`, background: P.bg0, color: P.text1, fontSize: 14 }} />
+                </div>
+              </div>
+              <button onClick={startSimulation} disabled={step === 0 || step === 2} style={{ width: '100%', marginTop: 16, padding: 12, borderRadius: 12, background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, fontSize: 14, fontWeight: 800, cursor: (step === 0 || step === 2) ? 'not-allowed' : 'pointer' }}>
+                Parametreleri Yeniden Tara
+              </button>
+            </div>
+
             {/* STATE 1: ASYMMETRY FOUND */}
             {step >= 1 && (
               <div style={{ background: step === 3 ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s' }}>
@@ -128,7 +178,7 @@ export default function AutonomousAgentPage() {
                 {step !== 3 ? (
                   <>
                     <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 24 }}>
-                      Vadesiz hesabınızda boşta bekleyen <strong style={{ color: '#fff' }}>20.000 TL</strong> nakit bulunurken, kredi kartınızda aylık <strong style={{ color: P.red }}>%5.5 faiz</strong> işleyen <strong style={{ color: '#fff' }}>15.000 TL</strong> borcunuz tespit edildi. Bu durum her ay 825 TL zarara yol açıyor.
+                      Vadesiz hesabınızda boşta bekleyen <strong style={{ color: '#fff' }}>{fmt(idleCash)}</strong> nakit bulunurken, kredi kartınızda aylık <strong style={{ color: P.red }}>%{debtRate} faiz</strong> işleyen <strong style={{ color: '#fff' }}>{fmt(debtAmount)}</strong> borcunuz tespit edildi. Bu durum her ay {fmt(simulationData.bleed)} zarara yol açıyor.
                     </p>
                     <button 
                       onClick={() => setStep(2)}
@@ -146,11 +196,11 @@ export default function AutonomousAgentPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.1)`, padding: 16, borderRadius: 16 }}>
                         <p style={{ fontSize: 11, color: P.text3, textTransform: 'uppercase', fontWeight: 800, margin: '0 0 4px' }}>Aylık Engellenen Zarar</p>
-                        <p style={{ fontSize: 24, color: '#fff', fontWeight: 900, margin: 0 }}>₺825,00</p>
+                        <p style={{ fontSize: 24, color: '#fff', fontWeight: 900, margin: 0 }}>{fmt(simulationData.bleed)}</p>
                       </div>
                       <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.1)`, padding: 16, borderRadius: 16 }}>
                         <p style={{ fontSize: 11, color: P.text3, textTransform: 'uppercase', fontWeight: 800, margin: '0 0 4px' }}>Yeni DeFi Getirisi</p>
-                        <p style={{ fontSize: 24, color: P.green, fontWeight: 900, margin: 0 }}>₺155,00 / ay</p>
+                        <p style={{ fontSize: 24, color: P.green, fontWeight: 900, margin: 0 }}>{fmt(simulationData.gain)} / ay</p>
                       </div>
                     </div>
                   </>
@@ -166,7 +216,7 @@ export default function AutonomousAgentPage() {
                 </h3>
                 <div style={{ height: 180, width: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={CHART_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <AreaChart data={simulationData.chart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorBleed" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={P.red} stopOpacity={0.5}/>
