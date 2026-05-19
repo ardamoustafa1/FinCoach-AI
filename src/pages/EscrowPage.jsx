@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Lock, ShieldCheck, Activity, ShieldAlert, Cpu, CheckCircle2, Mic, Code, Send, Check } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import { fmt } from '../utils/categories';
 
 import { P } from '../styles/palette';
-const MOCK_TRANSCRIPT = "Can'a akşam yemeği için 1000 TL gönder, ama sadece yarın akşama kadar bana o projeyi teslim ederse parayı serbest bırak.";
 
 export default function EscrowPage() {
   const [activeTab, setActiveTab] = useState('voice'); // 'voice' or 'emergency'
   
   // Emergency State
   const [unlockStatus, setUnlockStatus] = useState('idle');
+  const [emergencyTVL, setEmergencyTVL] = useState(120000);
 
   const timersRef = useRef([]);
   const intervalsRef = useRef([]);
@@ -45,6 +46,7 @@ export default function EscrowPage() {
 
   // Voice State
   const [isListening, setIsListening] = useState(false);
+  const [transcriptInput, setTranscriptInput] = useState("Can'a akşam yemeği için 1000 TL gönder, ama sadece yarın akşama kadar bana projeyi teslim ederse parayı serbest bırak.");
   const [transcript, setTranscript] = useState('');
   const [nlpStep, setNlpStep] = useState(0); // 0: idle, 1: listening, 2: parsing, 3: parsed, 4: generating_solidity, 5: deployed
   const [parsedData, setParsedData] = useState(null);
@@ -65,7 +67,7 @@ export default function EscrowPage() {
       };
       recognition.onend = () => {
         setIsListening(false);
-        simulateNLPProcessing(transcript || MOCK_TRANSCRIPT);
+        simulateNLPProcessing(transcript || transcriptInput);
       };
       recognition.onerror = () => {
         setIsListening(false);
@@ -77,30 +79,40 @@ export default function EscrowPage() {
       let text = '';
       let i = 0;
       const interval = safeInterval(() => {
-        text += MOCK_TRANSCRIPT[i];
+        text += transcriptInput[i];
         setTranscript(text);
         i++;
-        if (i >= MOCK_TRANSCRIPT.length) {
+        if (i >= transcriptInput.length) {
           clearInterval(interval);
           setIsListening(false);
-          simulateNLPProcessing(MOCK_TRANSCRIPT);
+          simulateNLPProcessing(transcriptInput);
         }
       }, 30); // 30ms typing speed
     }
   };
 
+  const parseTranscript = (text) => {
+    // Basic regex parser for sandbox demo purposes
+    const amountMatch = text.match(/(\d+)\s*(tl|lira|dolar|euro|₺)/i);
+    const toMatch = text.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+)'a|([A-ZÇĞİÖŞÜa-zçğıöşü]+) için/i);
+    const reasonMatch = text.match(/için (.+?) gönder/i) || text.match(/(.+?) için/i);
+    const conditionMatch = text.match(/eğer (.+?) ise/i) || text.match(/ama sadece (.+?) ederse/i) || text.match(/sadece (.+?) ederse/i) || text.match(/ama (.+?) serbest bırak/i);
+    
+    return {
+      to: toMatch ? (toMatch[1] || toMatch[2]) : 'Bilinmeyen Alıcı',
+      amount: amountMatch ? `${amountMatch[1]} ₺` : 'Belirsiz',
+      reason: reasonMatch ? reasonMatch[1] : 'Belirtilmemiş',
+      condition: conditionMatch ? conditionMatch[1] : 'Şart Bulunamadı',
+      deadline: text.toLowerCase().includes('yarın') ? 'Yarın (24 Saat)' : text.toLowerCase().includes('haftaya') ? 'Haftaya (7 Gün)' : 'Belirtilmemiş'
+    };
+  };
+
   const simulateNLPProcessing = (finalText) => {
-    if (!finalText) finalText = MOCK_TRANSCRIPT;
+    if (!finalText) finalText = transcriptInput;
     setTranscript(finalText);
     setNlpStep(2);
     safeTimeout(() => {
-      setParsedData({
-        to: 'Can',
-        amount: '1.000 ₺',
-        reason: 'Akşam yemeği',
-        condition: 'Projeyi teslim etmesi',
-        deadline: 'Yarın Akşam (24 Saat)'
-      });
+      setParsedData(parseTranscript(finalText));
       setNlpStep(3);
     }, 2500);
   };
@@ -156,7 +168,16 @@ export default function EscrowPage() {
               </div>
 
               <p style={{ fontSize: 13, color: P.text3, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>KİLİTLİ BAKİYE</p>
-              <h2 style={{ fontSize: 56, fontWeight: 900, color: P.text1, letterSpacing: '-0.03em', margin: '0 0 8px' }}>120.000 ₺</h2>
+              
+              {unlockStatus === 'idle' ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <input type="number" value={emergencyTVL} onChange={e => setEmergencyTVL(Number(e.target.value))} style={{ fontSize: 40, fontWeight: 900, color: P.text1, background: 'transparent', border: `1px dashed ${P.border}`, borderRadius: 12, width: 200, textAlign: 'center', padding: '4px' }} />
+                  <span style={{ fontSize: 40, fontWeight: 900, color: P.text1 }}>₺</span>
+                </div>
+              ) : (
+                <h2 style={{ fontSize: 56, fontWeight: 900, color: P.text1, letterSpacing: '-0.03em', margin: '0 0 8px' }}>{fmt(emergencyTVL)}</h2>
+              )}
+
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: 8, border: `1px solid ${P.border}` }}>
                 <span style={{ fontSize: 11, color: P.text3, fontFamily: 'monospace' }}>0x8aA9...3F9c</span>
                 <ShieldCheck size={14} color={P.green} />
@@ -221,6 +242,16 @@ export default function EscrowPage() {
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '80%', height: 1, background: `linear-gradient(90deg, transparent, ${P.purple}, transparent)` }} />
               
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 40 }}>
+                
+                {nlpStep === 0 && (
+                  <textarea 
+                    value={transcriptInput} 
+                    onChange={e => setTranscriptInput(e.target.value)} 
+                    placeholder="Şartlı transfer isteğinizi yazın veya mikrofon ile söyleyin..."
+                    style={{ width: '100%', maxWidth: 500, minHeight: 80, padding: 16, borderRadius: 16, background: P.bg2, border: `1px solid ${P.border}`, color: P.text1, fontSize: 15, marginBottom: 24, resize: 'vertical' }}
+                  />
+                )}
+
                 <button 
                   onClick={startListening}
                   disabled={nlpStep > 0 && nlpStep < 6}
@@ -238,13 +269,10 @@ export default function EscrowPage() {
                    <Mic size={40} color={isListening ? P.red : '#fff'} />
                 </button>
                 <p style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>
-                  {nlpStep === 0 && 'Sesli Komut Verin'}
+                  {nlpStep === 0 && 'Sesli/Yazılı Komut İşle'}
                   {nlpStep === 1 && 'Dinleniyor...'}
                   {nlpStep === 2 && 'Doğal Dil İşleniyor (NLP)...'}
                   {nlpStep >= 3 && 'Komut Analiz Edildi'}
-                </p>
-                <p style={{ fontSize: 13, color: P.text3, maxWidth: 400, textAlign: 'center', margin: 0 }}>
-                  Örn: "Can'a akşam yemeği için 1000 TL gönder, ama projeyi teslim ederse parayı serbest bırak."
                 </p>
               </div>
 
