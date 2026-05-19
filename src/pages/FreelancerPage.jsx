@@ -48,14 +48,14 @@ export default function FreelancerPage() {
           return { month: MONTH_NAMES[monthIdx] || ym, gercekGelir: Math.round(grouped[ym]) };
         });
       } else {
-        // Not enough real data — use demo
-        monthlyIncome = DEMO_INCOME;
+        // Not enough real data — signal UI
+        if (isMounted) {
+          setData({ notEnoughData: true });
+          setLoading(false);
+        }
+        return;
       }
 
-      // AI calculates the "Safe Salary" (average of last 6 months with a 15% safety buffer)
-      if (!monthlyIncome || monthlyIncome.length === 0) {
-        monthlyIncome = DEMO_INCOME;
-      }
       const totalIncome = monthlyIncome.reduce((a, b) => a + b.gercekGelir, 0);
       const avgIncome = totalIncome / (monthlyIncome.length || 1);
       const safeSalary = avgIncome * 0.85; // 85% of average to build buffer
@@ -87,7 +87,28 @@ export default function FreelancerPage() {
     setSmoothingActive(true);
   };
 
-  if (loading || !data) return <PageLoader message="Serbest meslek gelir oynakl&#305;&#287;&#305; analiz ediliyor..." />;
+  if (loading || !data) return <PageLoader message="Serbest meslek gelir oynaklığı analiz ediliyor..." />;
+
+  if (data.notEnoughData) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
+        <PageHeader
+          icon={<Waves size={24} />}
+          color="#3B82F6"
+          title="Freelancer Gelir Dengeleyici"
+          subtitle="Aydan aya değişen gelirinizi sabit bir maaşa dönüştürün. Stressiz bir finansal hayat." 
+          badge="Freelancer & Esnaf"
+        />
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 40, textAlign: 'center' }}>
+          <Waves size={48} color={P.text3} style={{ marginBottom: 16 }} />
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 8px' }}>Yeterli Veri Yok</h3>
+          <p style={{ fontSize: 14, color: P.text2, margin: 0, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+            Bu özelliği kullanabilmek için en az 3 farklı aya ait gelir işleminiz (maaş, ödeme vs.) bulunması gerekmektedir. İşlemler sayfasından gelir ekleyerek sistemi aktif edebilirsiniz.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
