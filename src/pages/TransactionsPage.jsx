@@ -463,9 +463,9 @@ export default function TransactionsPage() {
 
             {/* ── KART ── */}
             {gorunum === 'kart' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
+              <div style={{ width: '100%', animation: 'fadeUp 0.4s ease 0.25s both' }}>
                 {filtrelenmis.length === 0
-                  ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '56px 20px', color: P.text3 }}>
+                  ? <div style={{ textAlign: 'center', padding: '56px 20px', color: P.text3 }}>
                     <div style={{ fontSize: 36, marginBottom: 12 }}>{ham.length === 0 ? '📥' : '🔍'}</div>
                     <p style={{ fontWeight: 800, color: P.text2, marginBottom: 8 }}>{ham.length === 0 ? 'Veri bekleyen temiz hesap' : 'Eşleşen işlem bulunamadı'}</p>
                     <p style={{ fontSize: 13, maxWidth: 440, margin: '0 auto 16px' }}>{ham.length === 0 ? 'İlk verini CSV, fiş tarama, ses veya manuel kayıtla ekleyebilirsin.' : 'Filtreleri temizleyerek tüm işlemleri tekrar görebilirsin.'}</p>
@@ -476,7 +476,7 @@ export default function TransactionsPage() {
                       style={{ height: 600, width: '100%' }}
                       data={filtrelenmis}
                       components={{
-                        List: React.forwardRef((props, ref) => <div {...props} ref={ref} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14, ...props.style }} />)
+                        List: React.forwardRef((props, ref) => <div {...props} ref={ref} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14, width: '100%', ...props.style }} />)
                       }}
                       itemContent={(index, tx) => <TxKartRow key={tx.id} tx={tx}  onDuzenle={handleDuzenle} onSil={setSilinecek} />}
                     />
