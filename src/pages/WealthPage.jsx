@@ -6,23 +6,23 @@ import PageHeader, { PageLoader } from '../components/PageHeader';
 import { fmt } from '../utils/categories';
 
 import { P } from '../styles/palette';
-// Simulated Assets (Expected Annual Return %, Volatility/Risk %)
-const ASSETS = [
+// Varsayılan değerler state'e aktarılacak
+const DEFAULT_ASSETS = [
   { name: 'Teknoloji Hisse', eR: 35, vol: 25 },
   { name: 'Kripto', eR: 70, vol: 50 },
   { name: 'Altın', eR: 18, vol: 12 },
   { name: 'Tahvil', eR: 10, vol: 5 }
 ];
 
-function generatePortfolios() {
+function generatePortfolios(assets) {
   const portfolios = [];
   for (let i = 0; i < 500; i++) {
     let w = [Math.random(), Math.random(), Math.random(), Math.random()];
     const sum = w.reduce((a, b) => a + b, 0);
     w = w.map(val => val / sum);
 
-    const expReturn = w[0]*ASSETS[0].eR + w[1]*ASSETS[1].eR + w[2]*ASSETS[2].eR + w[3]*ASSETS[3].eR;
-    const rawRisk = w[0]*ASSETS[0].vol + w[1]*ASSETS[1].vol + w[2]*ASSETS[2].vol + w[3]*ASSETS[3].vol;
+    const expReturn = w[0]*assets[0].eR + w[1]*assets[1].eR + w[2]*assets[2].eR + w[3]*assets[3].eR;
+    const rawRisk = w[0]*assets[0].vol + w[1]*assets[1].vol + w[2]*assets[2].vol + w[3]*assets[3].vol;
     const divFactor = 1 - (0.2 * (1 - Math.max(...w))); // Diversification benefit
     const risk = rawRisk * divFactor;
 
@@ -37,6 +37,7 @@ function generatePortfolios() {
 }
 
 export default function WealthPage() {
+  const [assets, setAssets] = useState(DEFAULT_ASSETS);
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState(null);
   const [cloud, setCloud] = useState([]);
@@ -53,6 +54,7 @@ export default function WealthPage() {
     const tx = useStore.getState().transactions || [];
     const goals = useStore.getState().goals || [];
     
+    setLoading(true);
     setTimeout(() => {
       if (!isMountedRef.current) return;
       // 1. Calculate Monthly Cashflow (Savings Capacity)
@@ -106,7 +108,7 @@ export default function WealthPage() {
       }
 
       // 3. Generate Portfolios & Find Optimal Point
-      const pts = generatePortfolios();
+      const pts = generatePortfolios(assets);
       
       let bestPoint = null;
       let minRiskForTarget = 999;
@@ -140,7 +142,7 @@ export default function WealthPage() {
       setOptimalPoint(bestPoint);
       setLoading(false);
     }, 800);
-  }, []);
+  }, [assets]);
 
   if (loading || !optimalPoint) return <PageLoader message="Hedeflerinize göre Markowitz portföy matrisi hesaplanıyor..." />;
 
@@ -166,6 +168,35 @@ export default function WealthPage() {
           subtitle="Modern Portföy Teorisi (Markowitz) ile hedeflerinize ulaşmanız için gereken optimal dağılımı matematiksel olarak bulur."
           badge="Algoritmik Optimizasyon"
         />
+
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: '0 0 16px' }}>Varlık Beklentilerini Ayarla</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {assets.map((asset, idx) => (
+              <div key={idx} style={{ background: P.bg0, padding: 16, borderRadius: 12, border: `1px solid ${P.border}` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: P.text1, marginBottom: 8 }}>{asset.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: P.text3, width: 40 }}>Getiri</span>
+                  <input type="range" min="1" max="100" value={asset.eR} onChange={e => {
+                    const newAssets = [...assets];
+                    newAssets[idx].eR = Number(e.target.value);
+                    setAssets(newAssets);
+                  }} style={{ flex: 1 }} />
+                  <span style={{ fontSize: 11, color: P.purple, fontWeight: 800, width: 25 }}>%{asset.eR}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: P.text3, width: 40 }}>Risk</span>
+                  <input type="range" min="1" max="100" value={asset.vol} onChange={e => {
+                    const newAssets = [...assets];
+                    newAssets[idx].vol = Number(e.target.value);
+                    setAssets(newAssets);
+                  }} style={{ flex: 1 }} />
+                  <span style={{ fontSize: 11, color: P.red, fontWeight: 800, width: 25 }}>%{asset.vol}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* AI GOAL ANALYSIS BANNER */}
         {goalAnalysis && goalAnalysis.msg && (
