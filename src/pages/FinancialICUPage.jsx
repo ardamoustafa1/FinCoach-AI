@@ -27,8 +27,9 @@ export default function FinancialICUPage() {
   }, []);
 
   const startAnalysis = async () => {
-    if (hasTrained.current) return;
+    if (hasTrained.current && step !== 4) return;
     hasTrained.current = true;
+    setDynamicChartData([]);
     setStep(1); // Scanning state
 
     let predictions;

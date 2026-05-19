@@ -71,7 +71,7 @@ export default function AutonomousAgentPage() {
     if (step === 2) {
       let currentLogIndex = 5;
       interval = setInterval(() => {
-        setLogs(prev => [...prev, simulationData.logs[currentLogIndex] || generateLogsAndChart().dynamicLogs[currentLogIndex]].filter(Boolean));
+        setLogs(prev => [...prev, (simulationData.dynamicLogs || [])[currentLogIndex] || generateLogsAndChart().dynamicLogs[currentLogIndex]].filter(Boolean));
         currentLogIndex++;
         if (currentLogIndex >= 9) {
           clearInterval(interval);

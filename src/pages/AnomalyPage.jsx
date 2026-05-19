@@ -196,7 +196,7 @@ export default function AnomalyPage() {
                       <div>
                         <h4 style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>{anomaly.desc}</h4>
                         <p style={{ fontSize: 12, color: P.text3, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Clock size={12} /> Saat: {Math.floor(anomaly.hour)}:{(anomaly.hour % 1 * 60).toFixed(0).padStart(2,'0')}
+                          <Clock size={12} /> Saat: {Math.floor(anomaly.hour)}:{((anomaly.hour % 1) * 60).toFixed(0).padStart(2,'0')}
                         </p>
                       </div>
                       <span style={{ fontSize: 16, fontWeight: 900, color: P.red }}>{fmt(anomaly.amount)}</span>

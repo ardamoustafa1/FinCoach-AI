@@ -240,7 +240,7 @@ contract DegreeEscrow {
     function releaseFunds(bool conditionMet) public {
         require(msg.sender == arbiter, "Only Oracle");
         require(conditionMet == true, "Condition not met");
-        IERC20(${parsedData.currency.toLowerCase()}Token).transfer(beneficiary, amount);
+        IERC20(${(parsedData.currency || 'USDC').toLowerCase()}Token).transfer(beneficiary, amount);
     }
 }`}
               </pre>
