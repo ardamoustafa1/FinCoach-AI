@@ -6,11 +6,9 @@ import { useToast } from '../hooks/useToast';
 import { P } from '../styles/palette';
 // ─── DAVRANIŞSAL İKTİSAT MOTORU ───
 // Formül: V = A / (1 + kD)
-function calculateHyperbolicDiscounting(price) {
-  const k = 0.15; // Kullanıcının dürtüsellik katsayısı (Kişilik modelinden gelebilir)
+function calculateHyperbolicDiscounting(price, k, expectedROI) {
   const years = 5;
   const days = years * 365;
-  const expectedROI = 0.08; // Yıllık %8 getiri (Hisse senedi/Fon)
   
   // Gelecekteki Paranın Matematiksel Değeri (Bileşik Faiz)
   const futureValue = price * Math.pow(1 + expectedROI, years);
@@ -22,7 +20,6 @@ function calculateHyperbolicDiscounting(price) {
   const immediateValue = price;
 
   // İrrasyonalite Skoru (Yüzde olarak ne kadar mantıksız bir karar?)
-  // Eğer beynimiz gelecekteki 36.000 TL'yi bugün 1.200 TL gibi algılıyorsa, çok mantıksız bir karar veriyoruzdur.
   const irrationalityRatio = 1 - (subjectiveFutureValue / immediateValue);
   const score = Math.max(0, Math.min(100, Math.round(irrationalityRatio * 100)));
 
@@ -33,13 +30,20 @@ export default function ShopSimulationPage() {
   const [buying, setBuying] = useState(false);
   const [swarmStep, setSwarmStep] = useState(0); // 0: none, 1: Risk, 2: Opp, 3: Psychologist, 4: Orch, 5: Final
   const [psyData, setPsyData] = useState(null);
+  
+  // Sandbox Parameters
+  const [kFactor, setKFactor] = useState(0.15); // Dürtüsellik
+  const [roi, setRoi] = useState(0.08); // Beklenen getiri
+  const [cashFlow, setCashFlow] = useState(15000); // Kullanıcı nakit durumu
+  const PRODUCT_PRICE = 24999;
+
   const navigate = useNavigate();
   const toast = useToast();
 
   const handleBuy = () => {
     setBuying(true);
     setSwarmStep(1); 
-    setPsyData(calculateHyperbolicDiscounting(24999));
+    setPsyData(calculateHyperbolicDiscounting(PRODUCT_PRICE, kFactor, roi));
   };
 
   useEffect(() => {
@@ -67,7 +71,25 @@ export default function ShopSimulationPage() {
       {/* Mock Apple Store Header */}
       <div style={{ borderBottom: '1px solid #d2d2d7', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>TechStore</div>
-        <div style={{ display: 'flex', gap: 20, fontSize: 12, fontWeight: 500, color: '#1d1d1f' }}>
+        
+        {/* Sandbox Configurator (Invisible to a normal user, but visible in demo) */}
+        <div style={{ display: 'flex', gap: 16, background: '#f5f5f7', padding: '4px 16px', borderRadius: 20, alignItems: 'center', border: '1px solid #d2d2d7' }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#86868b', textTransform: 'uppercase' }}>Demo Params</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600 }}>Nakit (₺):</label>
+            <input type="number" value={cashFlow} onChange={e => setCashFlow(Number(e.target.value))} style={{ width: 60, padding: 4, fontSize: 11, borderRadius: 4, border: '1px solid #ccc' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600 }}>k (Dürtü):</label>
+            <input type="number" step="0.05" value={kFactor} onChange={e => setKFactor(Number(e.target.value))} style={{ width: 50, padding: 4, fontSize: 11, borderRadius: 4, border: '1px solid #ccc' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600 }}>ROI:</label>
+            <input type="number" step="0.01" value={roi} onChange={e => setRoi(Number(e.target.value))} style={{ width: 50, padding: 4, fontSize: 11, borderRadius: 4, border: '1px solid #ccc' }} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 20, fontSize: 12, fontWeight: 500, color: '#1d1d1f', alignItems: 'center' }}>
           <span style={{cursor: 'pointer'}} onClick={() => navigate(-1)}>Geri Dön</span>
           <ShoppingBag size={16} />
         </div>
