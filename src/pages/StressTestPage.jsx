@@ -54,6 +54,7 @@ export default function StressTestPage() {
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [emergencyFundValue, setEmergencyFundValue] = useState(85000);
   
   // Monte Carlo Animation States
   const [isMonteCarloRunning, setIsMonteCarloRunning] = useState(false);
@@ -112,7 +113,7 @@ export default function StressTestPage() {
       const totalIncome = txList.filter(t => t && t.tur === 'gelir').reduce((a, b) => a + Number(b.tutar), 0) || 45000;
       const totalExpense = txList.filter(t => t && t.tur === 'gider').reduce((a, b) => a + Number(b.tutar), 0) || 28000;
       const currentSavingsRate = ((totalIncome - totalExpense) / (totalIncome || 1)) * 100;
-      const emergencyFund = 85000; 
+      const emergencyFund = emergencyFundValue; 
       
       const scenarioIncome = totalIncome * (1 + activeScenario.incomeGrowth);
       const scenarioExpense = totalExpense * activeScenario.expenseMultiplier;
@@ -140,7 +141,7 @@ export default function StressTestPage() {
       });
       setChartData(data);
     }
-  }, [activeScenarioId, activeScenario]);
+  }, [activeScenarioId, activeScenario, emergencyFundValue]);
 
   return (
     <>
@@ -157,9 +158,19 @@ export default function StressTestPage() {
           icon={<Cpu size={24} />}
           color={activeScenario.color}
           title="Makroekonomik Stres Testi"
-          subtitle="Monte Carlo algoritmasıyla farklı kriz senaryolarında hayatta kalma sürenizi hesaplayın."
+          subtitle="Farklı kriz senaryolarında acil durum fonunuzun ne kadar dayanacağını test edin."
           badge="Digital Twin"
         />
+
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, marginBottom: 8, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Mevcut Acil Durum Fonu (Nakit/Likit Varlıklar) - ₺</label>
+            <input type="number" value={emergencyFundValue} onChange={e => setEmergencyFundValue(Number(e.target.value))} style={{ width: '100%', padding: '16px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 800 }} />
+          </div>
+          <div style={{ flex: 1 }}>
+             <p style={{ fontSize: 13, color: P.text3, margin: 0, lineHeight: 1.5 }}>Bu değer kriz anlarında hayatta kalma sürenizi (runway) belirler. Gerçek nakit durumunuza göre güncelleyin.</p>
+          </div>
+        </div>
 
         {/* SCENARIO SELECTOR */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
