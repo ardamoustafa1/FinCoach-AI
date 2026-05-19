@@ -46,6 +46,8 @@ const QUICK_QUESTIONS = [
   "Bu harcama alışkanlığıyla 5 yıl sonraki hayatım 🔮",
 ];
 
+const EMPTY_EMOTION_LOGS = [];
+
 
 
 function getUserContext() {
@@ -148,7 +150,7 @@ const TypewriterMarkdown = ({ text, delay = 8, isLatest }) => {
       setCurrentText('');
       setCurrentIndex(0);
     }
-  }, [text, isLatest]);
+  }, [currentIndex, currentText, text, isLatest]);
 
   useEffect(() => {
     if (isLatest && currentIndex < text.length) {
@@ -176,7 +178,7 @@ export default function ChatPage() {
   const [modalChart, setModalChart] = useState(null);
   const [showEmotionCheckin, setShowEmotionCheckin] = useState(false);
   const messagesEndRef = useRef(null);
-  const emotionLogs = useStore(state => state.emotionLogs) || [];
+  const emotionLogs = useStore(state => state.emotionLogs ?? EMPTY_EMOTION_LOGS);
   const addEmotionLog = useStore(state => state.addEmotionLog);
 
   const initialMsgHandled = useRef(false);

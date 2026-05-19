@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingDown, AlertCircle, CalendarClock, BarChart4, ArrowUpRight, BrainCircuit, Upload, FileText } from 'lucide-react';
 import useStore from '../store/useStore';
@@ -52,7 +52,7 @@ export default function CashFlowPage() {
     return () => { isMountedRef.current = false; };
   }, []);
 
-  const runSimulation = (contractPenalty = 0) => {
+  const runSimulation = useCallback((contractPenalty = 0) => {
     // ─── MONTE CARLO SIMULATION ───
     const tx = useStore.getState().transactions || [];
     
@@ -162,11 +162,11 @@ export default function CashFlowPage() {
       
       setLoading(false);
     }, 1200); // UI için yapay bekleme
-  };
+  }, [currentBalance]);
 
   useEffect(() => {
     runSimulation(contractData?.extractedTerms ? 14500 : 0);
-  }, [currentBalance]);
+  }, [contractData?.extractedTerms, runSimulation]);
 
   const handleUploadContract = () => {
     setUploading(true);

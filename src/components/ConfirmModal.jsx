@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { X, AlertTriangle, Trash2, Sparkles, Info, CheckCircle, LogOut, Bell } from 'lucide-react';
 import { P } from '../styles/palette';
 
@@ -98,14 +98,6 @@ export default function ConfirmModal({
   cancelLabel = 'İptal',
   hideCancelButton = false,
 }) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) { setVisible(false); return; }
-    const t = setTimeout(() => setVisible(true), 10);
-    return () => clearTimeout(t);
-  }, [isOpen]);
-
   // Lock body scroll
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';

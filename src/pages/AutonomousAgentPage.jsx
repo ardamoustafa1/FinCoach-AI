@@ -1,12 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Cpu, Zap, Activity, Terminal, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import PageHeader from '../components/PageHeader';
 
 import { P } from '../styles/palette';
+
+const fmt = (value) => new Intl.NumberFormat('tr-TR', {
+  style: 'currency',
+  currency: 'TRY',
+  maximumFractionDigits: 0,
+}).format(Number(value) || 0);
+
 export default function AutonomousAgentPage() {
   const [step, setStep] = useState(0); 
   const [logs, setLogs] = useState([]);
+  const initializedRef = useRef(false);
   
   // Dynamic User Inputs
   const [idleCash, setIdleCash] = useState(20000);
@@ -14,7 +22,7 @@ export default function AutonomousAgentPage() {
   const [debtRate, setDebtRate] = useState(5.5); // Monthly %
   const [depositRate, setDepositRate] = useState(3.5); // Monthly %
 
-  const generateLogsAndChart = () => {
+  const generateLogsAndChart = useCallback(() => {
     const monthlyBleed = Math.round(debtAmount * (debtRate / 100));
     const optimizedCash = idleCash - debtAmount;
     const monthlyGain = optimizedCash > 0 ? Math.round(optimizedCash * (depositRate / 100)) : 0;
@@ -39,39 +47,46 @@ export default function AutonomousAgentPage() {
       { month: '4. Ay', bleeding: -(monthlyBleed * 4), optimized: monthlyGain * 4 },
     ];
 
-    return { dynamicLogs, dynamicChart, monthlyBleed, monthlyGain, netDifference };
-  };
+    return {
+      dynamicLogs,
+      chart: dynamicChart,
+      bleed: monthlyBleed,
+      gain: monthlyGain,
+      net: netDifference,
+    };
+  }, [debtAmount, debtRate, depositRate, idleCash]);
 
-  const [simulationData, setSimulationData] = useState({ logs: [], chart: [], bleed: 0, gain: 0, net: 0 });
+  const [simulationData, setSimulationData] = useState({ dynamicLogs: [], chart: [], bleed: 0, gain: 0, net: 0 });
 
-  const startSimulation = () => {
+  const startSimulation = useCallback(() => {
     setStep(0);
     setLogs([]);
     const data = generateLogsAndChart();
     setSimulationData(data);
 
-    let t1;
     let currentLogIndex = 0;
     const interval = setInterval(() => {
       setLogs(prev => [...prev, data.dynamicLogs[currentLogIndex]].filter(Boolean));
       currentLogIndex++;
       if (currentLogIndex === 5) {
         clearInterval(interval);
-        t1 = setTimeout(() => setStep(1), 1000);
+        setTimeout(() => setStep(1), 1000);
       }
     }, 800);
-  };
+  }, [generateLogsAndChart]);
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     startSimulation();
-  }, []);
+  }, [startSimulation]);
 
   useEffect(() => {
     let t2, interval;
     if (step === 2) {
       let currentLogIndex = 5;
       interval = setInterval(() => {
-        setLogs(prev => [...prev, (simulationData.dynamicLogs || [])[currentLogIndex] || generateLogsAndChart().dynamicLogs[currentLogIndex]].filter(Boolean));
+        setLogs(prev => [...prev, simulationData.dynamicLogs[currentLogIndex]].filter(Boolean));
         currentLogIndex++;
         if (currentLogIndex >= 9) {
           clearInterval(interval);
@@ -83,7 +98,7 @@ export default function AutonomousAgentPage() {
       clearInterval(interval);
       clearTimeout(t2);
     };
-  }, [step]);
+  }, [step, simulationData.dynamicLogs]);
 
   return (
     <>

@@ -4,13 +4,11 @@ import { P } from '../styles/palette';
 
 export default function MicPermissionModal({ onAllow, onDeny }) {
   const [visible, setVisible] = useState(false);
-  const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
     // Mount animasyonu
     const t = setTimeout(() => setVisible(true), 10);
-    const p = setInterval(() => setPulse(v => !v), 1200);
-    return () => { clearTimeout(t); clearInterval(p); };
+    return () => clearTimeout(t);
   }, []);
 
   const features = [

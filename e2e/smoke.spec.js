@@ -49,3 +49,72 @@ test('Auth form shows validation on empty submit', async ({ page }) => {
     await expect(stillOnAuth).toBeVisible();
   }
 });
+
+// ─── 5. Demo Account Can Open All Judge-Facing Routes ──────────────────────
+test('Demo account opens all primary routes without app errors', async ({ page }) => {
+  test.setTimeout(45_000);
+
+  const consoleErrors = [];
+  page.on('pageerror', error => consoleErrors.push(`pageerror: ${error.message}`));
+  page.on('console', message => {
+    if (message.type() === 'error') consoleErrors.push(`console: ${message.text()}`);
+  });
+
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.reload();
+
+  const demoButton = page.getByRole('button', { name: /Demo hesabı ile giriş yap|Demo Gir|Demo/i }).first();
+  await expect(demoButton).toBeVisible({ timeout: 10_000 });
+  await demoButton.click();
+  await page.waitForTimeout(1_000);
+
+  const routes = [
+    '/',
+    '/dashboard',
+    '/transactions',
+    '/wealth',
+    '/micro-invest',
+    '/debt-snowball',
+    '/freelancer-smoother',
+    '/tax',
+    '/real-estate',
+    '/anomaly',
+    '/graph-analysis',
+    '/system-monitor',
+    '/federated',
+    '/escrow',
+    '/autonomous-agent',
+    '/financial-icu',
+    '/dead-mans-switch',
+    '/voice-escrow',
+    '/synthetic-data',
+    '/goals',
+    '/league',
+    '/cashflow',
+    '/stress-test',
+    '/time-machine',
+    '/subscriptions',
+    '/shop-sim',
+    '/chat',
+    '/reports',
+    '/settings',
+  ];
+
+  const routeFailures = [];
+  for (const route of routes) {
+    consoleErrors.length = 0;
+    await page.goto(route);
+    await page.waitForTimeout(350);
+    const bodyText = await page.locator('body').innerText();
+    const visibleError = /Bir şeyler ters gitti|Ekran güvenli moda alındı|Application error|ReferenceError/.test(bodyText);
+    if (visibleError || consoleErrors.length > 0) {
+      routeFailures.push({ route, visibleError, consoleErrors: [...consoleErrors] });
+    }
+  }
+
+  expect(routeFailures).toEqual([]);
+});

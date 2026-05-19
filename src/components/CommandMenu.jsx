@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, ArrowRight, LayoutDashboard, Target, Bot, Settings, ShieldCheck, 
   HeartPulse, Cpu, Landmark, Snowflake, Home, Waves, Calculator, Globe, 
-  Network, Coins, Layers, Lock, Skull, Mic, ShieldAlert, Trophy, Clock, BarChart4 
+  Network, Coins, Layers, Lock, Mic, ShieldAlert, Clock, BarChart4 
 } from 'lucide-react';
 import { P } from '../styles/palette';
 

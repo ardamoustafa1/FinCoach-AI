@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock, Terminal, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import useStore from '../store/useStore';
@@ -22,7 +22,7 @@ export default function DeadMansSwitchPage() {
     }
   }, []);
 
-  const getDynamicLogs = () => [
+  const getDynamicLogs = useCallback(() => [
     `[ORACLE] Pinging user activity logs... ${inactivityDays} days since last login.`,
     "[ORACLE] Polling e-Devlet & National Health DB APIs...",
     "[ORACLE] WARNING: Critical status confirmed via Medical API.",
@@ -32,7 +32,7 @@ export default function DeadMansSwitchPage() {
     `[LEDGER] Unlocking ${fmt(tvl)} sandbox custody record...`,
     "[LEDGER] Probate checklist attached; transfer package executed in sandbox.",
     "[SYS] Asset transfer package completed successfully."
-  ];
+  ], [heirAddress, inactivityDays, tvl]);
 
   const startSimulation = () => {
     setStep(0);
@@ -65,7 +65,7 @@ export default function DeadMansSwitchPage() {
       }, 700);
     }
     return () => { clearInterval(interval); clearTimeout(timer); };
-  }, [step, inactivityDays, heirAddress, tvl]);
+  }, [step, getDynamicLogs]);
 
   return (
     <>

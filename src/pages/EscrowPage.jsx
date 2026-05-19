@@ -16,9 +16,11 @@ export default function EscrowPage() {
   const intervalsRef = useRef([]);
 
   useEffect(() => {
+    const timers = timersRef.current;
+    const intervals = intervalsRef.current;
     return () => {
-      timersRef.current.forEach(clearTimeout);
-      intervalsRef.current.forEach(clearInterval);
+      timers.forEach(clearTimeout);
+      intervals.forEach(clearInterval);
     };
   }, []);
 

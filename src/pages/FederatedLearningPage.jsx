@@ -18,8 +18,9 @@ export default function FederatedLearningPage() {
   const timersRef = useRef([]);
 
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
-      timersRef.current.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
@@ -172,7 +173,7 @@ export default function FederatedLearningPage() {
 
       timersRef.current.push(t1, t2, t3, t4);
 
-    } catch (err) {
+    } catch {
       addLog(`[WARN] TF.js timeout veya hata — Sandbox fallback ağırlıkları kullanılıyor.`, P.amber);
       addLog(`[PRIVACY] Fallback vektörü: [0.8412, -0.2243, 0.8912] (Demo Mode)`, P.green);
       setTrainingState('p2p_connecting');

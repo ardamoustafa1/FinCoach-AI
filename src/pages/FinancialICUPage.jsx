@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, Activity, Lock, TrendingDown, Radio, ShieldAlert, HeartPulse, Building2 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine } from 'recharts';
 import PageHeader from '../components/PageHeader';
 
 import { P } from '../styles/palette';
@@ -17,13 +17,35 @@ const chartData = [
 export default function FinancialICUPage() {
   const [step, setStep] = useState(0); 
   const [dynamicChartData, setDynamicChartData] = useState([]);
+  const [chartReady, setChartReady] = useState(false);
+  const [chartSize, setChartSize] = useState({ width: 0, height: 280 });
+  const chartContainerRef = useRef(null);
   const hasTrained = useRef(false);
   const isMountedRef = useRef(true);
   // 0: Scanning/Predicting, 1: NPL Detected (Red Alert), 2: ICU Activating, 3: Stabilized
   
   useEffect(() => {
     isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
+    const timer = setTimeout(() => setChartReady(true), 80);
+    const element = chartContainerRef.current;
+    let observer;
+    if (element) {
+      const updateSize = () => {
+        const rect = element.getBoundingClientRect();
+        setChartSize({
+          width: Math.max(1, Math.floor(rect.width || 0)),
+          height: Math.max(1, Math.floor(rect.height || 280)),
+        });
+      };
+      updateSize();
+      observer = new ResizeObserver(updateSize);
+      observer.observe(element);
+    }
+    return () => {
+      isMountedRef.current = false;
+      clearTimeout(timer);
+      observer?.disconnect();
+    };
   }, []);
 
   const startAnalysis = async () => {
@@ -158,23 +180,23 @@ export default function FinancialICUPage() {
               {step === 4 && <span className="secure-text">RİSK İZOLE EDİLDİ</span>}
             </div>
 
-            <div style={{ height: 280, width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dynamicChartData.length > 0 ? dynamicChartData : chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="month" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} />
-                  <YAxis stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} tickFormatter={v => `₺${Math.round(v/1000)}k`} />
-                  <Tooltip contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }} />
-                  <ReferenceLine y={0} stroke={P.red} strokeDasharray="3 3" label={{ position: 'insideBottomRight', value: 'TEMERRÜT SINIRI', fill: P.red, fontSize: 10, fontWeight: 800 }} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="liquidity" 
-                    stroke={step >= 4 ? P.green : P.red} 
-                    strokeWidth={4} 
-                    dot={{ fill: P.bg2, strokeWidth: 2, r: 4 }} 
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div ref={chartContainerRef} style={{ height: 280, width: '100%' }}>
+              {chartReady && chartSize.width > 1 && (
+                  <LineChart width={chartSize.width} height={chartSize.height} data={dynamicChartData.length > 0 ? dynamicChartData : chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="month" stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} />
+                    <YAxis stroke={P.text3} fontSize={11} axisLine={false} tickLine={false} tickFormatter={v => `₺${Math.round(v/1000)}k`} />
+                    <Tooltip contentStyle={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 12 }} />
+                    <ReferenceLine y={0} stroke={P.red} strokeDasharray="3 3" label={{ position: 'insideBottomRight', value: 'TEMERRÜT SINIRI', fill: P.red, fontSize: 10, fontWeight: 800 }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="liquidity" 
+                      stroke={step >= 4 ? P.green : P.red} 
+                      strokeWidth={4} 
+                      dot={{ fill: P.bg2, strokeWidth: 2, r: 4 }} 
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+              )}
             </div>
           </div>
 

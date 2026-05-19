@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Database, Zap, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare, RefreshCw } from 'lucide-react';
+import { Database, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import useStore from '../store/useStore';
 
@@ -37,6 +37,7 @@ export default function SyntheticDataGeneratorPage() {
 
   useEffect(() => {
     isMountedRef.current = true;
+    const timers = timersRef.current;
     // Pre-populate from user's actual transaction categories if available
     const txs = useStore.getState().transactions || [];
     if (txs.length > 0) {
@@ -50,7 +51,7 @@ export default function SyntheticDataGeneratorPage() {
     }
     return () => {
       isMountedRef.current = false;
-      timersRef.current.forEach(id => {
+      timers.forEach(id => {
         clearInterval(id);
         clearTimeout(id);
       });

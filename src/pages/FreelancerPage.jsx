@@ -8,16 +8,6 @@ import PageHeader, { PageLoader } from '../components/PageHeader';
 import { P } from '../styles/palette';
 const MONTH_NAMES = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
-// Demo fallback when user has no income transactions
-const DEMO_INCOME = [
-  { month: 'Oca', gercekGelir: 120000 },
-  { month: 'Şub', gercekGelir: 15000 },
-  { month: 'Mar', gercekGelir: 85000 },
-  { month: 'Nis', gercekGelir: 0 },
-  { month: 'May', gercekGelir: 140000 },
-  { month: 'Haz', gercekGelir: 25000 },
-];
-
 export default function FreelancerPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
