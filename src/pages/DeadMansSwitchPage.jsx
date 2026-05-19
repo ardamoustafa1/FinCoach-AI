@@ -1,48 +1,71 @@
 import { useState, useEffect } from 'react';
-import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock, Terminal } from 'lucide-react';
+import { Skull, FileWarning, Fingerprint, Database, Network, Clock, CheckCircle2, ChevronRight, Lock, Terminal, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import useStore from '../store/useStore';
+import { fmt } from '../utils/categories';
 
 import { P } from '../styles/palette';
-const LOG_MESSAGES = [
-  "[ORACLE] Pinging user activity logs... 180 days since last login.",
-  "[ORACLE] Polling e-Devlet & National Health DB APIs...",
-  "[ORACLE] WARNING: Critical status confirmed via Medical API.",
-  "[SYS] Condition Met: 'No heartbeat / No login > 180 Days'",
-  "[SANDBOX] Fetching encrypted Dead Man's Switch contract (0x7F9a...2B4)",
-  "[SANDBOX] Verifying heir signature... (Address: 0x9B2c...1D4)",
-  "[LEDGER] Unlocking 2.45 BTC and 14,500 USDC sandbox custody record...",
-  "[LEDGER] Probate checklist attached; transfer package executed in sandbox.",
-  "[SYS] Asset transfer package completed successfully."
-];
 
 export default function DeadMansSwitchPage() {
   const [step, setStep] = useState(0); 
-  // 0: Monitoring, 1: Triggered/Alert, 2: Smart Contract Execution, 3: Completed
   const [logs, setLogs] = useState([]);
+  
+  const [tvl, setTvl] = useState(235400);
+  const [inactivityDays, setInactivityDays] = useState(180);
+  const [heirAddress, setHeirAddress] = useState('0x9B2c...1D4');
 
   useEffect(() => {
-    if (step === 0) {
-      const timer = setTimeout(() => setStep(1), 2000); // Trigger alert
-      return () => clearTimeout(timer);
+    const goals = useStore.getState().goals || [];
+    const totalAssets = goals.reduce((acc, g) => acc + (Number(g.currentAmount) || 0), 0);
+    if (totalAssets > 0) {
+      setTvl(totalAssets);
     }
-    
+  }, []);
+
+  const getDynamicLogs = () => [
+    `[ORACLE] Pinging user activity logs... ${inactivityDays} days since last login.`,
+    "[ORACLE] Polling e-Devlet & National Health DB APIs...",
+    "[ORACLE] WARNING: Critical status confirmed via Medical API.",
+    `[SYS] Condition Met: 'No heartbeat / No login > ${inactivityDays} Days'`,
+    "[SANDBOX] Fetching encrypted Dead Man's Switch contract (0x7F9a...2B4)",
+    `[SANDBOX] Verifying heir signature... (Address: ${heirAddress})`,
+    `[LEDGER] Unlocking ${fmt(tvl)} sandbox custody record...`,
+    "[LEDGER] Probate checklist attached; transfer package executed in sandbox.",
+    "[SYS] Asset transfer package completed successfully."
+  ];
+
+  const startSimulation = () => {
+    setStep(0);
+    setLogs([]);
+  };
+
+  useEffect(() => {
+    let timer;
+    if (step === 0) {
+      timer = setTimeout(() => setStep(1), 2000); // Trigger alert
+    }
+    return () => clearTimeout(timer);
+  }, [step]);
+
+  useEffect(() => {
+    let currentLogIndex = 0;
+    let timer, interval;
     if (step === 2) {
-      let currentLogIndex = 0;
-      let timer;
-      const interval = setInterval(() => {
-        const nextMsg = LOG_MESSAGES[currentLogIndex];
+      const dynamicLogs = getDynamicLogs();
+      interval = setInterval(() => {
+        const nextMsg = dynamicLogs[currentLogIndex];
         if (nextMsg) {
           setLogs(prev => [...prev, nextMsg]);
         }
         currentLogIndex++;
-        if (currentLogIndex >= LOG_MESSAGES.length) {
+        if (currentLogIndex >= dynamicLogs.length) {
           clearInterval(interval);
           timer = setTimeout(() => setStep(3), 1500);
         }
       }, 700);
-      return () => { clearInterval(interval); clearTimeout(timer); };
     }
-  }, [step]);
+    return () => { clearInterval(interval); clearTimeout(timer); };
+  }, [step, inactivityDays, heirAddress, tvl]);
 
   return (
     <>
@@ -102,21 +125,44 @@ export default function DeadMansSwitchPage() {
               </div>
             </div>
 
+            {/* Config Inputs (Dynamic Setup) */}
+            {step === 0 && (
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: 16, marginBottom: 24, border: `1px dashed ${P.border}` }}>
+                <h4 style={{ margin: '0 0 12px', fontSize: 13, color: P.text2 }}>Kontrat Parametreleri (Test)</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: P.text3, marginBottom: 4, display: 'block' }}>Kilitli Varlık (TVL - ₺)</label>
+                    <input type="number" value={tvl} onChange={e => setTvl(Number(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: 8, background: P.bg0, border: `1px solid ${P.border}`, color: '#fff', fontSize: 14 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: P.text3, marginBottom: 4, display: 'block' }}>İnaktiflik Süresi (Gün)</label>
+                    <input type="number" value={inactivityDays} onChange={e => setInactivityDays(Number(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: 8, background: P.bg0, border: `1px solid ${P.border}`, color: '#fff', fontSize: 14 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: P.text3, marginBottom: 4, display: 'block' }}>Varis Adresi (ETH)</label>
+                    <input type="text" value={heirAddress} onChange={e => setHeirAddress(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: 8, background: P.bg0, border: `1px solid ${P.border}`, color: '#fff', fontSize: 14 }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Contract Details */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Database size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Kilitli Varlık (TVL)</span></div>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>$235,400.00</span>
+            {step > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Database size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Kilitli Varlık (TVL)</span></div>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{fmt(tvl)}</span>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Network size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Atanan Yasal Varis</span></div>
+                  <span className="code-font" style={{ fontSize: 13, color: P.purple }}>{heirAddress}</span>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Clock size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Tetikleyici Şart (Condition)</span></div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{inactivityDays} Gün İnaktiflik</span>
+                </div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Network size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Atanan Yasal Varis</span></div>
-                <span className="code-font" style={{ fontSize: 13, color: P.purple }}>0x9B2c...1D4</span>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, padding: 16, borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Clock size={16} color={P.text3} /> <span style={{ fontSize: 13, color: P.text2 }}>Tetikleyici Şart (Condition)</span></div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>180 Gün İnaktiflik / Vefat</span>
-              </div>
-            </div>
+            )}
 
             {step === 1 && (
               <button 
@@ -127,13 +173,16 @@ export default function DeadMansSwitchPage() {
               </button>
             )}
             {step === 3 && (
-              <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: P.green, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <Lock size={18} /> Varlık Devir Paketi Tamamlandı
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: P.green, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Lock size={18} /> Varlık Devir Paketi Tamamlandı
+                </div>
+                <button onClick={startSimulation} style={{ padding: '12px', borderRadius: 12, background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, fontWeight: 700, cursor: 'pointer' }}>Testi Sıfırla</button>
               </div>
             )}
             {step === 0 && (
               <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.05)`, color: P.text3, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                Oracle Veri Akışı Bekleniyor...
+                <RefreshCw size={14} className="spin" /> Oracle Veri Akışı Bekleniyor... (Simülasyon Aktif)
               </div>
             )}
           </div>
@@ -148,7 +197,7 @@ export default function DeadMansSwitchPage() {
               {step === 0 && <span style={{ opacity: 0.5 }}>Standby. Listening to sandbox oracle checks...</span>}
               {step === 1 && (
                 <div style={{ color: P.red, fontWeight: 700, marginBottom: 16 }}>
-                  [FATAL] Oracle triggered. User inactive &gt; 180 days.<br/>
+                  [FATAL] Oracle triggered. User inactive &gt; {inactivityDays} days.<br/>
                   [FATAL] Hospital API status code: 410 (Gone).<br/>
                   [REQ] Awaiting contract execution confirmation...
                 </div>
