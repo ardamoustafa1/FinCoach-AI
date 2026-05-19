@@ -2,25 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { Server, Activity, Database, Cpu, ShieldAlert, Zap, Terminal, GitMerge, ShieldCheck, Globe, Wifi, Key, Filter } from 'lucide-react';
 import { fmt } from '../utils/categories';
 import PageHeader from '../components/PageHeader';
+import useStore from '../store/useStore';
 
 import { P } from '../styles/palette';
-// Mock transaction generator
-const getRandomTx = () => {
-  const merchants = ['Starbucks', 'Apple Store', 'Trendyol', 'Uber', 'Steam', 'Migros', 'AWS Cloud'];
-  const amt = Math.floor(Math.random() * 2000) + 50;
-  const isFraud = amt > 1800; // 1800 üzeri fraud simülasyonu
-  return {
-    id: `ev-${Math.floor(Math.random() * 100000)}`,
-    merchant: merchants[Math.floor(Math.random() * merchants.length)],
-    amount: amt,
-    isFraud
-  };
-};
 
 export default function SystemMonitorPage() {
   const [logs, setLogs] = useState([]);
   const [activeNodes, setActiveNodes] = useState({ kafka: false, fraud: false, cashflow: false, rag: false });
   const isMountedRef = useRef(true);
+  const txIndexRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -35,12 +25,36 @@ export default function SystemMonitorPage() {
     });
   };
 
+  const getNextTx = () => {
+    const allTxs = useStore.getState().transactions || [];
+    if (allTxs.length > 0) {
+      const tx = allTxs[txIndexRef.current % allTxs.length];
+      txIndexRef.current += 1;
+      return {
+        id: tx.id || `real-${Math.floor(Math.random() * 10000)}`,
+        merchant: tx.kategori || 'İşlem',
+        amount: Number(tx.tutar) || 0,
+        isFraud: Number(tx.tutar) > 5000 // Real tx fraud threshold
+      };
+    } else {
+      // Fallback
+      const merchants = ['Starbucks', 'Apple Store', 'Trendyol', 'Uber', 'Steam', 'Migros', 'AWS Cloud'];
+      const amt = Math.floor(Math.random() * 2000) + 50;
+      return {
+        id: `mock-${Math.floor(Math.random() * 100000)}`,
+        merchant: merchants[Math.floor(Math.random() * merchants.length)],
+        amount: amt,
+        isFraud: amt > 1800
+      };
+    }
+  };
+
   useEffect(() => {
     const activeTimeouts = [];
 
     // Event Stream Simulator
     const interval = setInterval(() => {
-      const tx = getRandomTx();
+      const tx = getNextTx();
       const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
       
       // 1. Transaction arrives
