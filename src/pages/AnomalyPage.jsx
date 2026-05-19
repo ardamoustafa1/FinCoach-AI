@@ -3,30 +3,57 @@ import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip as Recharts
 import { ShieldAlert, Clock, Lock, CheckCircle2, Search } from 'lucide-react';
 import { fmt } from '../utils/categories';
 import PageHeader, { PageLoader } from '../components/PageHeader';
+import useStore from '../store/useStore';
 
 import { P } from '../styles/palette';
-// Generates normal transactions + anomalies to simulate Isolation Forest clustering
-function generateTransactions() {
-  const data = [];
+// Evaluates real transactions + adds synthetic ones to show the Isolation Forest logic clearly
+function detectAnomalies(realTxs) {
+  let data = [];
   
+  if (realTxs && realTxs.length > 0) {
+    const expenses = realTxs.filter(t => t.tur === 'gider').map(t => Number(t.tutar));
+    const avg = expenses.reduce((a,b) => a + b, 0) / (expenses.length || 1);
+    const stdDev = Math.sqrt(expenses.reduce((a,b) => a + Math.pow(b - avg, 2), 0) / (expenses.length || 1));
+    
+    realTxs.filter(t => t.tur === 'gider').forEach((t, i) => {
+      const amount = Number(t.tutar);
+      // Rastgele bir saat atayalım eğer yoksa (gerçek veri sadece gün içeriyor)
+      const hour = 8 + Math.random() * 14; 
+      
+      const isHighAmountAnomaly = amount > (avg + 2 * stdDev);
+      let isAnomaly = isHighAmountAnomaly;
+      let reason = '';
+      if (isHighAmountAnomaly) reason = 'Standart Sapmanın Çok Üzerinde Harcama (Kullanıcı Verisi)';
+
+      data.push({
+        id: t.id || `real-tx-${i}`,
+        hour: hour,
+        amount: amount,
+        isAnomaly: isAnomaly,
+        desc: t.kategori || 'Kategorisiz',
+        reason: reason
+      });
+    });
+  }
+
   // Normal Cluster 1: Morning Coffee & Commute (07:00 - 10:00, 30₺ - 150₺)
   for(let i=0; i<30; i++) {
     data.push({
-      id: `tx-n1-${i}`, hour: 7 + Math.random() * 3, amount: 30 + Math.random() * 120, isAnomaly: false, desc: 'Sabah Rutini'
+      id: `tx-n1-${i}`, hour: 7 + Math.random() * 3, amount: 30 + Math.random() * 120, isAnomaly: false, desc: 'Sabah Rutini (Sim)'
     });
   }
   
   // Normal Cluster 2: Lunch & Shopping (12:00 - 16:00, 100₺ - 400₺)
   for(let i=0; i<40; i++) {
     data.push({
-      id: `tx-n2-${i}`, hour: 12 + Math.random() * 4, amount: 100 + Math.random() * 300, isAnomaly: false, desc: 'Öğle / Market'
+      id: `tx-n2-${i}`, hour: 12 + Math.random() * 4, amount: 100 + Math.random() * 300, isAnomaly: false, desc: 'Öğle / Market (Sim)'
     });
   }
 
   // Normal Cluster 3: Dinner (18:00 - 22:00, 200₺ - 600₺)
   for(let i=0; i<30; i++) {
     data.push({
-      id: `tx-n3-${i}`, hour: 18 + Math.random() * 4, amount: 200 + Math.random() * 400, isAnomaly: false, desc: 'Akşam Yemeği'
+      id: `tx-n3-${i}`, hour: 18 + Math.random() * 4, amount: 200 + Math.random() * 400, isAnomaly: false, desc: 'Akşam Yemeği (Sim)'
     });
   }
 
@@ -52,7 +79,7 @@ export default function AnomalyPage() {
     let isMounted = true;
     setTimeout(() => {
       if (!isMounted) return;
-      const txData = generateTransactions();
+      const txData = detectAnomalies(useStore.getState().transactions);
       setData(txData);
       setAnomalies(txData.filter(t => t.isAnomaly));
       setLoading(false);
