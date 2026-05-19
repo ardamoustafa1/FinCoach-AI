@@ -4,8 +4,9 @@ import { useToast } from '../hooks/useToast';
 import PageHeader from '../components/PageHeader';
 
 import { P } from '../styles/palette';
-const MOCK_LEADERBOARD = [
-  { id: 1, name: 'Sen (FinCoach AI)', savingsRate: 32, score: 950, isMe: true, avatar: '😎' },
+import useStore from '../store/useStore';
+
+const MOCK_FRIENDS = [
   { id: 2, name: 'Ahmet Yılmaz', savingsRate: 28, score: 820, isMe: false, avatar: '🤠' },
   { id: 3, name: 'Zeynep K.', savingsRate: 25, score: 780, isMe: false, avatar: '👩‍💻' },
   { id: 4, name: 'Caner D.', savingsRate: 15, score: 540, isMe: false, avatar: '🎸' },
@@ -23,6 +24,29 @@ export default function LeaguePage() {
   const toast = useToast();
   const [inviting, setInviting] = useState(false);
   const inviteTimerRef = useRef(null);
+  
+  const transactions = useStore(state => state.transactions);
+  const userProfile = useStore(state => state.userProfile);
+
+  // Calculate user's savings rate and score
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const thisMonthTxs = transactions.filter(t => {
+    if(!t.tarih) return false;
+    const d = new Date(t.tarih);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+  
+  const totalIncome = thisMonthTxs.filter(t => t.tur === 'gelir').reduce((s, t) => s + Number(t.tutar), 0);
+  const totalExpense = thisMonthTxs.filter(t => t.tur === 'gider').reduce((s, t) => s + Number(t.tutar), 0);
+  
+  const userSavingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100) : 0;
+  const userScore = Math.max(0, userSavingsRate * 10);
+  
+  const activeLeaderboard = [
+    { id: 1, name: userProfile?.name || 'Sen', savingsRate: userSavingsRate, score: userScore, isMe: true, avatar: '😎' },
+    ...MOCK_FRIENDS
+  ].sort((a, b) => b.score - a.score);
 
   useEffect(() => {
     return () => clearTimeout(inviteTimerRef.current);
@@ -88,7 +112,7 @@ export default function LeaguePage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {MOCK_LEADERBOARD.map((user, idx) => (
+            {activeLeaderboard.map((user, idx) => (
               <div key={user.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 20px', borderRadius: 16,
