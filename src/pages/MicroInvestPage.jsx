@@ -226,6 +226,27 @@ export default function MicroInvestPage() {
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: 11, fontWeight: 800, color: P.green, textTransform: 'uppercase', marginBottom: 4 }}>1 Yıllık Hedef</p>
                 <p style={{ fontSize: 24, fontWeight: 900, color: P.text1, margin: 0 }}>{fmt(data.investedValue)}</p>
+                <button 
+                  onClick={async () => {
+                    const addGoal = useStore.getState().addGoal;
+                    await addGoal({
+                      name: 'Küsürat Kumbarası',
+                      targetAmount: data.investedValue,
+                      currentAmount: liveYield,
+                      icon: 'Zap',
+                      color: '#10b981',
+                      deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+                    });
+                    alert('Birikimleriniz hedeflerinize eklendi!');
+                  }}
+                  style={{
+                    marginTop: 8,
+                    background: P.green, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 12px rgba(16, 185, 129, 0.3)`
+                  }}
+                >
+                  Hedeflere Ekle
+                </button>
               </div>
             </div>
             
