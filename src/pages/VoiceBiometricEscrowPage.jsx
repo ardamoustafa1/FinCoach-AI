@@ -21,29 +21,47 @@ export default function VoiceBiometricEscrowPage() {
   // 0: Idle, 1: Listening, 2: Processing Text/NLP, 3: Biometrics, 4: Contract Gen, 5: Complete
   const [logs, setLogs] = useState([]);
   const [transcript, setTranscript] = useState("");
+  const [transcriptInput, setTranscriptInput] = useState("FinCoach, kardeşim Ali'ye 500 USDC gönder, ama parayı o üniversiteden mezun olana kadar akıllı sözleşmeye kilitle.");
+  const [parsedData, setParsedData] = useState({ to: 'Ali', amount: 500, currency: 'USDC', condition: 'Üniversite Mezuniyeti' });
   
+  const parseTranscript = (text) => {
+    const amountMatch = text.match(/(\d+)\s*(usdc|usdt|eth|btc|tl|lira|dolar|euro|₺)/i);
+    const toMatch = text.match(/([A-ZÇĞİÖŞÜa-zçğıöşü]+)'a|([A-ZÇĞİÖŞÜa-zçğıöşü]+)'ye|([A-ZÇĞİÖŞÜa-zçğıöşü]+)'ya/i);
+    const conditionMatch = text.match(/o (.+?) kadar/i) || text.match(/(.+?) olana kadar/i) || text.match(/eğer (.+?) ise/i);
+    
+    return {
+      to: toMatch ? (toMatch[1] || toMatch[2] || toMatch[3]) : 'Unknown',
+      amount: amountMatch ? amountMatch[1] : '0',
+      currency: amountMatch ? amountMatch[2].toUpperCase() : 'USDC',
+      condition: conditionMatch ? conditionMatch[1] : 'Condition Not Found'
+    };
+  };
+
   const handleStartListening = () => {
     if (step !== 0) return;
     setStep(1);
     setLogs(["[SYS] Microphone activated. Listening..."]);
     
+    // Parse Input First
+    const data = parseTranscript(transcriptInput);
+    setParsedData(data);
+
     // Simulate typing the transcript
-    const fullText = "FinCoach, kardeşim Ali'ye 500 USDC gönder, ama parayı o üniversiteden mezun olana kadar akıllı sözleşmeye kilitle.";
     let i = 0;
     const typeInterval = setInterval(() => {
-      setTranscript(fullText.substring(0, i));
+      setTranscript(transcriptInput.substring(0, i));
       i++;
-      if (i > fullText.length) {
+      if (i > transcriptInput.length) {
         clearInterval(typeInterval);
         setTimeout(() => setStep(2), 500);
       }
-    }, 40);
+    }, 30);
   };
 
   useEffect(() => {
     if (step === 2) {
       const timer = setTimeout(() => {
-        setLogs(prev => [...prev, "[NLP] Parsing intent: TRANSFER, AMOUNT: 500 USDC, TO: 'Ali', CONDITION: 'University Graduation'"]);
+        setLogs(prev => [...prev, `[NLP] Parsing intent: TRANSFER, AMOUNT: ${parsedData.amount} ${parsedData.currency}, TO: '${parsedData.to}', CONDITION: '${parsedData.condition}'`]);
         setStep(3);
       }, 2000);
       return () => clearTimeout(timer);
@@ -78,7 +96,7 @@ export default function VoiceBiometricEscrowPage() {
       }, 1000);
       return () => clearInterval(t);
     }
-  }, [step]);
+  }, [step, parsedData]);
 
   return (
     <>
@@ -120,6 +138,16 @@ export default function VoiceBiometricEscrowPage() {
           {/* LEFT: VOICE INTERFACE */}
           <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 24, padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: 450 }}>
             
+            {/* Input for testing */}
+            {step === 0 && (
+              <textarea 
+                value={transcriptInput} 
+                onChange={e => setTranscriptInput(e.target.value)} 
+                placeholder="Sesli komut simülasyon metnini yazın..."
+                style={{ width: '100%', maxWidth: 400, minHeight: 80, padding: 16, borderRadius: 16, background: P.bg0, border: `1px solid ${P.border}`, color: P.text1, fontSize: 14, marginBottom: 24, resize: 'vertical' }}
+              />
+            )}
+
             {/* Mic Button */}
             <button 
               onClick={handleStartListening}
@@ -186,7 +214,7 @@ export default function VoiceBiometricEscrowPage() {
               </div>
               <div className="code-box" style={{ display: 'flex', flexDirection: 'column', gap: 8, height: 200, overflowY: 'auto' }}>
                 {logs.map((log, index) => (
-                  <div key={index} style={{ color: (log && (log.includes('Match') || log.includes('Confirmed'))) ? P.green : (log && log.includes('Deploying')) ? P.purple : '#a1a1aa' }}>
+                  <div key={index} style={{ color: (log && (log.includes('Match') || log.includes('Confirmed') || log.includes('deployed'))) ? P.green : (log && log.includes('Deploying')) ? P.purple : '#a1a1aa' }}>
                     &gt; {log || ''}
                   </div>
                 ))}
@@ -206,13 +234,13 @@ export default function VoiceBiometricEscrowPage() {
 {`pragma solidity ^0.8.0;
 contract DegreeEscrow {
     address public arbiter = 0xFinCoachOracle;
-    address public beneficiary = 0xAliWallet;
-    uint public amount = 500 * 10**6; // USDC
+    address public beneficiary = 0x${parsedData.to}Wallet;
+    uint public amount = ${parsedData.amount} * 10**6; // ${parsedData.currency}
     
-    function releaseFunds(bool graduated) public {
+    function releaseFunds(bool conditionMet) public {
         require(msg.sender == arbiter, "Only Oracle");
-        require(graduated == true, "Condition not met");
-        IERC20(usdcToken).transfer(beneficiary, amount);
+        require(conditionMet == true, "Condition not met");
+        IERC20(${parsedData.currency.toLowerCase()}Token).transfer(beneficiary, amount);
     }
 }`}
               </pre>
