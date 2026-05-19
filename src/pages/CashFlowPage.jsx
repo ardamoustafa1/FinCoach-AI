@@ -39,6 +39,7 @@ export default function CashFlowPage() {
   const [data, setData] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentBalance, setCurrentBalance] = useState(25000);
   
   // NLP Contract NER States
   const toast = useToast();
@@ -82,11 +83,11 @@ export default function CashFlowPage() {
       return num * stdDev + mean;
     };
 
-    setTimeout(() => {
-      if (!isMountedRef.current) return;
-      const NUM_SIMULATIONS = 500;
-      const MONTHS_AHEAD = 12;
-      let initialBalance = 25000; // Gerçekte kullanıcının banka API'sinden gelir
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        const NUM_SIMULATIONS = 500;
+        const MONTHS_AHEAD = 12;
+        let initialBalance = Number(currentBalance);
       
       const currentMonthIdx = new Date().getMonth();
       const currentYear = new Date().getFullYear();
@@ -164,8 +165,8 @@ export default function CashFlowPage() {
   };
 
   useEffect(() => {
-    runSimulation(0);
-  }, []);
+    runSimulation(contractData?.extractedTerms ? 14500 : 0);
+  }, [currentBalance]);
 
   const handleUploadContract = () => {
     setUploading(true);
@@ -215,6 +216,16 @@ export default function CashFlowPage() {
             {uploading ? 'NLP Analizi Yapılıyor...' : 'Sözleşme PDF Yükle'}
           </button>
         </PageHeader>
+
+        <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: P.text2, marginBottom: 8, textTransform: 'uppercase' }}>Mevcut Bakiyeniz (₺)</label>
+            <input type="number" value={currentBalance} onChange={e => setCurrentBalance(Number(e.target.value))} style={{ width: '100%', padding: '16px', borderRadius: 16, border: '1px solid ' + P.border, background: P.bg0, color: P.text1, fontSize: 16, fontWeight: 800 }} />
+          </div>
+          <div style={{ flex: 1 }}>
+             <p style={{ fontSize: 13, color: P.text3, margin: 0, lineHeight: 1.5 }}>Monte Carlo simülasyonu bu bakiye üzerinden 12 aylık rastgele gelir-gider ihtimallerini hesaplayacaktır.</p>
+          </div>
+        </div>
 
         {/* NLP Contract Extracted Data UI */}
         {contractData && (
