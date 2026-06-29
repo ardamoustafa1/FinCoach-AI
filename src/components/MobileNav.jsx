@@ -101,10 +101,12 @@ export default function MobileNav() {
           background: 'var(--bg-sidebar)', backdropFilter: 'blur(24px) saturate(150%)',
           borderTop: '1px solid var(--border-color)',
           boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           height: 64, padding: '0 8px',
+          overflowX: 'auto', whiteSpace: 'nowrap',
+          WebkitOverflowScrolling: 'touch',
         }}
-        className="lg:hidden"
+        className="lg:hidden hide-scrollbar"
       >
         {bottomTabs.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -135,6 +137,7 @@ export default function MobileNav() {
         {/* Hamburger — opens full drawer */}
         <button
           onClick={() => setOpen(true)}
+          aria-label="Tüm menüyü aç"
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
             flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
@@ -195,6 +198,7 @@ export default function MobileNav() {
             </div>
             <button
               onClick={() => setOpen(false)}
+              aria-label="Menüyü kapat"
               style={{
                 width: 36, height: 36, borderRadius: 10,
                 background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
