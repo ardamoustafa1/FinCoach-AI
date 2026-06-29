@@ -450,6 +450,11 @@ export default function App() {
         <RouteHandler />
         <TourOverlay />
         <CommandMenu />
+        {authUser?.id === 'demo-local-123' && (
+          <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999, background: 'rgba(245, 158, 11, 0.95)', color: '#000', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, boxShadow: '0 4px 12px rgba(245,158,11,0.3)', backdropFilter: 'blur(10px)', pointerEvents: 'none', border: '1px solid rgba(255,255,255,0.2)' }}>
+            ⚠️ DEMO MODU
+          </div>
+        )}
         {syncError && (
           <div style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', padding: '12px 24px', borderRadius: 12, boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500, animation: 'fadeSlideDown 0.3s ease-out' }}>
             <span style={{ fontSize: 18 }}>⚠️</span>
