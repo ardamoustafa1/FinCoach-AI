@@ -45,6 +45,30 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Cache-first for static assets
+  if (url.pathname.startsWith('/assets/')) {
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        return cachedResponse || fetch(e.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheCopy));
+          }
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for other GET requests
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       const fetchPromise = fetch(e.request).then((networkResponse) => {
@@ -58,7 +82,6 @@ self.addEventListener('fetch', (e) => {
       }).catch(() => {
         return cachedResponse;
       });
-
       return cachedResponse || fetchPromise;
     })
   );
@@ -108,7 +131,7 @@ async function processQueue() {
   const items = await getSyncItems();
   if (items.length === 0) return;
 
-  console.log(`[SW Sync] Processing sync queue with ${items.length} items...`);
+
 
   for (const item of items) {
     try {
@@ -120,8 +143,6 @@ async function processQueue() {
 
       if (response.ok) {
         await deleteSyncItem(item.id);
-        console.log(`[SW Sync] Item ${item.id} successfully synchronized with Supabase.`);
-        
         // Notify active tabs about successful sync
         const clientsList = await self.clients.matchAll();
         for (const client of clientsList) {
@@ -131,11 +152,8 @@ async function processQueue() {
             action: item.action
           });
         }
-      } else {
-        console.error(`[SW Sync] Sync failed for item ${item.id} with status: ${response.status}`);
       }
-    } catch (error) {
-      console.error(`[SW Sync] Network error during synchronization:`, error);
+    } catch {
       // Stop loop if network is still down
       break;
     }
