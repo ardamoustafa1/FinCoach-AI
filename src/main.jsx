@@ -16,6 +16,39 @@ if (typeof window !== 'undefined') {
   }
 }
 
+const originalError = console.error;
+const originalWarn = console.warn;
+
+window.addEventListener('error', e => {
+  if (e.message === 'ResizeObserver loop limit exceeded' || e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+    e.stopImmediatePropagation();
+    return;
+  }
+  
+  // Production Error Monitoring Placeholder (e.g., Sentry)
+  // Sentry.captureException(e.error);
+  if (process.env.NODE_ENV === 'production') {
+    // A real app would send this error to an event pipeline
+    console.debug('[Monitoring] Captured global error:', e.message);
+  }
+});
+
+window.addEventListener('unhandledrejection', e => {
+  if (process.env.NODE_ENV === 'production') {
+    console.debug('[Monitoring] Captured unhandled promise rejection:', e.reason);
+  }
+});
+
+console.error = (...args) => {
+  if (args[0] && typeof args[0] === 'string' && args[0].includes('defaultProps will be removed')) return;
+  originalError(...args);
+};
+
+console.warn = (...args) => {
+  if (args[0] && typeof args[0] === 'string' && args[0].includes('width(-1) and height(-1)')) return;
+  originalWarn(...args);
+};
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
