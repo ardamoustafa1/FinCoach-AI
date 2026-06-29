@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sparkles, QrCode } from 'lucide-react';
 import Sidebar from './Sidebar';
@@ -129,6 +129,14 @@ export default function Layout({ theme, onToggleTheme }) {
       {/* Çevrimdışı Mod Bildirimi — tüm sayfalarda otomatik görünür */}
       <OfflineBanner />
 
+      {/* Demo Modu Bildirimi */}
+      {useStore.getState().userProfile?.email?.includes('demo') && (
+        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 9998, background: 'rgba(245, 158, 11, 0.95)', color: '#000', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(245,158,11,0.3)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 16 }}>🧪</span>
+          Demo Modu — AI yanıtları simüle edilmektedir
+        </div>
+      )}
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0 transition-all duration-300" style={{ width: collapsed ? 80 : 260 }}>
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -232,7 +240,19 @@ export default function Layout({ theme, onToggleTheme }) {
 
         {/* Page Content */}
         <div className="page-content" style={{ maxWidth: 1540, margin: '0 auto', padding: '0 16px', width: '100%' }}>
-          <Outlet />
+          <Suspense fallback={
+            <div style={{ flex: 1, padding: '32px 0', display: 'flex', flexDirection: 'column', gap: 32 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="skeleton-box" style={{ height: 32, width: 200, background: 'var(--bg-card)', borderRadius: 8, animation: 'pulse 1.5s infinite' }} />
+                <div className="skeleton-box" style={{ height: 40, width: 40, borderRadius: '50%', background: 'var(--bg-card)', animation: 'pulse 1.5s infinite' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+                {[1,2,3].map(i => <div key={i} className="skeleton-box" style={{ height: 120, background: 'var(--bg-card)', borderRadius: 12, animation: 'pulse 1.5s infinite' }} />)}
+              </div>
+            </div>
+          }>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
 
