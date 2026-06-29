@@ -12,7 +12,7 @@ import DeleteTransactionConfirm from '../components/transactions/DeleteTransacti
 import ReceiptScanModal from '../components/transactions/ReceiptScanModal';
 import UnusualSpendingModal from '../components/transactions/UnusualSpendingModal';
 import AntiImpulseModal from '../components/AntiImpulseModal';
-import CsvUploader from '../components/CsvUploader';
+const CsvUploader = React.lazy(() => import('../components/CsvUploader'));
 import SubscriptionsTab from '../components/SubscriptionsTab';
 import OpenBankingModal from '../components/OpenBankingModal';
 import { detectUnusualSpending, saveUnusualSpendingDecision } from '../utils/notifications';
@@ -338,7 +338,9 @@ export default function TransactionsPage() {
 
           {/* CSV Uploader */}
           {csvAcik && (
-            <CsvUploader onImport={handleCsvImport} onKapat={() => setCsvAcik(false)} />
+            <React.Suspense fallback={<div className="flex justify-center p-8"><RefreshCw className="w-6 h-6 animate-spin text-zinc-400" /></div>}>
+              <CsvUploader onImport={handleCsvImport} onKapat={() => setCsvAcik(false)} />
+            </React.Suspense>
           )}
 
           {/* Open Banking Modal */}
