@@ -15,52 +15,35 @@ const navSections = [
       { to: '/',             label: 'Ana Sayfa',   icon: LayoutDashboard },
       { to: '/dashboard',    label: 'Dashboard',   icon: BarChart3 },
       { to: '/transactions', label: 'İşlemler',    icon: ArrowLeftRight },
+      { to: '/reports',      label: 'Raporlar',    icon: BarChart4 },
     ],
   },
   {
-    title: 'Yatırım & Borç',
+    title: 'Finansal Araçlar',
     items: [
       { to: '/wealth',               label: 'Varlık Yönetimi',       icon: Landmark },
-      { to: '/micro-invest',         label: 'Küsürat Yatırımı',      icon: Coins },
       { to: '/debt-snowball',        label: 'Borç Yapılandırma',     icon: Snowflake },
-      { to: '/freelancer-smoother',  label: 'Freelancer Dengeleyici',icon: Waves },
-    ],
-  },
-  {
-    title: 'Analiz & AI',
-    items: [
-      { to: '/tax',            label: 'Vergi Asistanı',      icon: Calculator },
-      { to: '/real-estate',    label: 'Ev & Kredi AI',       icon: Home },
-      { to: '/anomaly',        label: 'Anomali & Fraud AI',  icon: Lock },
-      { to: '/shop-sim',       label: 'Harcama Simülatörü',  icon: Target },
-      { to: '/graph-analysis', label: 'Market Basket Graph', icon: Network },
-      { to: '/cashflow',       label: 'Nakit Akışı',         icon: BarChart4 },
-      { to: '/stress-test',    label: 'Stres Testi',         icon: Globe },
-    ],
-  },
-  {
-    title: 'Altyapı & Güvenlik',
-    items: [
-      { to: '/system-monitor',    label: 'Sistem Mimarisi',    icon: Server },
-      { to: '/federated',         label: 'Federated AI',       icon: ShieldCheck },
-      { to: '/escrow',            label: 'Web3 Escrow',        icon: Lock },
-      { to: '/autonomous-agent',  label: 'Self-Driving Money', icon: Cpu },
-      { to: '/financial-icu',     label: 'Financial ICU',      icon: HeartPulse },
-      { to: '/dead-mans-switch',  label: 'Web3 Vasiyet',       icon: Skull },
-      { to: '/voice-escrow',      label: 'Voice Biometric',    icon: Mic },
-      { to: '/synthetic-data',    label: 'Data GAN',           icon: Layers },
+      { to: '/goals',                label: 'Hedefler',              icon: Target },
+      { to: '/tax',                  label: 'Vergi Asistanı',        icon: Calculator },
     ],
   },
   {
     title: 'Kişisel & Diğer',
     items: [
-      { to: '/goals',         label: 'Hedefler',       icon: Target },
-      { to: '/league',        label: 'Tasarruf Ligi',  icon: Trophy },
-      { to: '/time-machine',  label: 'Zaman Makinesi', icon: Clock },
-      { to: '/subscriptions', label: 'Abonelikler',    icon: ShieldAlert },
       { to: '/chat',          label: 'AI Koç',         icon: Bot },
-      { to: '/reports',       label: 'Raporlar',       icon: BarChart3 },
+      { to: '/subscriptions', label: 'Abonelikler',    icon: ShieldAlert },
       { to: '/settings',      label: 'Ayarlar',        icon: Settings },
+    ],
+  },
+  {
+    title: 'Labs / Deneysel',
+    items: [
+      { to: '/federated',         label: 'Federated AI',       icon: ShieldCheck },
+      { to: '/autonomous-agent',  label: 'Self-Driving Money', icon: Cpu },
+      { to: '/financial-icu',     label: 'Financial ICU',      icon: HeartPulse },
+      { to: '/system-monitor',    label: 'Sistem Mimarisi',    icon: Server },
+      { to: '/anomaly',           label: 'Anomali AI',         icon: Lock },
+      { to: '/shop-sim',          label: 'Harcama Simülatörü', icon: Target },
     ],
   },
 ];
@@ -238,6 +221,19 @@ export default function Sidebar({ collapsed, onToggle }) {
           {collapsed ? <ChevronRight size={18} /> : <><ChevronLeft size={18} /> Daralt</>}
         </button>
       </div>
+
+      {!collapsed && (
+        <div style={{ padding: '0 20px 16px', textAlign: 'center', opacity: 0.6 }}>
+          <p style={{ fontSize: 9, color: P.text3, margin: '0 0 4px', lineHeight: 1.4 }}>
+            Bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir.
+          </p>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+            <a href="#" style={{ fontSize: 9, color: P.purple, textDecoration: 'none' }}>KVKK</a>
+            <span style={{ color: P.text3, fontSize: 9 }}>•</span>
+            <a href="#" style={{ fontSize: 9, color: P.purple, textDecoration: 'none' }}>Gizlilik</a>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
