@@ -91,18 +91,21 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' data: https://fonts.gstatic.com; frame-src 'none'");
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
   next();
 });
 
 // ─── CORS (Origin Whitelist) ─────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8501,http://127.0.0.1:8501')
   .split(',')
   .map(o => o.trim());
 
 app.use(cors({
   origin: (origin, cb) => {
     // Allow non-browser requests (Postman, WhatsApp bot internal calls) and whitelisted origins
-    if (!origin || allowedOrigins.includes(origin) || origin.includes('railway.app') || origin.includes('vercel.app')) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.railway.app') || origin.endsWith('.vercel.app')) {
       return cb(null, true);
     }
     // Safe reject instead of throwing a 500 crash exception
