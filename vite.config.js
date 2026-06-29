@@ -4,11 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     react(),
     tailwindcss(),
   ],
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  preview: {
+    port: 5173,
+    strictPort: true,
+  },
   build: {
     rolldownOptions: {
       output: {
@@ -18,10 +26,7 @@ export default defineConfig({
             { name: 'vendor-charts', test: /node_modules[\\/](recharts|d3-[^\\/]+)[\\/]/, priority: 15 },
             { name: 'vendor-jspdf', test: /node_modules[\\/]jspdf[\\/]/, priority: 15 },
             { name: 'vendor-html2canvas', test: /node_modules[\\/]html2canvas[\\/]/, priority: 15 },
-            { name: 'vendor-tfjs-core', test: /node_modules[\\/]@tensorflow[\\/]tfjs-core[\\/]/, priority: 15 },
-            { name: 'vendor-tfjs-backends', test: /node_modules[\\/]@tensorflow[\\/](tfjs-backend-cpu|tfjs-backend-webgl)[\\/]/, priority: 15 },
-            { name: 'vendor-tfjs-layers', test: /node_modules[\\/]@tensorflow[\\/](tfjs-layers|tfjs-converter)[\\/]/, priority: 15 },
-            { name: 'vendor-tfjs-data', test: /node_modules[\\/]@tensorflow[\\/](tfjs|tfjs-data)[\\/]/, priority: 15 },
+            { name: 'vendor-tfjs', test: /node_modules[\\/]@tensorflow[\\/]/, priority: 15 },
           ],
         },
       },
