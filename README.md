@@ -12,14 +12,30 @@
   <img alt="TensorFlow.js" src="https://img.shields.io/badge/TensorFlow.js-Federated_AI-FF6F00?logo=tensorflow&logoColor=ffffff">
   <img alt="Offline First" src="https://img.shields.io/badge/Offline--First-IndexedDB-10B981">
 </p>
+<p align="center">
+  <img alt="Build Status" src="https://github.com/ardamoustafa1/FinCoach-AI/actions/workflows/ci.yml/badge.svg">
+  <img alt="Playwright Tests" src="https://img.shields.io/badge/tested_with-playwright-2EAD33.svg">
+</p>
 
 <p align="center">
   <a href="#hizli-baslangic">Hızlı Başlangıç</a> •
   <a href="#ekran-goruntuleri">Ekran Görüntüleri</a> •
   <a href="#ozellik-haritasi">Özellik Haritası</a> •
   <a href="#mimari">Mimari</a> •
-  <a href="#api">API</a>
+  <a href="#api">API</a> •
+  <a href="PROD_DEPLOY.md">Prod Deploy Rehberi</a>
 </p>
+
+---
+
+## Mimari Karar Kayıtları (ADRs) & Bilinen Kısıtlar (Known Limitations)
+
+* **Offline-first mimari:** `PWA` ve `Service Worker` ile tüm veriler lokal IndexedDB'de şifreli tutulur ve Supabase'e senkronize edilir. 
+* **Yapay Zeka (Gemini & TF.js):** Sunucu tarafında veri güvenliğini sağlamak amacıyla `Gemini 2.5 Flash` API'si proxy olarak kullanılır. Tarayıcıda (Edge AI) ise `@tensorflow/tfjs` ile anonimleştirilmiş cihaz-içi çıkarım (Federated AI denemeleri) yapılır.
+* **Bilinen Kısıtlar:**
+  * Kredi kartı/banka veri entegrasyonu (Open Banking) gerçek bir API'ye değil, demo simülasyonuna veya CSV importuna bağlıdır.
+  * *Web3 Escrow* ve *Autonomous Agent* modülleri birer arayüz vizyonudur; gerçek blok zincir işlemleri yapmaz.
+  * Uygulamanın büyük kısımları SSR (Next.js) yerine CSR (React/Vite) olarak yazılmıştır. Bu nedenle SPA'da Lighthouse performans skorları DOM boyutuna bağlı olarak (özellikle Recharts) gecikebilir. (Bunu çözmek için `manualChunks` ile Lazy-Loading uygulanmıştır).
 
 ---
 
@@ -97,7 +113,7 @@ http://localhost:3001
 ### 4. Demo Hesabı
 
 ```text
-demo@butceai.app
+demo@fincoach.app
 Demo2026!
 ```
 
@@ -465,8 +481,53 @@ E2E smoke testleri demo login, ana rotalar ve kritik aksiyon ekranlari uzerinden
 - **Kullanici problemi net:** Harcama takibi, abonelik sizintisi, borc stresi, ani satin alma ve finansal belirsizlik tek urunde cozulur.
 - **Sunum etkisi yuksek:** Graph, AI chat, zaman makinesi, Web3 escrow ve agent ekranlari hikayeyi guclendirir.
 
+## Deployment ve Kurulum
+
+**Gerçek Üretim (Production) Kurulumu**
+Uygulamayı Vercel, Railway veya Render gibi platformlarda yayınlayabilirsiniz:
+1. **Frontend**: Vercel'e deploy edin. Build komutu `npm run build`, output dizini `dist`.
+2. **Backend**: Render veya Railway'e `server` dizinini deploy edin. Başlangıç komutu `node server/server.js` veya `npm run pm2:start`.
+
+**Not:** Eski sürümlerde (Streamlit vb.) kullanılan 8501 portu artık kullanılmamaktadır. Frontend **5173**, Backend **3001** portunu kullanır. Demo/Dokümantasyon bağlantıları buna göre güncellenmiştir.
+
+---
+
+## Gerçek Prod Environment Matrisi
+
+Aşağıdaki değişkenleri ortamınıza göre ayarlayarak farklı çalışma modlarını aktif edebilirsiniz:
+
+| Mod/Özellik | Ayar (Environment Variable) | Etkisi |
+| --- | --- | --- |
+| **Tam Prodüksiyon** | `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY` | Tüm Supabase RLS yetkileri ve Gemini AI analizleri aktif olur. |
+| **Demo / Offline** | *Değişkenler boş bırakılır* veya `DEMO_MODE=true` | Uygulama local IndexedDB fallback ile demo verisinde çalışır. UI'da "Demo Modu" banner'ı gösterilir. |
+| **WhatsApp Bot (Açık)** | `WHATSAPP_ENABLED=true` | WhatsApp üzerinden fiş ve harcama kaydı alma botu ayağa kalkar. |
+| **WhatsApp Bot (Kapalı)**| `WHATSAPP_ENABLED=false` | WhatsApp servisi başlatılmaz (kaynak tasarrufu). |
+| **Redis Rate Limit** | `REDIS_URL=redis://...` | Express API'de Redis tabanlı rate limiting devreye girer. Yoksa Memory store kullanılır. |
+
+---
+
+## Yol Haritası (Roadmap)
+
+- [x] Temel gelir/gider takibi ve hedefler
+- [x] AI Koç (Gemini 2.5 Flash) ve RAG tabanlı sohbet
+- [x] Offline-first mimari ve AES-GCM şifreleme
+- [ ] Gerçek banka API (PSD2 / Open Banking) entegrasyonu
+- [ ] Push Notification destekli PWA
+- [ ] Ortak bütçe ve aile yönetimi
+
+---
+
+## Katkıda Bulunma (Contribution)
+
+1. Bu depoyu fork edin.
+2. Feature branch'inizi oluşturun (`git checkout -b feature/AmazingFeature`).
+3. Değişikliklerinizi commit edin (`git commit -m 'feat: Add some AmazingFeature'`).
+4. Branch'inize push yapın (`git push origin feature/AmazingFeature`).
+5. Bir Pull Request açın.
+Lütfen PR açmadan önce `npm run lint`, `npm run typecheck` ve `npm run test:e2e` komutlarının başarıyla geçtiğinden emin olun.
+
 ---
 
 ## Lisans
 
-Hackathon/demo projesi. Tum haklari saklidir.
+Hackathon/demo projesi. Tüm hakları saklıdır.
