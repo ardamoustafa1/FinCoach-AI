@@ -268,7 +268,7 @@ export default function HomePage() {
                       {userName}
                     </span>
                     <br />
-                    <span style={{ color: P.text1 }}>paranı daha net gör.</span>
+                    <span style={{ color: P.text1 }}> paranı daha net gör.</span>
                   </h1>
 
                   <p style={{ fontSize: 15, color: P.text2, maxWidth: 480, lineHeight: 1.7, marginBottom: 20 }}>
