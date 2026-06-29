@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert, LayoutDashboard, ArrowRightLeft, Crosshair, BarChart3, Landmark, Bell, ShoppingBag, Cpu, MessageSquare, Settings } from 'lucide-react';
 import useStore from '../store/useStore';
 
@@ -179,6 +180,47 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
   
   const content = TOUR_CONTENT[pathname];
 
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (!content) return;
+    
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusableElements.length > 0) {
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement || document.activeElement === modalRef.current) {
+              lastElement.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    if (modalRef.current) {
+      modalRef.current.focus();
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [content]);
+
   // If no content for this route, don't show
   if (!content) return null;
   // If already seen and not forced open, skip
@@ -201,12 +243,20 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
         @keyframes slideUpTour { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
       `}</style>
       
-      <div style={{
-        background: P.bg2, border: `1px solid ${content.color}40`, borderRadius: 32,
-        width: '100%', maxWidth: 500, overflow: 'hidden',
-        boxShadow: `0 24px 60px ${content.color}20`,
-        animation: 'slideUpTour 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        position: 'relative'
+      <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-modal-title"
+        aria-describedby="tour-modal-desc"
+        tabIndex="-1"
+        style={{
+          background: P.bg2, border: `1px solid ${content.color}40`, borderRadius: 32,
+          width: '100%', maxWidth: 500, overflow: 'hidden',
+          boxShadow: `0 24px 60px ${content.color}20`,
+          animation: 'slideUpTour 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          position: 'relative',
+          outline: 'none'
       }}>
         <div style={{ position: 'absolute', top: -100, right: -100, width: 250, height: 250, background: content.color, opacity: 0.1, filter: 'blur(80px)' }} />
         
@@ -218,10 +268,10 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
           <h4 style={{ fontSize: 13, fontWeight: 800, color: content.color, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px 0' }}>
             {content.subtitle}
           </h4>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 16px 0' }}>
+          <h2 id="tour-modal-title" style={{ fontSize: 28, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: '0 0 16px 0' }}>
             {content.title}
           </h2>
-          <p style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, margin: '0 0 40px 0' }}>
+          <p id="tour-modal-desc" style={{ fontSize: 15, color: P.text2, lineHeight: 1.6, margin: '0 0 40px 0' }}>
             {content.desc}
           </p>
           
@@ -234,8 +284,9 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               boxShadow: `0 10px 30px ${content.color}40`
             }}
+            aria-label="Turu Kapat ve Keşfetmeye Başla"
           >
-            Anladım, Keşfet <ChevronRight size={20} />
+            Keşfetmeye Başla <ChevronRight size={20} />
           </button>
         </div>
       </div>
