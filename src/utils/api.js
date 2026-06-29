@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
-export const API_URL = configuredApiUrl || '';
+export const API_URL = configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:3001' : '');
 
 export function apiUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -145,7 +145,7 @@ export async function authFetch(path, options = {}) {
   if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`);
 
   const isLocalDemoSession = String(session?.access_token || '').startsWith('local-demo-token-');
-  if ((isLocalDemoSession || import.meta.env.DEV) && !configuredApiUrl && path.startsWith('/api/')) {
+  if (isLocalDemoSession && !configuredApiUrl && path.startsWith('/api/')) {
     return localApiFallback(path, options);
   }
 
