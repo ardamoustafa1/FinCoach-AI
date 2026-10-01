@@ -328,11 +328,11 @@ export default function ChatPage() {
         @keyframes bounce-dot { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
         .chat-scroll::-webkit-scrollbar { width: 4px; }
         .chat-scroll::-webkit-scrollbar-track { background: transparent; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.4); border-radius: 999px; }
-        .quick-btn:hover { background: rgba(124,58,237,0.18) !important; border-color: rgba(124,58,237,0.4) !important; color: #a78bfa !important; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(195,203,211,0.4); border-radius: 999px; }
+        .quick-btn:hover { background: rgba(195,203,211,0.18) !important; border-color: rgba(195,203,211,0.4) !important; color: #E4E9ED !important; }
         .send-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.04); }
         .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .chat-input:focus { border-color: rgba(124,58,237,0.5) !important; background: rgba(124,58,237,0.06) !important; outline: none; }
+        .chat-input:focus { border-color: rgba(195,203,211,0.5) !important; background: rgba(195,203,211,0.06) !important; outline: none; }
       `}</style>
 
       <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 8rem)', maxWidth: 900, margin: '0 auto', width: '100%' }}>
@@ -350,24 +350,24 @@ export default function ChatPage() {
           backdropFilter: 'blur(20px)'
         }}>
           {/* Top glowing line & Background glows */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.5), rgba(16,185,129,0.5), transparent)' }} />
-          <div style={{ position: 'absolute', top: -50, right: 0, width: 200, height: 200, background: 'rgba(124,58,237,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -50, left: 0, width: 200, height: 200, background: 'rgba(59,130,246,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(195,203,211,0.5), rgba(52,192,138,0.5), transparent)' }} />
+          <div style={{ position: 'absolute', top: -50, right: 0, width: 200, height: 200, background: 'rgba(195,203,211,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -50, left: 0, width: 200, height: 200, background: 'rgba(110,147,196,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, position: 'relative', zIndex: 1 }}>
             <div style={{
               width: 56, height: 56, borderRadius: 18,
-              background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+              background: 'linear-gradient(135deg, #C3CBD3, #C0705C)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 32px rgba(124,58,237,0.5)',
+              boxShadow: '0 0 32px rgba(195,203,211,0.5)',
               flexShrink: 0, border: '1px solid rgba(255,255,255,0.2)'
             }}>
               <Bot size={28} color="#fff" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#c4b5fd' }}>AI Cockpit</span>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'ping 1.5s ease-out infinite', opacity: 0.8, boxShadow: '0 0 10px #10b981' }} />
+                <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#F1F4F6' }}>AI Cockpit</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', animation: 'ping 1.5s ease-out infinite', opacity: 0.8, boxShadow: '0 0 10px #34C08A' }} />
               </div>
               <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '-0.02em', margin: '0 0 2px' }}>
                 AI Finansal Koçun
@@ -382,12 +382,12 @@ export default function ChatPage() {
                 title="Duygu Check-in"
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                  borderRadius: 12, border: '1px solid rgba(236,72,153,0.35)',
-                  background: 'rgba(236,72,153,0.08)', color: '#f9a8d4',
+                  borderRadius: 12, border: '1px solid rgba(192,112,92,0.35)',
+                  background: 'rgba(192,112,92,0.08)', color: '#f9a8d4',
                   fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(236,72,153,0.18)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(236,72,153,0.08)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,112,92,0.18)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(192,112,92,0.08)'; }}
               >
                 <HeartPulse size={14} /> Check-in
               </button>
@@ -396,18 +396,18 @@ export default function ChatPage() {
                 title="Haftalık Duygu Raporu"
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                  borderRadius: 12, border: '1px solid rgba(124,58,237,0.35)',
-                  background: 'rgba(124,58,237,0.08)', color: '#c4b5fd',
+                  borderRadius: 12, border: '1px solid rgba(195,203,211,0.35)',
+                  background: 'rgba(195,203,211,0.08)', color: '#F1F4F6',
                   fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(195,203,211,0.18)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(195,203,211,0.08)'; }}
               >
                 <BarChart2 size={14} /> Haftalık Rapor
               </button>
-              <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Zap size={16} color="#c4b5fd" />
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.02em' }}>Gemini 2.5 Flash</span>
+              <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(195,203,211,0.3)', borderRadius: 12, padding: '10px 16px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Zap size={16} color="#F1F4F6" />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#DFE3E7', letterSpacing: '0.02em' }}>Gemini 2.5 Flash</span>
               </div>
             </div>
           </div>
@@ -452,13 +452,13 @@ export default function ChatPage() {
                 {/* Avatar */}
                 <div style={{
                   width: 40, height: 40, borderRadius: 14, flexShrink: 0,
-                  background: isBot ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(236,72,153,0.15))' : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${isBot ? 'rgba(124,58,237,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                  background: isBot ? 'linear-gradient(135deg, rgba(195,203,211,0.25), rgba(192,112,92,0.15))' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${isBot ? 'rgba(195,203,211,0.4)' : 'rgba(255,255,255,0.1)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: isBot ? '0 0 20px rgba(124,58,237,0.2)' : 'none',
+                  boxShadow: isBot ? '0 0 20px rgba(195,203,211,0.2)' : 'none',
                   marginTop: 4
                 }}>
-                  {isBot ? <Bot size={20} color="#c4b5fd" /> : <User size={20} color="var(--text-secondary)" />}
+                  {isBot ? <Bot size={20} color="#F1F4F6" /> : <User size={20} color="var(--text-secondary)" />}
                 </div>
 
                 {/* Bubble */}
@@ -466,13 +466,13 @@ export default function ChatPage() {
                   maxWidth: '78%',
                   padding: '16px 20px',
                   borderRadius: isBot ? '8px 24px 24px 24px' : '24px 8px 24px 24px',
-                  background: isBot ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                  background: isBot ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, #C3CBD3, #C0705C)',
                   border: isBot ? `1px solid rgba(255,255,255,0.08)` : '1px solid rgba(255,255,255,0.15)',
-                  color: isBot ? '#e2e8f0' : '#ffffff',
+                  color: isBot ? '#DFE3E7' : '#ffffff',
                   fontSize: 15,
                   lineHeight: 1.6,
                   backdropFilter: isBot ? 'blur(12px)' : 'none',
-                  boxShadow: isBot ? '0 8px 32px rgba(0,0,0,0.2)' : '0 12px 32px rgba(124,58,237,0.4)',
+                  boxShadow: isBot ? '0 8px 32px rgba(0,0,0,0.2)' : '0 12px 32px rgba(195,203,211,0.4)',
                 }}>
                   {isBot ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -506,8 +506,8 @@ export default function ChatPage() {
                       {wrappedData && (
                         <div style={{
                           marginTop: 12, borderRadius: 24, padding: 1,
-                          background: 'linear-gradient(135deg, #FF1493, #7C3AED, #3B82F6)',
-                          boxShadow: '0 12px 40px rgba(124,58,237,0.4)',
+                          background: 'linear-gradient(135deg, #C0705C, #C3CBD3, #6E93C4)',
+                          boxShadow: '0 12px 40px rgba(195,203,211,0.4)',
                           maxWidth: 320, position: 'relative', overflow: 'hidden'
                         }}>
                           <div style={{
@@ -516,7 +516,7 @@ export default function ChatPage() {
                             position: 'relative', overflow: 'hidden'
                           }}>
                             {/* Texture & Glow */}
-                            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.2) 0%, transparent 60%)' }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(195,203,211,0.2) 0%, transparent 60%)' }} />
                             <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 6, lineHeight: 1.2, zIndex: 1 }}>{wrappedData.title}</h2>
                             <p style={{ fontSize: 12, color: P.purpleLight, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 24, zIndex: 1 }}>FinCoach AI 2026</p>
                             
@@ -537,10 +537,10 @@ export default function ChatPage() {
                               onClick={() => shareWrappedCard(wrappedData)}
                               style={{
                                 width: '100%', padding: '14px 0', borderRadius: 14,
-                                background: 'linear-gradient(135deg, #FF1493, #7C3AED)',
+                                background: 'linear-gradient(135deg, #C0705C, #C3CBD3)',
                                 color: '#fff', fontWeight: 800, fontSize: 14, border: 'none', cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 1,
-                                boxShadow: '0 4px 16px rgba(124,58,237,0.3)'
+                                boxShadow: '0 4px 16px rgba(195,203,211,0.3)'
                               }}
                             >
                               <Share2 size={16} /> Paylaş
@@ -557,11 +557,11 @@ export default function ChatPage() {
                         <div style={{ borderRadius: 20, background: 'rgba(0,0,0,0.25)', border: `1px solid rgba(255,255,255,0.06)`, padding: 20, marginTop: 8, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                             <h4 style={{ fontSize: 14, fontWeight: 800, color: '#fff', letterSpacing: '0.02em', margin: 0 }}>{chartData.title || 'Grafik Analizi'}</h4>
-                            <button onClick={() => setModalChart(chartData)} style={{
+                            <button aria-label="Grafiği büyüt" onClick={() => setModalChart(chartData)} style={{
                               width: 32, height: 32, borderRadius: 10,
-                              background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)',
+                              background: 'rgba(195,203,211,0.2)', border: '1px solid rgba(195,203,211,0.4)',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', color: '#c4b5fd', transition: 'all 0.2s'
+                              cursor: 'pointer', color: '#F1F4F6', transition: 'all 0.2s'
                             }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                               <Maximize2 size={15} />
                             </button>
@@ -599,15 +599,15 @@ export default function ChatPage() {
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 14,
-                background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.2))',
-                border: '1px solid rgba(124,58,237,0.3)',
+                background: 'linear-gradient(135deg, rgba(195,203,211,0.2), rgba(139,148,157,0.2))',
+                border: '1px solid rgba(195,203,211,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
                 <Bot size={20} color={P.purpleLight} />
               </div>
               <div style={{
                 padding: '16px 20px', borderRadius: '8px 24px 24px 24px',
-                background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(124,58,237,0.25)`,
+                background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(195,203,211,0.25)`,
                 minWidth: 320, display: 'flex', flexDirection: 'column', gap: 12,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)'
               }}>
@@ -639,7 +639,7 @@ export default function ChatPage() {
                           ragMatches.map((m, idx) => (
                             <div key={idx} style={{ fontSize: 12, color: P.green, display: 'flex', alignItems: 'center', gap: 6 }}>
                               <span style={{ fontWeight: 800, background: `${P.green}20`, padding: '2px 6px', borderRadius: 4 }}>%{Math.round(m.similarity * 100)} Eşleşme</span>
-                              <span style={{ color: '#e2e8f0' }}>{m.tx.magaza || m.tx.aciklama || 'İşlem'}</span>
+                              <span style={{ color: '#DFE3E7' }}>{m.tx.magaza || m.tx.aciklama || 'İşlem'}</span>
                               <span style={{ color: P.text3 }}>({m.tx.tutar} TL)</span>
                             </div>
                           ))
@@ -705,18 +705,18 @@ export default function ChatPage() {
                 lineHeight: 1.5
               }}
             />
-            <button
+            <button aria-label="Mesaj gönder"
               onClick={() => handleSend()}
               disabled={!input.trim() || isLoading}
               className="send-btn"
               style={{
                 position: 'absolute', right: 12, bottom: 12,
                 width: 44, height: 44, borderRadius: 16,
-                background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                background: 'linear-gradient(135deg, #C3CBD3, #C0705C)',
                 border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s',
-                boxShadow: '0 4px 16px rgba(124,58,237,0.5)',
+                boxShadow: '0 4px 16px rgba(195,203,211,0.5)',
               }}
             >
               <Send size={18} color="#fff" style={{ transform: 'translateX(-1px)' }} />
@@ -733,8 +733,8 @@ export default function ChatPage() {
           }}>
             <div style={{
               width: '100%', maxWidth: 720,
-              background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)',
-              border: '1px solid rgba(124,58,237,0.35)',
+              background: 'linear-gradient(160deg, #121417 0%, #0A0B0C 100%)',
+              border: '1px solid rgba(195,203,211,0.35)',
               borderRadius: 24, padding: 32,
               boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
             }}>

@@ -70,12 +70,12 @@ export default function TimeMachinePage() {
           position: absolute;
           top: 0; bottom: 0; left: 50%;
           width: 2px;
-          background: linear-gradient(to bottom, #10B981, #EF4444);
+          background: linear-gradient(to bottom, #34C08A, #DB5C4E);
           transform: translateX(-50%);
         }
 
-        .neon-glow { text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
-        .neon-glow-red { text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .neon-glow { text-shadow: 0 0 20px rgba(52,192,138, 0.5); }
+        .neon-glow-red { text-shadow: 0 0 20px rgba(219,92,78, 0.5); }
         
         @keyframes universeSplit {
           0% { transform: scaleX(0); opacity: 0; }
@@ -87,7 +87,7 @@ export default function TimeMachinePage() {
         
         <PageHeader
           icon={<Clock size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Paralel Evren Simülatörü 🦋"
           subtitle="Bugün yapacağınız bir haracamanın 10 yıl sonra ne kadar değer kazanabileceğini görün."
           badge="Butterfly Effect"
@@ -114,7 +114,7 @@ export default function TimeMachinePage() {
               <option value="1.75">Kripto / Yüksek Risk (Yıllık %75)</option>
             </select>
           </div>
-          <button onClick={simulate} disabled={simulating} style={{ flex: 1, minWidth: 200, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', border: 'none', color: '#fff', fontSize: 16, fontWeight: 800, cursor: simulating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 26, boxShadow: '0 8px 32px rgba(59,130,246,0.3)', transition: 'transform 0.2s' }}>
+          <button onClick={simulate} disabled={simulating} style={{ flex: 1, minWidth: 200, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #6E93C4, #AAB3BB)', border: 'none', color: '#fff', fontSize: 16, fontWeight: 800, cursor: simulating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 26, boxShadow: '0 8px 32px rgba(110,147,196,0.3)', transition: 'transform 0.2s' }}>
             {simulating ? <RefreshCw size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowRight size={20} />}
             {simulating ? 'Zaman Çizgisi Bölünüyor...' : 'Evrenleri Çarpıştır'}
           </button>
@@ -128,8 +128,8 @@ export default function TimeMachinePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 32, alignItems: 'stretch' }}>
               
               {/* Universe A (Spent) */}
-              <div style={{ background: 'linear-gradient(180deg, rgba(239,68,68,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'right center' }}>
-                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <div style={{ background: 'linear-gradient(180deg, rgba(219,92,78,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(219,92,78,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'right center' }}>
+                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(219,92,78,0.1)', border: '1px solid rgba(219,92,78,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                    <TrendingDown size={32} color={P.red} />
                  </div>
                  <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren A: Harcama</h3>
@@ -143,14 +143,14 @@ export default function TimeMachinePage() {
               {/* Center Timeline */}
               <div style={{ position: 'relative', width: 40, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                  <div className="timeline-line" />
-                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 40, height: 40, background: '#0a0a0f', border: '1px solid #333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 40, height: 40, background: '#0A0B0C', border: '1px solid #333', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                    <Clock size={20} color="#fff" />
                  </div>
               </div>
 
               {/* Universe B (Invested) */}
-              <div style={{ background: 'linear-gradient(180deg, rgba(16,185,129,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'left center' }}>
-                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <div style={{ background: 'linear-gradient(180deg, rgba(52,192,138,0.05) 0%, rgba(0,0,0,0.5) 100%)', border: '1px solid rgba(52,192,138,0.3)', borderRadius: 24, padding: 40, textAlign: 'center', position: 'relative', overflow: 'hidden', animation: 'universeSplit 1s cubic-bezier(0.16, 1, 0.3, 1) forwards', transformOrigin: 'left center' }}>
+                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(52,192,138,0.1)', border: '1px solid rgba(52,192,138,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                    <TrendingUp size={32} color={P.green} />
                  </div>
                  <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Evren B: Yatırım Senaryosu</h3>

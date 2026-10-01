@@ -278,8 +278,8 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
       <style>{`
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .limit-input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.09) !important; border-radius: 11px !important; color: #F1F5F9 !important; font-family: inherit; }
-        .limit-input:focus { border-color: rgba(124,58,237,0.55) !important; background: rgba(124,58,237,0.08) !important; outline: none !important; }
+        .limit-input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.09) !important; border-radius: 11px !important; color: #F2F4F5 !important; font-family: inherit; }
+        .limit-input:focus { border-color: rgba(195,203,211,0.55) !important; background: rgba(195,203,211,0.08) !important; outline: none !important; }
         .limit-input::placeholder { color: rgba(255,255,255,0.2); }
       `}</style>
 
@@ -307,21 +307,21 @@ export default function SettingsPage({ theme, onToggleTheme }) {
               </div>
             </div>
             {profileSaved && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 10, background: 'rgba(52,192,138,0.12)', border: '1px solid rgba(52,192,138,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>
                 <Check size={13} /> Kaydedildi
               </span>
             )}
           </div>
 
           {profileError && (
-            <div style={{ padding: '12px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(239,68,68,0.08)', color: P.red, fontSize: 12, fontWeight: 700 }}>
+            <div style={{ padding: '12px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(219,92,78,0.08)', color: P.red, fontSize: 12, fontWeight: 700 }}>
               {profileError}
             </div>
           )}
 
           {/* Avatar + name row */}
           <div style={{ padding: '24px 28px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 20 }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 3px rgba(124,58,237,0.2)', fontSize: 24, fontWeight: 800, color: '#fff' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #C3CBD3, #8B949D)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 3px rgba(195,203,211,0.2)', fontSize: 24, fontWeight: 800, color: '#fff' }}>
               {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
             </div>
             <div style={{ flex: 1 }}>
@@ -350,16 +350,16 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                       onChange={e => setEditValue(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') saveField(key); if (e.key === 'Escape') cancelEdit(); }}
                       placeholder={placeholder}
-                      style={{ flex: 1, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.4)', borderRadius: 10, padding: '8px 12px', color: P.text1, fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                      style={{ flex: 1, background: 'rgba(195,203,211,0.08)', border: '1px solid rgba(195,203,211,0.4)', borderRadius: 10, padding: '8px 12px', color: P.text1, fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
                     />
-                    <button onClick={() => saveField(key)} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} color={P.green} /></button>
-                    <button onClick={cancelEdit} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} color={P.red} /></button>
+                    <button aria-label={`${label} değişikliğini kaydet`} onClick={() => saveField(key)} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(52,192,138,0.15)', border: '1px solid rgba(52,192,138,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} color={P.green} /></button>
+                    <button aria-label={`${label} düzenlemesini iptal et`} onClick={cancelEdit} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(219,92,78,0.1)', border: '1px solid rgba(219,92,78,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} color={P.red} /></button>
                   </div>
                 ) : (
                   <p style={{ fontSize: 14, color: value ? P.text1 : P.text3, fontStyle: value ? 'normal' : 'italic' }}>
                     {value || `${label} girilmedi`}
                     {key === 'email' && (
-                      <span style={{ marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, background: emailVerified ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)', border: `1px solid ${emailVerified ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`, fontSize: 11, fontWeight: 700, color: emailVerified ? P.green : P.amber, verticalAlign: 'middle' }}>
+                      <span style={{ marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, background: emailVerified ? 'rgba(52,192,138,0.12)' : 'rgba(210,137,79,0.12)', border: `1px solid ${emailVerified ? 'rgba(52,192,138,0.3)' : 'rgba(210,137,79,0.3)'}`, fontSize: 11, fontWeight: 700, color: emailVerified ? P.green : P.amber, verticalAlign: 'middle' }}>
                         {emailVerified ? <><BadgeCheck size={11} /> Doğrulandı</> : '⚠ Doğrulanmadı'}
                       </span>
                     )}
@@ -367,9 +367,9 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                 )}
               </div>
               {editField !== key && (
-                <button onClick={() => startEdit(key)} style={{ padding: '7px 14px', borderRadius: 10, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.18)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,58,237,0.08)'}
+                <button onClick={() => startEdit(key)} style={{ padding: '7px 14px', borderRadius: 10, background: 'rgba(195,203,211,0.08)', border: '1px solid rgba(195,203,211,0.2)', color: P.purpleLight, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(195,203,211,0.18)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(195,203,211,0.08)'}
                 ><Edit3 size={12} /> Düzenle</button>
               )}
             </div>
@@ -377,7 +377,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
           {/* Email verification */}
           {!emailVerified && profile.email && (
-            <div style={{ padding: '16px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(245,158,11,0.04)' }}>
+            <div style={{ padding: '16px 28px', borderBottom: `1px solid ${P.border}`, background: 'rgba(210,137,79,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 16 }}>📧</span>
@@ -389,7 +389,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                 <button
                   onClick={sendVerification}
                   disabled={verificationSent}
-                  style={{ padding: '8px 18px', borderRadius: 10, background: verificationSent ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', color: P.amber, fontSize: 13, fontWeight: 700, cursor: verificationSent ? 'default' : 'pointer', transition: 'all 0.2s', flexShrink: 0 }}
+                  style={{ padding: '8px 18px', borderRadius: 10, background: verificationSent ? 'rgba(210,137,79,0.15)' : 'rgba(210,137,79,0.12)', border: '1px solid rgba(210,137,79,0.35)', color: P.amber, fontSize: 13, fontWeight: 700, cursor: verificationSent ? 'default' : 'pointer', transition: 'all 0.2s', flexShrink: 0 }}
                 >
                   {verificationSent ? '✓ Gönderildi...' : 'Doğrulama Gönder'}
                 </button>
@@ -426,16 +426,16 @@ export default function SettingsPage({ theme, onToggleTheme }) {
                       onChange={e => set(e.target.value)}
                       style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: P.text1, fontSize: 14, fontFamily: 'inherit' }}
                     />
-                    <button onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 0, display: 'flex' }}>
+                    <button aria-label={`${label} ${show ? 'gizle' : 'göster'}`} onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: P.text3, padding: 0, display: 'flex' }}>
                       {show ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
                 ))}
-                {passError && <p style={{ fontSize: 12, color: P.red, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)' }}>⚠️ {passError}</p>}
-                {passSaved && <p style={{ fontSize: 12, color: P.green, padding: '8px 12px', background: 'rgba(16,185,129,0.08)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.2)' }}>✓ Şifre başarıyla güncellendi!</p>}
+                {passError && <p style={{ fontSize: 12, color: P.red, padding: '8px 12px', background: 'rgba(219,92,78,0.08)', borderRadius: 10, border: '1px solid rgba(219,92,78,0.2)' }}>⚠️ {passError}</p>}
+                {passSaved && <p style={{ fontSize: 12, color: P.green, padding: '8px 12px', background: 'rgba(52,192,138,0.08)', borderRadius: 10, border: '1px solid rgba(52,192,138,0.2)' }}>✓ Şifre başarıyla güncellendi!</p>}
                 <button
                   onClick={handlePasswordChange}
-                  style={{ padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed, #6366f1)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 20px rgba(124,58,237,0.3)', transition: 'opacity 0.2s', marginTop: 4 }}
+                  style={{ padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #C3CBD3, #8B949D)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 20px rgba(195,203,211,0.3)', transition: 'opacity 0.2s', marginTop: 4 }}
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >Şifre Güncelle</button>
@@ -448,7 +448,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Genel</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.3), transparent)' }} />
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(195,203,211,0.3), transparent)' }} />
           </div>
 
           <SettingRow
@@ -476,7 +476,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
           <SettingRow
             icon={Globe}
-            iconColor="#06B6D4"
+            iconColor="#45939C"
             title="Dil"
             subtitle="Türkçe"
             action={<span style={{ padding: '8px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, fontSize: 13, color: P.text2 }}>🇹🇷 Türkçe</span>}
@@ -502,7 +502,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             iconColor={P.green}
             title="Gizlilik"
             subtitle="Tüm veriler yerel olarak saklanır"
-            action={<span style={{ padding: '6px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>Güvenli</span>}
+            action={<span style={{ padding: '6px 14px', borderRadius: 10, background: 'rgba(52,192,138,0.12)', border: '1px solid rgba(52,192,138,0.25)', fontSize: 12, fontWeight: 700, color: P.green }}>Güvenli</span>}
           />
         </div>
 
@@ -521,10 +521,10 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             <button onClick={handleSaveLimits} style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '10px 20px', borderRadius: 12,
-              background: isSaved ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #7c3aed, #6366f1)',
+              background: isSaved ? 'linear-gradient(135deg, #34C08A, #1E8A62)' : 'linear-gradient(135deg, #C3CBD3, #8B949D)',
               border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
               cursor: 'pointer', transition: 'all 0.25s',
-              boxShadow: '0 8px 24px rgba(124,58,237,0.3)',
+              boxShadow: '0 8px 24px rgba(195,203,211,0.3)',
             }}>
               <Save size={15} />
               {isSaved ? 'Kaydedildi ✓' : 'Kaydet'}
@@ -551,7 +551,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>WhatsApp Operasyon Paneli</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(16,185,129,0.3), transparent)' }} />
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(52,192,138,0.3), transparent)' }} />
           </div>
 
           <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 18, padding: 22 }}>
@@ -559,8 +559,8 @@ export default function SettingsPage({ theme, onToggleTheme }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
                   width: 46, height: 46, borderRadius: 14,
-                  background: whatsappStatus?.ready ? 'rgba(16,185,129,0.14)' : 'rgba(245,158,11,0.14)',
-                  border: `1px solid ${whatsappStatus?.ready ? 'rgba(16,185,129,0.28)' : 'rgba(245,158,11,0.28)'}`,
+                  background: whatsappStatus?.ready ? 'rgba(52,192,138,0.14)' : 'rgba(210,137,79,0.14)',
+                  border: `1px solid ${whatsappStatus?.ready ? 'rgba(52,192,138,0.28)' : 'rgba(210,137,79,0.28)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <Phone size={20} color={whatsappStatus?.ready ? P.green : P.amber} />
@@ -591,7 +591,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
             </div>
 
             {(whatsappError || whatsappStatus?.lastError) && (
-              <p style={{ margin: '14px 0 0', fontSize: 12, color: '#fca5a5', lineHeight: 1.5 }}>
+              <p style={{ margin: '14px 0 0', fontSize: 12, color: '#F0AFA6', lineHeight: 1.5 }}>
                 {whatsappError || whatsappStatus.lastError}
               </p>
             )}
@@ -602,7 +602,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Hesap Yönetimi</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.3), transparent)' }} />
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(195,203,211,0.3), transparent)' }} />
           </div>
 
           <SettingRow
@@ -618,7 +618,7 @@ export default function SettingsPage({ theme, onToggleTheme }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Veri Yönetimi</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(124,58,237,0.3), transparent)' }} />
+            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(195,203,211,0.3), transparent)' }} />
           </div>
 
           <SettingRow
@@ -648,13 +648,13 @@ export default function SettingsPage({ theme, onToggleTheme }) {
 
         {/* ── QR CODE ── */}
         <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '28px 32px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(195,203,211,0.06)', filter: 'blur(40px)', pointerEvents: 'none' }} />
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 28, flexWrap: 'wrap' }}>
-            <div style={{ padding: 16, borderRadius: 18, background: '#fff', boxShadow: '0 8px 30px rgba(124,58,237,0.25)', flexShrink: 0 }}>
+            <div style={{ padding: 16, borderRadius: 18, background: '#fff', boxShadow: '0 8px 30px rgba(195,203,211,0.25)', flexShrink: 0 }}>
               <QRCodeSVG value="https://fincoach.vercel.app" size={160} />
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 99, padding: '4px 14px', fontSize: 11, fontWeight: 700, color: P.purpleLight, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(195,203,211,0.15)', border: '1px solid rgba(195,203,211,0.3)', borderRadius: 99, padding: '4px 14px', fontSize: 11, fontWeight: 700, color: P.purpleLight, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
                 <QrCode size={11} /> Sunum QR
               </div>
               <h3 style={{ fontSize: 20, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 8 }}>Demo QR Kodu</h3>

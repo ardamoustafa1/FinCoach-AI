@@ -84,7 +84,7 @@ export default function FreelancerPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Waves size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Freelancer Gelir Dengeleyici"
           subtitle="Aydan aya değişen gelirinizi sabit bir maaşa dönüştürün. Stressiz bir finansal hayat." 
           badge="Freelancer & Esnaf"
@@ -106,17 +106,17 @@ export default function FreelancerPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Waves size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Freelancer Gelir Dengeleyici"
           subtitle="Aydan aya değişen gelirinizi sabit bir maaşa dönüştürün. Stressiz bir finansal hayat." 
           badge="Freelancer & Esnaf"
         >
           {!smoothingActive ? (
-            <button onClick={activateSmoothing} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #3B82F6, #2563EB)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(59,130,246,0.3)' }}>
+            <button onClick={activateSmoothing} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #6E93C4, #527CAE)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(110,147,196,0.3)' }}>
               <RefreshCw size={16} /> Sistemi Aktif Et
             </button>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: '#10B981', fontSize: 13, fontWeight: 800 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, background: 'rgba(52,192,138,0.1)', border: '1px solid rgba(52,192,138,0.3)', color: '#34C08A', fontSize: 13, fontWeight: 800 }}>
               <CheckCircle2 size={16} /> Sistem Aktif
             </div>
           )}
@@ -130,12 +130,12 @@ export default function FreelancerPage() {
             <TrendingUp size={60} color={P.text3} style={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.1 }} />
           </div>
           
-          <div style={{ background: smoothingActive ? 'rgba(59,130,246,0.05)' : P.bg2, border: `1px solid ${smoothingActive ? 'rgba(59,130,246,0.3)' : P.border}`, borderRadius: 20, padding: 24, transition: 'all 0.5s' }}>
+          <div style={{ background: smoothingActive ? 'rgba(110,147,196,0.05)' : P.bg2, border: `1px solid ${smoothingActive ? 'rgba(110,147,196,0.3)' : P.border}`, borderRadius: 20, padding: 24, transition: 'all 0.5s' }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: smoothingActive ? P.blue : P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Sana Ödenecek Sabit Maaş</p>
             <p style={{ fontSize: 28, fontWeight: 900, color: smoothingActive ? P.blue : P.text1, margin: 0 }}>{fmt(data.safeSalary)}</p>
           </div>
 
-          <div style={{ background: smoothingActive ? 'rgba(16,185,129,0.05)' : P.bg2, border: `1px solid ${smoothingActive ? 'rgba(16,185,129,0.3)' : P.border}`, borderRadius: 20, padding: 24, transition: 'all 0.5s' }}>
+          <div style={{ background: smoothingActive ? 'rgba(52,192,138,0.05)' : P.bg2, border: `1px solid ${smoothingActive ? 'rgba(52,192,138,0.3)' : P.border}`, borderRadius: 20, padding: 24, transition: 'all 0.5s' }}>
             <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: smoothingActive ? P.green : P.text3, textTransform: 'uppercase', marginBottom: 8 }}>Yedek Kasa Bakiyesi (Tampon)</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {smoothingActive && <Lock size={20} color={P.green} />}
@@ -154,7 +154,7 @@ export default function FreelancerPage() {
               <p style={{ fontSize: 13, color: P.text3, margin: 0 }}>Kırmızı çubuklar gerçek geliriniz, mavi çizgi AI'ın size her ay ödeyeceği sabit maaştır.</p>
             </div>
             {smoothingActive && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(59,130,246,0.1)', padding: '6px 12px', borderRadius: 999 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(110,147,196,0.1)', padding: '6px 12px', borderRadius: 999 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.blue, animation: 'pulse 2s infinite' }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: P.blue }}>AI Maaş Koruması Devrede</span>
               </div>

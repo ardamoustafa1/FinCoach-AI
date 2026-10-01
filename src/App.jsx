@@ -5,6 +5,7 @@ import Onboarding from './components/Onboarding';
 import FeatureTourModal from './components/FeatureTourModal';
 import CommandMenu from './components/CommandMenu';
 import AuthPage from './pages/AuthPage';
+import LandingPage from './pages/LandingPage';
 import useStore from './store/useStore';
 import { ToastProvider } from './components/ToastProvider';
 import { supabase } from './utils/supabase';
@@ -12,6 +13,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { DEMO_EMAIL } from './config/demoAccount';
 import { mockGelir, mockTransactions } from './data/mockData';
 import { sampleGoals } from './utils/seedData';
+import { pageTitleFor } from './config/pageTitles';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -42,6 +44,12 @@ const FinancialICUPage = lazy(() => import('./pages/FinancialICUPage'));
 const DeadMansSwitchPage = lazy(() => import('./pages/DeadMansSwitchPage'));
 const VoiceBiometricEscrowPage = lazy(() => import('./pages/VoiceBiometricEscrowPage'));
 const SyntheticDataGeneratorPage = lazy(() => import('./pages/SyntheticDataGeneratorPage'));
+
+const DEMO_SCOPED_KEYS = [
+  'fincoach_transactions', 'fincoach_goals', 'fincoach_budget_limits', 'fincoach_gelir',
+  'fincoach_category_rules', 'fincoach_mock_initialized', 'fincoach_profile',
+  'fincoach_income', 'fincoach_bank', 'fincoach_emotion_logs',
+];
 
 const demoBudgetLimits = {
   Market: 3000,
@@ -120,38 +128,7 @@ function RouteHandler() {
     }, 50);
 
     // 3. SEO / Sayfa başlıkları
-    const titleMap = {
-      '/': 'Ana Sayfa',
-      '/dashboard': 'Dashboard',
-      '/transactions': 'İşlemler',
-      '/wealth': 'Varlık Portföyü',
-      '/micro-invest': 'Küsürat Kumbarası (DeFi)',
-      '/debt-snowball': 'Borç Kartopu',
-      '/freelancer-smoother': 'Freelancer Nakit Dengesi',
-      '/tax': 'Vergi Optimizasyonu',
-      '/real-estate': 'Emlak & Kredi AI',
-      '/anomaly': 'Güvenlik & Anomali',
-      '/graph-analysis': 'Harcama Graph Analizi',
-      '/system-monitor': 'Sistem Sağlığı',
-      '/federated': 'Privacy-Preserving AI',
-      '/escrow': 'Güvenli Ödeme (Web3)',
-      '/goals': 'Finansal Hedefler',
-      '/league': 'Tasarruf Ligi',
-      '/cashflow': 'Nakit Akışı Simülasyonu',
-      '/stress-test': 'Ekonomik Stres Testi',
-      '/time-machine': 'Finansal Gelecek Zaman Makinesi',
-      '/subscriptions': 'Abonelik Takibi',
-      '/chat': 'AI Finansal Asistan',
-      '/reports': 'Detaylı Analitik Raporlar',
-      '/settings': 'Kullanıcı Ayarları',
-      '/shop-sim': 'Dürtüsel Harcama Simülatörü',
-      '/autonomous-agent': 'Self-Driving Money',
-      '/financial-icu': 'Financial ICU (İflas Radarı)',
-      '/dead-mans-switch': 'Dead Man\'s Switch (Web3 Vasiyet)',
-      '/voice-escrow': 'Voice Biometric Escrow',
-      '/synthetic-data': 'Synthetic Data Generator'
-    };
-    const currentTitle = titleMap[pathname] || 'Finansal Koçunuz';
+    const currentTitle = pageTitleFor(pathname);
     document.title = `${currentTitle} | FinCoach AI`;
 
     return () => clearTimeout(timer);
@@ -167,7 +144,7 @@ function RouteHandler() {
         }
         .nav-progress-bar {
           position: fixed; top: 0; left: 0; height: 3px;
-          background: linear-gradient(90deg, #7c3aed, #06b6d4, #ec4899);
+          background: linear-gradient(90deg, #C3CBD3, #45939C, #C0705C);
           z-index: 99999; pointer-events: none;
           animation: top-progress 0.4s ease-out forwards;
         }
@@ -179,56 +156,46 @@ function RouteHandler() {
 
 // ErrorBoundary: ./components/ErrorBoundary.jsx'den import ediliyor (KRİTİK-02 düzeltmesi)
 
-function LoadingScreen({ label = 'FinCoach AI Başlatılıyor...' }) {
+function LoadingScreen({ label = 'FinCoach AI başlatılıyor…' }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#050714', display: 'flex', color: '#fff', overflow: 'hidden' }}>
+    <div style={{
+      minHeight: '100vh', background: '#0A0B0C', color: '#F2F4F5',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 26, position: 'relative', overflow: 'hidden', padding: 24,
+    }}>
       <style>{`
-        @keyframes shimmer { 
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
-        }
-        .skeleton-box {
-          background: #1e293b;
-          background-image: linear-gradient(90deg, #1e293b 0px, #334155 40px, #1e293b 80px);
-          background-size: 1000px 100%;
-          animation: shimmer 2s infinite linear;
-          border-radius: 12px;
-        }
+        @keyframes boot-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        @keyframes boot-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
       `}</style>
-      
-      {/* Sidebar Skeleton */}
-      <div className="hidden lg:flex" style={{ width: 260, borderRight: '1px solid #1e293b', padding: 24, flexDirection: 'column', gap: 24, flexShrink: 0 }}>
-        <div className="skeleton-box" style={{ height: 40, width: '80%', borderRadius: 8 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
-          {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton-box" style={{ height: 24, width: '90%', borderRadius: 6 }} />)}
-        </div>
+
+      {/* Zemin ışığı */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(600px 400px at 50% 38%, rgba(195,203,211,0.10), transparent 68%)',
+      }} />
+
+      <div style={{ position: 'relative', textAlign: 'center', animation: 'boot-fade .6s cubic-bezier(0.16,1,0.3,1) both' }}>
+        <p style={{
+          fontFamily: "'Instrument Serif', Georgia, serif",
+          fontSize: 34, letterSpacing: '-0.02em', marginBottom: 10,
+        }}>
+          FinCoach<span style={{ color: '#C3CBD3' }}> AI</span>
+        </p>
+        <p style={{
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.28em',
+          textTransform: 'uppercase', color: '#6B7075',
+        }} aria-live="polite">
+          {label}
+        </p>
       </div>
 
-      {/* Main Content Skeleton */}
-      <div style={{ flex: 1, padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 32 }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="skeleton-box" style={{ height: 32, width: 200 }} />
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div className="skeleton-box" style={{ height: 40, width: 40, borderRadius: '50%' }} />
-            <div className="skeleton-box" style={{ height: 40, width: 40, borderRadius: '50%' }} />
-          </div>
-        </div>
-        
-        {/* Widgets Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
-          {[1,2,3].map(i => <div key={i} className="skeleton-box" style={{ height: 120 }} />)}
-        </div>
-
-        {/* Big Chart Area */}
-        <div className="skeleton-box" style={{ height: 300, width: '100%' }} />
-        
-        {/* Status Text */}
-        <div style={{ textAlign: 'center', marginTop: 'auto', paddingTop: 20 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#64748b', letterSpacing: '0.05em' }} aria-live="polite">
-            {label}
-          </p>
-        </div>
+      {/* İnce yükleme çizgisi */}
+      <div style={{ position: 'relative', width: 190, height: 1, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+        <span style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, transparent, #C3CBD3, transparent)',
+          animation: 'boot-sweep 1.5s cubic-bezier(0.65,0,0.35,1) infinite',
+        }} />
       </div>
     </div>
   );
@@ -240,6 +207,7 @@ export default function App() {
   const [authUser, setAuthUser] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [syncError, setSyncError] = useState(null);
+  const [authView, setAuthView] = useState(null); // null → tanıtım sayfası | 'login' | 'register'
 
   const checkUserStatus = useCallback(async (user) => {
     try {
@@ -385,13 +353,15 @@ export default function App() {
   }, [checkUserStatus]);
 
   useEffect(() => {
-    if (theme === 'dark') {
+    // Tanıtım sayfası daima koyu temada sunulur; uygulama içinde kullanıcı tercihi geçerlidir.
+    const showingLanding = !authUser && !authView;
+    if (theme === 'dark' || showingLanding) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
     localStorage.setItem('fincoach_theme', theme);
-  }, [theme]);
+  }, [theme, authUser, authView]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -402,11 +372,33 @@ export default function App() {
     return <LoadingScreen />;
   }
 
-  // Henüz giriş yapılmamış
+  // Henüz giriş yapılmamış → önce tanıtım sitesi, sonra kimlik doğrulama
   if (!authUser) {
+    const enterDemo = () => {
+      DEMO_SCOPED_KEYS.forEach((key) => localStorage.removeItem(key));
+      localStorage.setItem('fincoach_demo_session', 'true');
+      hydrateDemoWorkspace();
+      setAuthUser({ id: 'demo-local-123', email: DEMO_EMAIL, name: 'Demo Kullanıcı' });
+      setOnboardingCompleted(true);
+      setLoading(false);
+    };
+
+    if (!authView) {
+      return (
+        <ToastProvider>
+          <LandingPage
+            onEnter={(mode) => {
+              if (mode === 'demo') { enterDemo(); return; }
+              setAuthView(mode === 'register' ? 'register' : 'login');
+            }}
+          />
+        </ToastProvider>
+      );
+    }
+
     return (
       <ToastProvider>
-        <AuthPage onAuth={(user) => {
+        <AuthPage initialMode={authView} onBack={() => setAuthView(null)} onAuth={(user) => {
           if (user?.isDemo || user?.id === 'demo-local-123' || user?.email?.toLowerCase() === DEMO_EMAIL.toLowerCase()) {
             hydrateDemoWorkspace();
             setAuthUser({
@@ -451,15 +443,31 @@ export default function App() {
         <TourOverlay />
         <CommandMenu />
         {authUser?.id === 'demo-local-123' && (
-          <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999, background: 'rgba(245, 158, 11, 0.95)', color: '#000', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, boxShadow: '0 4px 12px rgba(245,158,11,0.3)', backdropFilter: 'blur(10px)', pointerEvents: 'none', border: '1px solid rgba(255,255,255,0.2)' }}>
-            ⚠️ DEMO MODU
+          <div style={{
+            position: 'fixed', bottom: 18, right: 18, zIndex: 9999,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(195,203,211,0.10)', border: '1px solid rgba(195,203,211,0.3)',
+            backdropFilter: 'blur(18px)', color: '#E4E9ED',
+            padding: '8px 14px', borderRadius: 999,
+            fontSize: 10.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+            pointerEvents: 'none',
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: 99, background: '#C3CBD3' }} />
+            Demo Modu
           </div>
         )}
         {syncError && (
-          <div style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', padding: '12px 24px', borderRadius: 12, boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500, animation: 'fadeSlideDown 0.3s ease-out' }}>
-            <span style={{ fontSize: 18 }}>⚠️</span>
+          <div style={{
+            position: 'fixed', top: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
+            background: 'rgba(219,92,78,0.12)', border: '1px solid rgba(219,92,78,0.36)',
+            backdropFilter: 'blur(20px)', color: '#F0AFA6',
+            padding: '12px 20px', borderRadius: 999,
+            display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, fontWeight: 500,
+            animation: 'fadeSlideUp .4s cubic-bezier(0.16,1,0.3,1) both',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: '#DB5C4E', flexShrink: 0 }} />
             {syncError}
-            <button onClick={() => setSyncError(null)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 4, marginLeft: 8, opacity: 0.8 }}>✕</button>
+            <button onClick={() => setSyncError(null)} aria-label="Kapat" style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 2, marginLeft: 4, opacity: 0.7, fontSize: 14 }}>✕</button>
           </div>
         )}
         <Suspense fallback={<LoadingScreen label="Sayfa hazırlanıyor..." />}>

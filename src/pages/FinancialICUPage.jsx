@@ -137,15 +137,15 @@ export default function FinancialICUPage() {
     <>
       <style>{`
         .icu-bg {
-          background-image: radial-gradient(circle at 50% 50%, rgba(239,68,68,0.05) 0%, transparent 50%);
+          background-image: radial-gradient(circle at 50% 50%, rgba(219,92,78,0.05) 0%, transparent 50%);
           animation: pulse-bg 2s infinite alternate;
         }
         @keyframes pulse-bg {
           0% { opacity: 0.5; transform: scale(0.95); }
           100% { opacity: 1; transform: scale(1.05); }
         }
-        .distress-text { color: #EF4444; font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-        .secure-text { color: #10B981; font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .distress-text { color: #DB5C4E; font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .secure-text { color: #34C08A; font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
       `}</style>
 
       <div className="flex flex-col gap-6 pb-10 relative overflow-hidden">
@@ -158,7 +158,7 @@ export default function FinancialICUPage() {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <PageHeader
             icon={<ShieldAlert size={24} />}
-            color="#EF4444"
+            color="#DB5C4E"
             title="Financial ICU (İflas Radarı)"
             subtitle="TF.js ile tarayıcı içinde lineer regresyon risk projeksiyonu üretir."
             badge="TF.js Risk Motoru"
@@ -168,7 +168,7 @@ export default function FinancialICUPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
           
           {/* LEFT: TF.js demo projection chart */}
-          <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${step === 1 ? 'rgba(239,68,68,0.5)' : P.border}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', boxShadow: step === 1 ? '0 0 40px rgba(239,68,68,0.1)' : 'none' }}>
+          <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${step === 1 ? 'rgba(219,92,78,0.5)' : P.border}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', boxShadow: step === 1 ? '0 0 40px rgba(219,92,78,0.1)' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: P.text1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrendingDown size={20} color={step === 1 ? P.red : P.text3} /> 
@@ -204,7 +204,7 @@ export default function FinancialICUPage() {
           <div className="animate-enter flex flex-col gap-4" style={{ animationDelay: '0.1s' }}>
             
             {/* ALERT BOX */}
-            <div style={{ background: step === 3 ? 'rgba(16,185,129,0.05)' : step === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(239,68,68,0.1)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : step === 0 ? P.border : 'rgba(239,68,68,0.4)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ background: step === 3 ? 'rgba(52,192,138,0.05)' : step === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(219,92,78,0.1)', border: `1px solid ${step === 3 ? 'rgba(52,192,138,0.3)' : step === 0 ? P.border : 'rgba(219,92,78,0.4)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               
               {step === 0 && (
                 <div style={{ textAlign: 'center' }}>
@@ -244,7 +244,7 @@ export default function FinancialICUPage() {
                   
                   <button 
                     onClick={() => setStep(3)}
-                    style={{ width: '100%', padding: '16px', borderRadius: 16, background: P.red, border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(239,68,68,0.4)' }}
+                    style={{ width: '100%', padding: '16px', borderRadius: 16, background: P.red, border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(219,92,78,0.4)' }}
                   >
                     <HeartPulse size={18} /> Yoğun Bakım (ICU) Modunu Başlat
                   </button>
@@ -275,7 +275,7 @@ export default function FinancialICUPage() {
             {/* ACTION LOGS (Only visible when Step >= 3) */}
             <div style={{ opacity: step >= 3 ? 1 : 0, transform: step >= 3 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s', display: 'grid', gap: 12 }}>
               <div style={{ background: P.bg2, border: `1px solid ${P.border}`, padding: 16, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(219,92,78,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Lock size={20} color={P.red} />
                 </div>
                 <div>
@@ -285,7 +285,7 @@ export default function FinancialICUPage() {
               </div>
 
               <div style={{ background: P.bg2, border: `1px solid ${P.border}`, padding: 16, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 16, transitionDelay: '0.2s' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(110,147,196,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Building2 size={20} color={P.blue} />
                 </div>
                 <div>

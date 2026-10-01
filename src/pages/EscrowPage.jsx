@@ -130,14 +130,14 @@ export default function EscrowPage() {
     <>
       <style>{`
         .matrix-bg {
-          background-image: radial-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px);
+          background-image: radial-gradient(rgba(195,203,211, 0.1) 1px, transparent 1px);
           background-size: 24px 24px;
         }
 
         .shake-animation { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);} 20%, 40%, 60%, 80% {transform: translateX(10px);} }
         
-        @keyframes pulseMic { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes pulseMic { 0% { box-shadow: 0 0 0 0 rgba(219,92,78, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(219,92,78, 0); } 100% { box-shadow: 0 0 0 0 rgba(219,92,78, 0); } }
         @keyframes codeScroll { from { transform: translateY(0); } to { transform: translateY(-50%); } }
       `}</style>
 
@@ -165,7 +165,7 @@ export default function EscrowPage() {
             <div style={{ padding: '40px', textAlign: 'center', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '80%', height: 1, background: `linear-gradient(90deg, transparent, ${P.amber}, transparent)` }} />
               
-              <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(245,158,11,0.1)', border: `2px solid rgba(245,158,11,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(210,137,79,0.1)', border: `2px solid rgba(210,137,79,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                  <Lock size={36} color={P.amber} />
               </div>
 
@@ -190,7 +190,7 @@ export default function EscrowPage() {
               {unlockStatus === 'idle' && (
                  <div style={{ textAlign: 'center' }}>
                    <p style={{ fontSize: 14, color: P.text2, marginBottom: 24 }}>Bu fon sadece sağlık veya kaza gibi ekstrem acil durumlar için ayrılmıştır.</p>
-                   <button onClick={handleUnlock} style={{ padding: '18px 40px', borderRadius: 16, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(245,158,11,0.3)', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                   <button onClick={handleUnlock} style={{ padding: '18px 40px', borderRadius: 16, background: 'linear-gradient(135deg, #D2894F 0%, #AE6F3C 100%)', color: '#fff', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(210,137,79,0.3)', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                      Kilidi Aç ve Para Çek
                    </button>
                  </div>
@@ -198,7 +198,7 @@ export default function EscrowPage() {
 
               {unlockStatus !== 'idle' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(59,130,246,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(59,130,246,0.2)` }}>
+                  <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(110,147,196,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(110,147,196,0.2)` }}>
                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: P.blue, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Activity size={20} color="#fff" /></div>
                      <div>
                        <p style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: 0 }}>Para Çekme Talebi Alındı</p>
@@ -208,7 +208,7 @@ export default function EscrowPage() {
                   </div>
 
                   {unlockStatus === 'verifying' || unlockStatus === 'rejected' ? (
-                    <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(124,58,237,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(124,58,237,0.2)` }}>
+                    <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(195,203,211,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(195,203,211,0.2)` }}>
                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: P.purple, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {unlockStatus === 'verifying' ? <div style={{ width: 20, height: 20, border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : <Cpu size={20} color="#fff" />}
                        </div>
@@ -221,7 +221,7 @@ export default function EscrowPage() {
                   ) : null}
 
                   {unlockStatus === 'rejected' && (
-                    <div className={`animate-enter shake-animation`} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, background: 'rgba(239,68,68,0.1)', padding: 24, borderRadius: 16, border: `1px solid rgba(239,68,68,0.4)` }}>
+                    <div className={`animate-enter shake-animation`} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, background: 'rgba(219,92,78,0.1)', padding: 24, borderRadius: 16, border: `1px solid rgba(219,92,78,0.4)` }}>
                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: P.red, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><ShieldAlert size={20} color="#fff" /></div>
                        <div>
                          <p style={{ fontSize: 16, fontWeight: 900, color: P.red, margin: '0 0 8px' }}>ERİŞİM REDDEDİLDİ (SMART CONTRACT BLOKESİ)</p>
@@ -254,16 +254,16 @@ export default function EscrowPage() {
                   />
                 )}
 
-                <button 
+                <button aria-label="Sesli doğrulama simülasyonunu başlat"
                   onClick={startListening}
                   disabled={nlpStep > 0 && nlpStep < 6}
                   style={{ 
                     width: 100, height: 100, borderRadius: '50%', 
-                    background: isListening ? 'rgba(239,68,68,0.1)' : 'linear-gradient(135deg, #7c3aed, #ec4899)', 
+                    background: isListening ? 'rgba(219,92,78,0.1)' : 'linear-gradient(135deg, #C3CBD3, #C0705C)', 
                     border: isListening ? `2px solid ${P.red}` : 'none', 
                     display: 'flex', alignItems: 'center', justifyContent: 'center', 
                     margin: '0 auto 24px', cursor: (nlpStep > 0 && nlpStep < 6) ? 'not-allowed' : 'pointer',
-                    boxShadow: isListening ? 'none' : '0 16px 40px rgba(124,58,237,0.4)',
+                    boxShadow: isListening ? 'none' : '0 16px 40px rgba(195,203,211,0.4)',
                     animation: isListening ? 'pulseMic 1.5s infinite' : 'none',
                     transition: 'all 0.3s'
                   }}
@@ -279,7 +279,7 @@ export default function EscrowPage() {
               </div>
 
               {transcript && (
-                <div className="animate-enter" style={{ background: P.bg2, padding: 20, borderRadius: 16, border: `1px solid rgba(124,58,237,0.2)`, marginBottom: 24, textAlign: 'center' }}>
+                <div className="animate-enter" style={{ background: P.bg2, padding: 20, borderRadius: 16, border: `1px solid rgba(195,203,211,0.2)`, marginBottom: 24, textAlign: 'center' }}>
                   <p style={{ fontSize: 18, color: '#fff', fontStyle: 'italic', margin: 0, lineHeight: 1.6 }}>"{transcript}"</p>
                 </div>
               )}
@@ -304,14 +304,14 @@ export default function EscrowPage() {
               )}
 
               {nlpStep === 3 && (
-                <button onClick={deployContract} className="animate-enter" style={{ width: '100%', padding: '18px', borderRadius: 16, background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 32px rgba(16,185,129,0.3)' }}>
+                <button onClick={deployContract} className="animate-enter" style={{ width: '100%', padding: '18px', borderRadius: 16, background: 'linear-gradient(135deg, #34C08A, #1E8A62)', color: '#fff', fontSize: 16, fontWeight: 900, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 32px rgba(52,192,138,0.3)' }}>
                   <Code size={20} /> Sandbox Contract Üret ve Kilitle
                 </button>
               )}
 
               {nlpStep >= 4 && (
                 <div className="animate-enter" style={{ background: '#0a0a0a', borderRadius: 16, border: `1px solid ${P.green}`, overflow: 'hidden' }}>
-                  <div style={{ background: 'rgba(16,185,129,0.1)', padding: '12px 20px', borderBottom: `1px solid rgba(16,185,129,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ background: 'rgba(52,192,138,0.1)', padding: '12px 20px', borderBottom: `1px solid rgba(52,192,138,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                        <Code size={16} color={P.green} />
                        <span style={{ fontSize: 13, fontWeight: 800, color: P.green }}>FinCoach Contract Sandbox</span>
@@ -319,7 +319,7 @@ export default function EscrowPage() {
                      {nlpStep === 4 ? <span style={{ fontSize: 12, color: P.green, animation: 'pulse 1.5s infinite' }}>Sandbox ledger'a yazılıyor...</span> : <span style={{ fontSize: 12, color: P.green, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Ledger kaydı oluşturuldu</span>}
                   </div>
                   <div style={{ padding: 20, height: 160, overflow: 'hidden', position: 'relative' }}>
-                    <pre style={{ margin: 0, color: '#10b981', fontSize: 12, fontFamily: 'monospace', lineHeight: 1.6, animation: nlpStep === 4 ? 'codeScroll 10s linear infinite' : 'none', opacity: 0.8 }}>
+                    <pre style={{ margin: 0, color: '#34C08A', fontSize: 12, fontFamily: 'monospace', lineHeight: 1.6, animation: nlpStep === 4 ? 'codeScroll 10s linear infinite' : 'none', opacity: 0.8 }}>
 {`// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -356,7 +356,7 @@ contract ConditionalEscrow {
               )}
 
               {nlpStep === 5 && (
-                <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(16,185,129,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(16,185,129,0.3)`, marginTop: 24 }}>
+                <div className="animate-enter" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(52,192,138,0.1)', padding: 20, borderRadius: 16, border: `1px solid rgba(52,192,138,0.3)`, marginTop: 24 }}>
                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: P.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Send size={20} color="#fff" style={{ marginLeft: -2 }} /></div>
                    <div>
                      <p style={{ fontSize: 16, fontWeight: 900, color: P.green, margin: '0 0 4px' }}>Fon Sandbox Kasasında Kilitlendi!</p>

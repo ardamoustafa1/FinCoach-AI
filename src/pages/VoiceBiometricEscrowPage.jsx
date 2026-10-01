@@ -102,7 +102,7 @@ export default function VoiceBiometricEscrowPage() {
     <>
       <style>{`
         .voice-bg {
-          background: radial-gradient(circle at center, rgba(124, 58, 237, 0.05) 0%, transparent 60%);
+          background: radial-gradient(circle at center, rgba(195,203,211, 0.05) 0%, transparent 60%);
         }
         .mic-button {
           position: relative;
@@ -111,23 +111,23 @@ export default function VoiceBiometricEscrowPage() {
         .mic-button:hover { transform: scale(1.05); }
         .mic-pulse::before, .mic-pulse::after {
           content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
-          border-radius: 50%; border: 2px solid #7C3AED;
+          border-radius: 50%; border: 2px solid #C3CBD3;
           animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
         .mic-pulse::after { animation-delay: 1s; }
         @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
         
         .wave-container { display: flex; alignItems: center; gap: 4px; height: 40px; margin: 20px auto; justify-content: center; }
-        .bar { width: 6px; background: #7C3AED; border-radius: 10px; animation: sound 0ms -800ms linear infinite alternate; }
+        .bar { width: 6px; background: #C3CBD3; border-radius: 10px; animation: sound 0ms -800ms linear infinite alternate; }
         @keyframes sound { 0% { height: 4px; opacity: 0.5; } 100% { height: 40px; opacity: 1; } }
         
-        .code-box { font-family: 'Fira Code', monospace; font-size: 13px; color: #10B981; }
+        .code-box { font-family: 'Fira Code', monospace; font-size: 13px; color: #34C08A; }
       `}</style>
 
       <div className="voice-bg" style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, minHeight: '100%' }}>
         <PageHeader
           icon={<Waves size={24} />}
-          color="#7C3AED"
+          color="#C3CBD3"
           title="Voice Biometric Smart Escrow"
           subtitle="Ses komutunu, liveness kontrolünü ve şartlı ödeme kaydını FinCoach sandbox ledger üzerinde tamamlayın."
           badge="Voice Sandbox"
@@ -149,12 +149,12 @@ export default function VoiceBiometricEscrowPage() {
             )}
 
             {/* Mic Button */}
-            <button 
+            <button aria-label="Ses biyometrisi simülasyonunu başlat"
               onClick={handleStartListening}
               disabled={step !== 0}
               className={`mic-button ${step === 1 ? 'mic-pulse' : ''}`}
               style={{
-                width: 100, height: 100, borderRadius: '50%', background: step === 0 ? 'rgba(124,58,237,0.1)' : 'rgba(124,58,237,0.2)', border: `2px solid ${P.purple}`, color: P.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: step === 0 ? 'pointer' : 'default', marginBottom: 32, zIndex: 10, boxShadow: step === 0 ? '0 0 20px rgba(124,58,237,0.3)' : 'none'
+                width: 100, height: 100, borderRadius: '50%', background: step === 0 ? 'rgba(195,203,211,0.1)' : 'rgba(195,203,211,0.2)', border: `2px solid ${P.purple}`, color: P.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: step === 0 ? 'pointer' : 'default', marginBottom: 32, zIndex: 10, boxShadow: step === 0 ? '0 0 20px rgba(195,203,211,0.3)' : 'none'
               }}
             >
               {step === 5 ? <CheckCircle2 size={40} color={P.green} /> : <Mic size={40} />}
@@ -207,14 +207,14 @@ export default function VoiceBiometricEscrowPage() {
           {/* RIGHT: SMART CONTRACT GENERATION & LOGS */}
           <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, animationDelay: '0.1s' }}>
             
-            <div style={{ flex: 1, background: '#050714', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ flex: 1, background: '#0A0B0C', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, borderBottom: `1px solid rgba(255,255,255,0.1)`, paddingBottom: 16 }}>
                 <Cpu size={20} color={P.text2} />
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: P.text1, margin: 0 }}>System Logs & Web3 Engine</h3>
               </div>
               <div className="code-box" style={{ display: 'flex', flexDirection: 'column', gap: 8, height: 200, overflowY: 'auto' }}>
                 {logs.map((log, index) => (
-                  <div key={index} style={{ color: (log && (log.includes('Match') || log.includes('Confirmed') || log.includes('deployed'))) ? P.green : (log && log.includes('Deploying')) ? P.purple : '#a1a1aa' }}>
+                  <div key={index} style={{ color: (log && (log.includes('Match') || log.includes('Confirmed') || log.includes('deployed'))) ? P.green : (log && log.includes('Deploying')) ? P.purple : '#9BA1A6' }}>
                     &gt; {log || ''}
                   </div>
                 ))}
@@ -222,15 +222,15 @@ export default function VoiceBiometricEscrowPage() {
             </div>
 
             {/* Simulated Smart Contract Code */}
-            <div style={{ flex: 1, background: 'rgba(15,23,42,0.8)', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, padding: 24, opacity: step >= 4 ? 1 : 0, transform: step >= 4 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s' }}>
+            <div style={{ flex: 1, background: 'rgba(18,20,23,0.8)', border: `1px solid rgba(110,147,196,0.3)`, borderRadius: 24, padding: 24, opacity: step >= 4 ? 1 : 0, transform: step >= 4 ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.5s' }}>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Code2 size={20} color={P.blue} />
                   <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fff', margin: 0 }}>Dynamic Escrow Contract</h3>
                 </div>
-                {step === 5 && <span style={{ fontSize: 11, background: 'rgba(16,185,129,0.2)', color: P.green, padding: '4px 8px', borderRadius: 4, fontWeight: 800 }}>DEPLOYED</span>}
+                {step === 5 && <span style={{ fontSize: 11, background: 'rgba(52,192,138,0.2)', color: P.green, padding: '4px 8px', borderRadius: 4, fontWeight: 800 }}>DEPLOYED</span>}
               </div>
-              <pre style={{ margin: 0, padding: 16, background: '#000', borderRadius: 12, fontSize: 11, color: '#e2e8f0', overflowX: 'auto', fontFamily: 'monospace' }}>
+              <pre style={{ margin: 0, padding: 16, background: '#000', borderRadius: 12, fontSize: 11, color: '#DFE3E7', overflowX: 'auto', fontFamily: 'monospace' }}>
 {`pragma solidity ^0.8.0;
 contract DegreeEscrow {
     address public arbiter = 0xFinCoachOracle;

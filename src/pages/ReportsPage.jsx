@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Download, FileText, Loader2,
   Sparkles, Wallet, TrendingDown, TrendingUp, Scale,
@@ -85,6 +85,13 @@ function StatCard({ label, value, icon: Icon, color, positive }) {
 }
 
 export default function ReportsPage() {
+  // Async PDF/AI işlemleri sürerken sayfadan ayrılırsa state güncellenmesin
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const reportRef = useRef(null);
   const [aiYorumu, setAiYorumu] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -149,7 +156,7 @@ export default function ReportsPage() {
       const canvas = await html2canvas(reportRef.current, { 
         scale: 2, 
         useCORS: true, 
-        backgroundColor: '#050714',
+        backgroundColor: '#0A0B0C',
         logging: false 
       });
 
@@ -172,10 +179,11 @@ export default function ReportsPage() {
       }
       pdf.save(`FinCoach_AI_${monthLabel(selectedMonth).replace(' ', '_')}_Raporu.pdf`);
     } catch (err) {
+      if (!mountedRef.current) return; // sayfadan ayrıldıysa sessizce çık
       console.error('PDF Hatası:', err);
       setAiError('PDF oluşturulurken bir hata oluştu.');
-    } finally { 
-      setPdfLoading(false); 
+    } finally {
+      if (mountedRef.current) setPdfLoading(false);
     }
   };
 
@@ -193,9 +201,9 @@ export default function ReportsPage() {
     <>
       <style>{`
         @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .reports-btn-nav:hover:not(:disabled) { background: rgba(124,58,237,0.15) !important; color: #a78bfa !important; }
+        .reports-btn-nav:hover:not(:disabled) { background: rgba(195,203,211,0.15) !important; color: #E4E9ED !important; }
         .reports-btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
-        .cat-row:hover { background: rgba(124,58,237,0.08) !important; }
+        .cat-row:hover { background: rgba(195,203,211,0.08) !important; }
         .ai-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
         .dl-btn:hover { background: rgba(255,255,255,0.1) !important; }
         .csv-btn:hover { opacity: 0.88; transform: translateY(-1px); }
@@ -213,14 +221,14 @@ export default function ReportsPage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
             {/* Month Picker */}
             <div style={{ display: 'flex', alignItems: 'center', background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 14, overflow: 'hidden' }}>
-              <button onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} disabled={selectedIndex === 0} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+              <button aria-label="Önceki ay" onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} disabled={selectedIndex === 0} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
                 <ChevronLeft size={18} />
               </button>
               <div style={{ minWidth: 140, textAlign: 'center', padding: '8px 12px' }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Seçili Ay</p>
                 <p style={{ fontSize: 14, fontWeight: 800, color: P.text1 }}>{monthLabel(selectedMonth)}</p>
               </div>
-              <button onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))} disabled={selectedIndex === months.length - 1} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
+              <button aria-label="Sonraki ay" onClick={() => setSelectedIndex(i => Math.min(months.length - 1, i + 1))} disabled={selectedIndex === months.length - 1} className="reports-btn-nav" style={{ padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: P.text2, transition: 'all 0.2s', display: 'flex', alignItems: 'center' }}>
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -239,9 +247,9 @@ export default function ReportsPage() {
             <button onClick={handleCsv} className="csv-btn" style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '10px 18px', borderRadius: 12,
-              background: `linear-gradient(135deg, ${P.purple}, #6366f1)`,
+              background: `linear-gradient(135deg, ${P.purple}, #8B949D)`,
               border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.2s', boxShadow: '0 8px 20px rgba(124,58,237,0.3)',
+              transition: 'all 0.2s', boxShadow: '0 8px 20px rgba(195,203,211,0.3)',
             }}>
               <Download size={16} />
               CSV İndir
@@ -319,26 +327,26 @@ export default function ReportsPage() {
             backdropFilter: 'blur(20px)'
           }}>
             {/* Ambient glows */}
-            <div style={{ position: 'absolute', top: -50, right: -50, width: 250, height: 250, background: 'rgba(124,58,237,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, background: 'rgba(59,130,246,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.5), transparent)' }} />
+            <div style={{ position: 'absolute', top: -50, right: -50, width: 250, height: 250, background: 'rgba(195,203,211,0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, background: 'rgba(110,147,196,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(228,233,237,0.5), transparent)' }} />
 
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 24, position: 'relative', zIndex: 1 }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <Sparkles size={16} color="#c4b5fd" />
-                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#c4b5fd' }}>AI Yorumu</span>
+                  <Sparkles size={16} color="#F1F4F6" />
+                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#F1F4F6' }}>AI Yorumu</span>
                 </div>
                 <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{monthLabel(selectedMonth)} Finans Yorumu</h2>
               </div>
               <button onClick={handleAnalyze} disabled={aiLoading} className="ai-btn" style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '14px 24px', borderRadius: 14,
-                background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                background: 'linear-gradient(135deg, #C3CBD3, #C0705C)',
                 border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 800,
                 cursor: aiLoading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', opacity: aiLoading ? 0.7 : 1,
-                boxShadow: '0 8px 32px rgba(124,58,237,0.4)',
+                boxShadow: '0 8px 32px rgba(195,203,211,0.4)',
               }}>
                 {aiLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={18} />}
                 {aiLoading ? 'Rapor Hazırlanıyor...' : 'Rapor Oluştur'}
@@ -347,28 +355,28 @@ export default function ReportsPage() {
 
             <div style={{ position: 'relative', zIndex: 1 }}>
               {aiError && (
-                <div style={{ padding: '16px 20px', borderRadius: 14, background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: 14, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 4px 12px rgba(239,68,68,0.1)' }}>
+                <div style={{ padding: '16px 20px', borderRadius: 14, background: 'linear-gradient(135deg, rgba(219,92,78,0.15), rgba(219,92,78,0.05))', border: '1px solid rgba(219,92,78,0.3)', color: '#F0AFA6', fontSize: 14, fontWeight: 600, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 4px 12px rgba(219,92,78,0.1)' }}>
                   <span style={{ fontSize: 18 }}>⚠️</span> {aiError}
                 </div>
               )}
 
               {aiYorumu ? (
-                <div style={{ padding: '24px 28px', borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 15, lineHeight: 1.8, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+                <div style={{ padding: '24px 28px', borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', color: '#DFE3E7', fontSize: 15, lineHeight: 1.8, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
                   <ReactMarkdown components={{
-                    h2: ({ children }) => <h2 style={{ fontSize: 17, fontWeight: 800, color: '#fff', marginTop: 24, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 4, height: 16, borderRadius: 2, background: '#a78bfa' }} />{children}</h2>,
-                    p: ({ children }) => <p style={{ marginBottom: 16, color: '#cbd5e1' }}>{children}</p>,
+                    h2: ({ children }) => <h2 style={{ fontSize: 17, fontWeight: 800, color: '#fff', marginTop: 24, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 4, height: 16, borderRadius: 2, background: '#E4E9ED' }} />{children}</h2>,
+                    p: ({ children }) => <p style={{ marginBottom: 16, color: '#C8CDD2' }}>{children}</p>,
                     ul: ({ children }) => <ul style={{ paddingLeft: 24, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</ul>,
-                    li: ({ children }) => <li style={{ color: '#cbd5e1' }}>{children}</li>,
+                    li: ({ children }) => <li style={{ color: '#C8CDD2' }}>{children}</li>,
                     strong: ({ children }) => <strong style={{ color: '#fff', fontWeight: 800 }}>{children}</strong>,
                   }}>{aiYorumu}</ReactMarkdown>
                 </div>
               ) : (
                 <div style={{ padding: '40px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: `1px dashed rgba(255,255,255,0.15)`, textAlign: 'center' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '1px solid rgba(124,58,237,0.2)' }}>
-                    <Sparkles size={24} color="#a78bfa" />
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(195,203,211,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '1px solid rgba(195,203,211,0.2)' }}>
+                    <Sparkles size={24} color="#E4E9ED" />
                   </div>
                   <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
-                    <strong style={{ color: '#e2e8f0', display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 800 }}>Rapor Bekleniyor</strong>
+                    <strong style={{ color: '#DFE3E7', display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 800 }}>Rapor Bekleniyor</strong>
                     Rapor Oluştur butonuna basarak bu ayın kısa özetini, iyi yapılanları ve gelecek ay önerilerini görebilirsiniz.
                   </p>
                 </div>

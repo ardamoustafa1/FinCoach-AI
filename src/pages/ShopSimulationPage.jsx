@@ -65,7 +65,7 @@ export default function ShopSimulationPage() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#fff', color: '#1d1d1f', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', overflowY: 'auto' }}>
       <style>{`
-        @keyframes pulseBorder { 0%, 100% { border-color: rgba(124,58,237,0.3); } 50% { border-color: rgba(124,58,237,0.8); } }
+        @keyframes pulseBorder { 0%, 100% { border-color: rgba(195,203,211,0.3); } 50% { border-color: rgba(195,203,211,0.8); } }
       `}</style>
       
       {/* Mock Apple Store Header */}
@@ -134,7 +134,7 @@ export default function ShopSimulationPage() {
           <div style={{ width: '100%', maxWidth: 540, maxHeight: 'calc(100vh - 64px)', overflowY: 'auto', background: P.bg1, border: `1px solid ${P.border}`, borderRadius: 32, padding: '32px 40px', boxShadow: `0 40px 120px rgba(0,0,0,0.8)`, position: 'relative' }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, borderBottom: `1px solid ${P.border}`, paddingBottom: 20 }}>
-              <div style={{ background: 'rgba(124,58,237,0.2)', padding: 10, borderRadius: 14 }}><Zap size={24} color={P.purple} /></div>
+              <div style={{ background: 'rgba(195,203,211,0.2)', padding: 10, borderRadius: 14 }}><Zap size={24} color={P.purple} /></div>
               <div>
                 <h2 style={{ fontSize: 18, fontWeight: 900, color: P.text1, letterSpacing: '-0.01em', margin: 0 }}>Multi-Agent AI Swarm</h2>
                 <p style={{ fontSize: 13, color: P.text2, margin: 0 }}>Otonom Yapay Zeka Yönetim Kurulu Kararı</p>
@@ -145,7 +145,7 @@ export default function ShopSimulationPage() {
               
               {/* Agent 1: CFO (Risk) */}
               <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(239, 68, 68, 0.1)', border: `1px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(219,92,78, 0.1)', border: `1px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <ShieldAlert size={20} color={P.red} />
                 </div>
                 <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.border}`, flex: 1 }}>
@@ -159,7 +159,7 @@ export default function ShopSimulationPage() {
               {/* Agent 2: Opportunity */}
               {swarmStep >= 2 && (
                 <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(16, 185, 129, 0.1)', border: `1px solid ${P.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(52,192,138, 0.1)', border: `1px solid ${P.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Zap size={20} color={P.green} />
                   </div>
                   <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.border}`, flex: 1 }}>
@@ -174,7 +174,7 @@ export default function ShopSimulationPage() {
               {/* Agent 3: Behavioral Psychologist (Hyperbolic Discounting) */}
               {swarmStep >= 3 && psyData && (
                 <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(6, 182, 212, 0.1)', border: `1px solid ${P.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(69,147,156, 0.1)', border: `1px solid ${P.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <BrainCircuit size={20} color={P.cyan} />
                   </div>
                   <div style={{ background: P.bg2, borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.cyan}40`, flex: 1 }}>
@@ -197,10 +197,10 @@ export default function ShopSimulationPage() {
               {/* Agent 4: Orchestrator */}
               {swarmStep >= 4 && (
                 <div className="animate-enter" style={{ display: 'flex', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(124, 58, 237, 0.1)', border: `1px solid ${P.purple}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: swarmStep === 4 ? 'pulseBorder 1.5s infinite' : 'none' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 16, background: 'rgba(195,203,211, 0.1)', border: `1px solid ${P.purple}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: swarmStep === 4 ? 'pulseBorder 1.5s infinite' : 'none' }}>
                     <Scale size={20} color={P.purple} />
                   </div>
-                  <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.1), transparent)', borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.purple}`, flex: 1 }}>
+                  <div style={{ background: 'linear-gradient(135deg, rgba(195,203,211,0.1), transparent)', borderRadius: '4px 16px 16px 16px', padding: 16, border: `1px solid ${P.purple}`, flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: P.purple, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hakem Ajan (Orkestratör)</div>
                     {swarmStep === 4 ? (
                       <p style={{ fontSize: 14, color: P.text1, margin: 0, lineHeight: 1.5, fontStyle: 'italic', opacity: 0.8 }}>
@@ -221,10 +221,10 @@ export default function ShopSimulationPage() {
             {swarmStep >= 5 && (
               <div className="animate-enter" style={{ marginTop: 32, display: 'flex', gap: 12, animationDelay: '0.2s' }}>
                 <button onClick={() => navigate(-1)} style={{ flex: 1, padding: '16px', borderRadius: 16, background: P.bg2, color: P.text1, fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: `1px solid ${P.border}` }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#334155'} onMouseLeave={e => e.currentTarget.style.background = P.bg2}>
+                  onMouseEnter={e => e.currentTarget.style.background = '#383B3F'} onMouseLeave={e => e.currentTarget.style.background = P.bg2}>
                   7 Gün Bekle (Önerilen)
                 </button>
-                <button onClick={() => { toast.info('🏦 Apple Store taksitli ödeme sayfasına yönlendiriliyorsunuz...'); setTimeout(() => navigate(-1), 1500); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed, #ec4899)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(124,58,237,0.4)' }}
+                <button onClick={() => { toast.info('🏦 Apple Store taksitli ödeme sayfasına yönlendiriliyorsunuz...'); setTimeout(() => navigate(-1), 1500); }} style={{ flex: 1, padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #C3CBD3, #C0705C)', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s', border: 'none', boxShadow: '0 8px 24px rgba(195,203,211,0.4)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                   <ShieldCheck size={18} /> Al (6 Taksit)
                 </button>

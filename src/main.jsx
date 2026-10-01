@@ -27,14 +27,15 @@ window.addEventListener('error', e => {
   
   // Production Error Monitoring Placeholder (e.g., Sentry)
   // Sentry.captureException(e.error);
-  if (process.env.NODE_ENV === 'production') {
+  // Vite tarayıcı derlemesinde `process` tanımlı değildir — import.meta.env kullan.
+  if (import.meta.env.PROD) {
     // A real app would send this error to an event pipeline
     console.debug('[Monitoring] Captured global error:', e.message);
   }
 });
 
 window.addEventListener('unhandledrejection', e => {
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     console.debug('[Monitoring] Captured unhandled promise rejection:', e.reason);
   }
 });

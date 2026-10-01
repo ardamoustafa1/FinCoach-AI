@@ -251,10 +251,10 @@ export default function TransactionsPage() {
         @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .tx-input:focus { border-color: rgba(124,58,237,0.5) !important; box-shadow: 0 0 0 3px rgba(124,58,237,0.12) !important; }
+        .tx-input:focus { border-color: rgba(195,203,211,0.5) !important; box-shadow: 0 0 0 3px rgba(195,203,211,0.12) !important; }
         .tx-scroll::-webkit-scrollbar { width: 4px; }
         .tx-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius:999px; }
-        .tab-btn:hover { color: #A78BFA !important; }
+        .tab-btn:hover { color: #E4E9ED !important; }
       `}</style>
 
       <div style={{ minHeight: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", position: 'relative', overflow: 'hidden' }}>
@@ -299,12 +299,12 @@ export default function TransactionsPage() {
                 <button onClick={() => setCsvAcik(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid ${P.border}`, background: csvAcik ? P.bg4 : P.bg3, color: P.text2, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
                   <Upload size={15} /> Ekstre Yükle
                 </button>
-                <button onClick={() => setOpenBankingAcik(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid rgba(59,130,246,0.4)`, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.25)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.15)'}>
+                <button onClick={() => setOpenBankingAcik(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 12, border: `1px solid rgba(110,147,196,0.4)`, background: 'rgba(110,147,196,0.15)', color: '#8EAFD6', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(110,147,196,0.25)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(110,147,196,0.15)'}>
                   <Landmark size={15} /> Banka Bağla
                 </button>
-                <button onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${P.purple},#4F46E5)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'opacity 0.2s' }}
+                <button onClick={() => { setDuzenlenen(null); setTaslakIslem(null); setModalAcik(true); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${P.purple},#7A828A)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 16px ${P.purpleGlow}`, transition: 'opacity 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
                   <Plus size={16} /> Yeni İşlem
@@ -313,7 +313,7 @@ export default function TransactionsPage() {
                 {aktifTab === 'islemler' && (
                   <div style={{ display: 'flex', gap: 3, padding: 4, background: P.bg4, borderRadius: 11, border: `1px solid ${P.border}` }}>
                     {[{ k: 'tablo', icon: LayoutList }, { k: 'kart', icon: LayoutGrid }].map(({ k, icon: Icon }) => (
-                      <button key={k} onClick={() => setGorunum(k)} style={{
+                      <button key={k} aria-label={k === 'tablo' ? 'Tablo görünümü' : 'Kart görünümü'} aria-pressed={gorunum === k} onClick={() => setGorunum(k)} style={{
                         width: 34, height: 34, borderRadius: 8, border: 'none',
                         background: gorunum === k ? P.bg2 : 'transparent',
                         color: gorunum === k ? P.purpleLight : P.text3,
@@ -363,7 +363,7 @@ export default function TransactionsPage() {
             ].map(({ k, label, icon: Icon }) => (
               <button key={k} className="tab-btn" onClick={() => setAktifTab(k)} style={{
                 display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none',
-                background: aktifTab === k ? `linear-gradient(135deg,${P.purple},#4F46E5)` : 'transparent',
+                background: aktifTab === k ? `linear-gradient(135deg,${P.purple},#7A828A)` : 'transparent',
                 color: aktifTab === k ? '#fff' : P.text3,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
                 boxShadow: aktifTab === k ? `0 4px 12px ${P.purpleGlow}` : 'none',

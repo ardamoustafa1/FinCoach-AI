@@ -197,7 +197,7 @@ export default function CashFlowPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<BrainCircuit size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Nakit Akışı Tahmini"
           subtitle="Gelecek 12 ayda paranız nasıl gidecek? 500 farklı senaryo simüle ediliyor."
           badge="Monte Carlo"
@@ -207,9 +207,9 @@ export default function CashFlowPage() {
             disabled={uploading}
             style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-              background: uploading ? P.bg3 : `linear-gradient(135deg, ${P.purple}, #9333EA)`, color: uploading ? P.text3 : '#fff',
+              background: uploading ? P.bg3 : `linear-gradient(135deg, ${P.purple}, #9BA4AC)`, color: uploading ? P.text3 : '#fff',
               fontSize: 13, fontWeight: 800, cursor: uploading ? 'not-allowed' : 'pointer', border: 'none',
-              boxShadow: uploading ? 'none' : '0 8px 20px rgba(124,58,237,0.3)', transition: 'all 0.2s'
+              boxShadow: uploading ? 'none' : '0 8px 20px rgba(195,203,211,0.3)', transition: 'all 0.2s'
             }}
           >
             {uploading ? <FileText size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -229,7 +229,7 @@ export default function CashFlowPage() {
 
         {/* NLP Contract Extracted Data UI */}
         {contractData && (
-          <div className="animate-enter" style={{ background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, border: `1px solid ${P.purple}60`, borderRadius: 20, padding: 24, display: 'flex', gap: 20, alignItems: 'flex-start', boxShadow: `0 8px 32px rgba(124, 58, 237, 0.15)` }}>
+          <div className="animate-enter" style={{ background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, border: `1px solid ${P.purple}60`, borderRadius: 20, padding: 24, display: 'flex', gap: 20, alignItems: 'flex-start', boxShadow: `0 8px 32px rgba(195,203,211, 0.15)` }}>
             <div style={{ padding: 12, background: `${P.purple}15`, borderRadius: 12, border: `1px solid ${P.purple}40` }}>
               <FileText size={24} color={P.purple} />
             </div>
@@ -263,7 +263,7 @@ export default function CashFlowPage() {
 
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           {metrics.crisisMonth ? (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 16, padding: 20, maxWidth: 350 }}>
+            <div style={{ background: 'rgba(219,92,78,0.1)', border: `1px solid rgba(219,92,78,0.3)`, borderRadius: 16, padding: 20, maxWidth: 350 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <AlertCircle size={20} color={P.red} />
                 <span style={{ fontSize: 14, fontWeight: 800, color: P.red }}>Likidite Krizi Uyarısı</span>
@@ -273,7 +273,7 @@ export default function CashFlowPage() {
               </p>
             </div>
           ) : (
-            <div style={{ background: 'rgba(16,185,129,0.1)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 16, padding: 20, maxWidth: 350 }}>
+            <div style={{ background: 'rgba(52,192,138,0.1)', border: `1px solid rgba(52,192,138,0.3)`, borderRadius: 16, padding: 20, maxWidth: 350 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <ArrowUpRight size={20} color={P.green} />
                 <span style={{ fontSize: 14, fontWeight: 800, color: P.green }}>Nakit Akışı Güvende</span>

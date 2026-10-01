@@ -104,14 +104,14 @@ export default function AutonomousAgentPage() {
     <>
       <style>{`
         .matrix-bg {
-          background-image: linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
+          background-image: linear-gradient(rgba(52,192,138,0.03) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(52,192,138,0.03) 1px, transparent 1px);
           background-size: 20px 20px;
         }
-        .log-text { font-family: 'Fira Code', monospace; font-size: 13px; color: #10B981; margin: 4px 0; }
+        .log-text { font-family: 'Fira Code', monospace; font-size: 13px; color: #34C08A; margin: 4px 0; }
         .radar-scan {
           position: absolute; top: 0; left: 0; right: 0; height: 100%;
-          background: linear-gradient(to bottom, transparent, rgba(59,130,246,0.1) 50%, transparent);
+          background: linear-gradient(to bottom, transparent, rgba(110,147,196,0.1) 50%, transparent);
           animation: scan 3s linear infinite;
         }
         @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
@@ -120,7 +120,7 @@ export default function AutonomousAgentPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Cpu size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Self-Driving Money"
           subtitle="Boşta nakit ve pahalı borç asimetrisini sandbox ledger üzerinde optimize eden onaylı ajan."
           badge="Sandbox Ajan"
@@ -129,8 +129,8 @@ export default function AutonomousAgentPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, flexWrap: 'wrap' }}>
           
           {/* LEFT: TERMINAL & LOGS */}
-          <div className="animate-enter" style={{ background: '#050714', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 400 }}>
-            <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px 20px', borderBottom: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="animate-enter" style={{ background: '#0A0B0C', border: `1px solid rgba(110,147,196,0.3)`, borderRadius: 24, overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 400 }}>
+            <div style={{ background: 'rgba(110,147,196,0.1)', padding: '12px 20px', borderBottom: '1px solid rgba(110,147,196,0.2)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <Terminal size={16} color={P.blue} />
               <span style={{ fontSize: 13, fontWeight: 700, color: P.blue, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Sandbox Execution Log</span>
             </div>
@@ -144,7 +144,7 @@ export default function AutonomousAgentPage() {
               ))}
               {(step === 0 || step === 2) && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-                  <RefreshCw size={14} color="#10B981" className="spin" />
+                  <RefreshCw size={14} color="#34C08A" className="spin" />
                   <span className="log-text">İşleniyor...</span>
                 </div>
               )}
@@ -182,7 +182,7 @@ export default function AutonomousAgentPage() {
 
             {/* STATE 1: ASYMMETRY FOUND */}
             {step >= 1 && (
-              <div style={{ background: step === 3 ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s' }}>
+              <div style={{ background: step === 3 ? 'rgba(52,192,138,0.05)' : 'rgba(219,92,78,0.05)', border: `1px solid ${step === 3 ? 'rgba(52,192,138,0.3)' : 'rgba(219,92,78,0.3)'}`, borderRadius: 24, padding: 32, transition: 'all 0.5s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                   {step === 3 ? <CheckCircle2 size={28} color={P.green} /> : <AlertTriangle size={28} color={P.red} />}
                   <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0 }}>
@@ -198,7 +198,7 @@ export default function AutonomousAgentPage() {
                     <button 
                       onClick={() => setStep(2)}
                       disabled={step === 2}
-                      style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #3B82F6, #7C3AED)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: step === 2 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}
+                      style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #6E93C4, #C3CBD3)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: step === 2 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(110,147,196,0.3)' }}
                     >
                       {step === 2 ? <><RefreshCw size={18} className="spin" /> Sandbox Arbitraj Başlatıldı</> : <><Zap size={18} /> Sandbox Arbitrajı Başlat</>}
                     </button>

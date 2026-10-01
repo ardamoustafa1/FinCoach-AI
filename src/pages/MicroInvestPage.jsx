@@ -132,14 +132,14 @@ export default function MicroInvestPage() {
     <>
       <style>{`
         .matrix-bg {
-          background-image: radial-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+          background-image: radial-gradient(rgba(52,192,138, 0.05) 1px, transparent 1px);
           background-size: 32px 32px;
         }
 
         @keyframes dataStream { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
         
         .yield-text {
-          background: linear-gradient(to right, #10b981, #3b82f6);
+          background: linear-gradient(to right, #34C08A, #6E93C4);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -159,7 +159,7 @@ export default function MicroInvestPage() {
         {/* LIVE YIELD DASHBOARD */}
         <div className="animate-enter" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24, animationDelay: '0.1s' }}>
           
-          <div style={{ background: '#0a0a0f', border: `1px solid ${P.green}`, borderRadius: 24, padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(16,185,129,0.1)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: '#0A0B0C', border: `1px solid ${P.green}`, borderRadius: 24, padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(52,192,138,0.1)', position: 'relative', overflow: 'hidden' }}>
             <Activity size={200} color={P.green} style={{ position: 'absolute', opacity: 0.05, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
             <p style={{ fontSize: 14, fontWeight: 800, color: P.green, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Zap size={16} color={P.amber} fill={P.amber} /> Canlı Küsürat Getirisi (Live Yield)
@@ -167,7 +167,7 @@ export default function MicroInvestPage() {
             <h2 className="yield-text" style={{ fontSize: 56, fontWeight: 900, margin: 0, fontFamily: 'monospace', letterSpacing: '-0.03em' }}>
               ₺{liveYield.toFixed(6)}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16, background: 'rgba(16,185,129,0.1)', padding: '6px 12px', borderRadius: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16, background: 'rgba(52,192,138,0.1)', padding: '6px 12px', borderRadius: 12 }}>
                <RefreshCw size={14} color={P.green} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
                <span style={{ fontSize: 12, fontWeight: 700, color: P.green }}>FinCoach Sandbox Ledger Aktif</span>
             </div>
@@ -207,7 +207,7 @@ export default function MicroInvestPage() {
                   <ArrowRight size={16} color={P.text3} />
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: 14, fontWeight: 800, color: P.text1, margin: '0 0 4px' }}>{fmt(item.rounded)}</p>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16,185,129,0.1)', color: P.green, padding: '2px 8px', borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(52,192,138,0.1)', color: P.green, padding: '2px 8px', borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
                       +{fmt(item.change)} Havuz
                     </div>
                   </div>
@@ -234,7 +234,7 @@ export default function MicroInvestPage() {
                       targetAmount: data.investedValue,
                       currentAmount: liveYield,
                       icon: 'Zap',
-                      color: '#10b981',
+                      color: '#34C08A',
                       deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
                     });
                     alert('Birikimleriniz hedeflerinize eklendi!');
@@ -242,7 +242,7 @@ export default function MicroInvestPage() {
                   style={{
                     marginTop: 8,
                     background: P.green, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 8,
-                    fontSize: 12, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 12px rgba(16, 185, 129, 0.3)`
+                    fontSize: 12, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 12px rgba(52,192,138, 0.3)`
                   }}
                 >
                   Hedeflere Ekle

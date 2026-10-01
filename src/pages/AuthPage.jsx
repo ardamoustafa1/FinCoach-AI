@@ -1,8 +1,17 @@
-import { useState } from 'react';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles, Phone } from 'lucide-react';
+/**
+ * FinCoach AI — Kimlik Doğrulama  ·  "Obsidian & Champagne"
+ * Sıfırdan tasarlanmış split-screen deneyim. Tüm giriş/kayıt/demo
+ * mantığı birebir korunmuştur.
+ */
+import { useEffect, useState } from 'react';
+import {
+  Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Phone, Wallet,
+  Shield, ShieldCheck, ShieldAlert, Check,
+} from 'lucide-react';
 import { supabase } from '../utils/supabase';
-import { Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { DEMO_EMAIL, DEMO_PASSWORD } from '../config/demoAccount';
+import { Aurora, GridLines, Reveal, SplitWords } from '../components/motion';
+import { P } from '../styles/palette';
 
 const USER_SCOPED_KEYS = [
   'fincoach_transactions',
@@ -29,56 +38,53 @@ function PasswordStrength({ password }) {
   let score = 0;
   const checks = [
     { label: 'En az 6 karakter', pass: password.length >= 6 },
-    { label: 'Büyük harf içeriyor', pass: /[A-Z]/.test(password) },
-    { label: 'Küçük harf içeriyor', pass: /[a-z]/.test(password) },
-    { label: 'Rakam içeriyor', pass: /[0-9]/.test(password) },
-    { label: 'Özel karakter içeriyor', pass: /[^A-Za-z0-9]/.test(password) },
+    { label: 'Büyük harf', pass: /[A-Z]/.test(password) },
+    { label: 'Küçük harf', pass: /[a-z]/.test(password) },
+    { label: 'Rakam', pass: /[0-9]/.test(password) },
+    { label: 'Özel karakter', pass: /[^A-Za-z0-9]/.test(password) },
   ];
   checks.forEach(c => { if (c.pass) score++; });
 
   const levels = [
-    { label: 'Çok Zayıf', color: '#EF4444', bg: 'rgba(239,68,68,0.15)', icon: ShieldAlert },
-    { label: 'Zayıf', color: '#F97316', bg: 'rgba(249,115,22,0.15)', icon: ShieldAlert },
-    { label: 'Orta', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: Shield },
-    { label: 'Güçlü', color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: ShieldCheck },
-    { label: 'Çok Güçlü', color: '#06B6D4', bg: 'rgba(6,182,212,0.15)', icon: ShieldCheck },
+    { label: 'Çok Zayıf', color: '#DB5C4E', icon: ShieldAlert },
+    { label: 'Zayıf', color: '#C0705C', icon: ShieldAlert },
+    { label: 'Orta', color: '#D2894F', icon: Shield },
+    { label: 'Güçlü', color: '#34C08A', icon: ShieldCheck },
+    { label: 'Çok Güçlü', color: '#C3CBD3', icon: ShieldCheck },
   ];
   const level = levels[Math.max(0, score - 1)];
   const Icon = level.icon;
 
   return (
-    <div style={{ marginTop: -4, marginBottom: 12 }}>
-      {/* Bar */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+    <div style={{ marginTop: 2, marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 9 }}>
         {[1, 2, 3, 4, 5].map(i => (
           <div key={i} style={{
-            flex: 1, height: 4, borderRadius: 99,
-            background: i <= score ? level.color : 'rgba(255,255,255,0.08)',
-            transition: 'background 0.3s ease',
-            boxShadow: i <= score ? `0 0 8px ${level.color}40` : 'none',
+            flex: 1, height: 3, borderRadius: 99,
+            background: i <= score ? level.color : 'var(--hairline)',
+            transition: 'background .45s var(--ease-out-expo)',
+            boxShadow: i <= score ? `0 0 10px ${level.color}55` : 'none',
           }} />
         ))}
       </div>
-      {/* Label */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon size={13} color={level.color} />
           <span style={{ fontSize: 11, fontWeight: 700, color: level.color }}>{level.label}</span>
-        </div>
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{score}/5 kriter</span>
+        </span>
+        <span className="num" style={{ fontSize: 10, color: 'var(--text-muted)' }}>{score}/5</span>
       </div>
-      {/* Criteria dots */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 8 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 14px', marginTop: 10 }}>
         {checks.map(c => (
           <span key={c.label} style={{
-            fontSize: 10, color: c.pass ? 'rgba(16,185,129,0.8)' : 'rgba(255,255,255,0.25)',
-            display: 'flex', alignItems: 'center', gap: 4,
-            transition: 'color 0.3s',
+            fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 5,
+            color: c.pass ? P.green : 'var(--text-muted)',
+            transition: 'color .35s ease',
           }}>
             <span style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: c.pass ? '#10B981' : 'rgba(255,255,255,0.12)',
-              transition: 'background 0.3s',
+              width: 5, height: 5, borderRadius: '50%',
+              background: c.pass ? P.green : 'var(--hairline)',
+              transition: 'background .35s ease',
             }} />
             {c.label}
           </span>
@@ -93,38 +99,36 @@ const formatPhone = (val) => {
   const digits = val.replace(/\D/g, '');
   let res = '';
   if (digits.length === 0) return '';
-  
-  // İlk rakam 0 ise atla (maske içinde 0 zaten var varsayacağız veya kullanıcı 0 ile başlarsa düzelt)
+
   let pure = digits;
   if (pure.startsWith('0')) pure = pure.substring(1);
-  pure = pure.substring(0, 10); // Max 10 hane (5xx...)
+  pure = pure.substring(0, 10);
 
   if (pure.length > 0) {
     res = '0 (';
     res += pure.substring(0, 3);
-    if (pure.length > 3) {
-      res += ') ' + pure.substring(3, 6);
-    }
-    if (pure.length > 6) {
-      res += ' ' + pure.substring(6, 8);
-    }
-    if (pure.length > 8) {
-      res += ' ' + pure.substring(8, 10);
-    }
+    if (pure.length > 3) res += ') ' + pure.substring(3, 6);
+    if (pure.length > 6) res += ' ' + pure.substring(6, 8);
+    if (pure.length > 8) res += ' ' + pure.substring(8, 10);
   }
   return res;
 };
 
-/* ─── Input bileşeni ─── */
-function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, right, maxLength }) {
+/* ─── Input ─── */
+function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, right, maxLength, autoComplete }) {
+  const [focus, setFocus] = useState(false);
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: 14, padding: '14px 16px', marginBottom: 12,
-      transition: 'border-color 0.2s, background 0.2s',
-    }}>
-      {Icon && <Icon size={17} color="rgba(167,139,250,0.7)" style={{ flexShrink: 0 }} />}
+    <label
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        background: focus ? 'rgba(195,203,211,0.06)' : 'var(--bg-surface)',
+        border: `1px solid ${focus ? 'rgba(195,203,211,0.5)' : 'var(--border-color)'}`,
+        borderRadius: 13, padding: '14px 16px', marginBottom: 11,
+        transition: 'border-color .35s ease, background .35s ease, box-shadow .35s ease',
+        boxShadow: focus ? '0 0 0 4px rgba(195,203,211,0.08)' : 'none',
+      }}
+    >
+      {Icon && <Icon size={16} color={focus ? P.gold : 'var(--text-muted)'} style={{ flexShrink: 0, transition: 'color .3s' }} />}
       <input
         aria-label={placeholder}
         type={type}
@@ -132,26 +136,109 @@ function AuthInput({ icon: Icon, type = 'text', placeholder, value, onChange, ri
         value={value}
         onChange={onChange}
         maxLength={maxLength}
+        autoComplete={autoComplete}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
         style={{
           flex: 1, background: 'none', border: 'none', outline: 'none',
-          color: '#F1F5F9', fontSize: 15, fontFamily: 'inherit',
-        }}
-        onFocus={e => {
-          e.currentTarget.parentElement.style.borderColor = 'rgba(124,58,237,0.6)';
-          e.currentTarget.parentElement.style.background = 'rgba(124,58,237,0.08)';
-        }}
-        onBlur={e => {
-          e.currentTarget.parentElement.style.borderColor = 'rgba(255,255,255,0.1)';
-          e.currentTarget.parentElement.style.background = 'rgba(255,255,255,0.05)';
+          color: 'var(--text-primary)', fontSize: 14.5, fontFamily: 'inherit', minWidth: 0,
         }}
       />
       {right}
-    </div>
+    </label>
   );
 }
 
-export default function AuthPage({ onAuth }) {
-  const [mode, setMode] = useState('login');
+/* ─── Sol marka paneli ─── */
+const HIGHLIGHTS = [
+  ['26 modül', 'Dashboard\'dan federated learning\'e kadar tek abonelikte.'],
+  ['Uçtan uca şifreleme', 'Hassas alanlar tarayıcınızda AES-GCM ile şifrelenir.'],
+  ['Türkçe AI koç', 'Kendi verinizi okuyup rakamla cevap veren asistan.'],
+];
+
+function BrandPanel() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % HIGHLIGHTS.length), 4200);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <aside
+      className="auth-brand"
+      style={{
+        position: 'relative', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        padding: '48px 52px', borderRight: '1px solid var(--border-color)',
+        background: 'linear-gradient(165deg, rgba(195,203,211,0.07), transparent 58%)',
+      }}
+    >
+      <Aurora color="rgba(195,203,211,0.30)" size={480} top="-14%" left="-16%" duration={22} />
+      <Aurora color="rgba(52,192,138,0.14)" size={400} bottom="-12%" right="-14%" duration={26} delay={3} />
+      <GridLines opacity={0.05} size={72} />
+
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{
+          width: 34, height: 34, borderRadius: 10, background: P.gradBrand,
+          display: 'grid', placeItems: 'center', boxShadow: '0 8px 22px rgba(139,148,157,0.32)',
+        }}>
+          <Wallet size={17} color="#0C0E10" strokeWidth={2.4} />
+        </span>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--text-primary)' }}>
+          FinCoach<span style={{ color: P.green }}> AI</span>
+        </span>
+      </div>
+
+      <div style={{ position: 'relative', maxWidth: 460 }}>
+        <h2 className="display" style={{ fontSize: 'clamp(34px, 3.6vw, 56px)', color: 'var(--text-primary)', marginBottom: 26 }}>
+          <SplitWords text="Paranızın sessiz mimarı." step={70} highlight={[2]} />
+        </h2>
+
+        <div style={{ position: 'relative', minHeight: 92 }}>
+          {HIGHLIGHTS.map(([title, body], idx) => (
+            <div
+              key={title}
+              style={{
+                position: idx === 0 ? 'relative' : 'absolute', inset: idx === 0 ? undefined : 0,
+                opacity: i === idx ? 1 : 0,
+                transform: i === idx ? 'none' : 'translateY(14px)',
+                filter: i === idx ? 'none' : 'blur(5px)',
+                transition: 'all .7s var(--ease-out-expo)',
+              }}
+            >
+              <p style={{ fontSize: 14, fontWeight: 700, color: P.gold, marginBottom: 8, letterSpacing: '-0.01em' }}>{title}</p>
+              <p style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--text-secondary)' }}>{body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 6, marginTop: 26 }}>
+          {HIGHLIGHTS.map((h, idx) => (
+            <span key={h[0]} style={{
+              width: i === idx ? 26 : 8, height: 3, borderRadius: 99,
+              background: i === idx ? P.gold : 'var(--hairline)',
+              transition: 'all .6s var(--ease-out-expo)',
+            }} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ position: 'relative', display: 'flex', gap: 26, flexWrap: 'wrap' }}>
+        {[['12.400+', 'kullanıcı'], ['₺61M', 'takip edilen varlık'], ['%99,9', 'uptime']].map(([v, l]) => (
+          <div key={l}>
+            <p className="num" style={{ fontSize: 17, color: 'var(--text-primary)', marginBottom: 2 }}>{v}</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{l}</p>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+/* ═══════════════════ Sayfa ═══════════════════ */
+
+export default function AuthPage({ onAuth, initialMode = 'login', onBack }) {
+  const [mode, setMode] = useState(initialMode === 'register' ? 'register' : 'login');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -165,8 +252,13 @@ export default function AuthPage({ onAuth }) {
   const triggerShake = () => { setShake(false); setTimeout(() => setShake(true), 10); setTimeout(() => setShake(false), 400); };
 
   const eyeBtn = (show, toggle) => (
-    <button aria-label={show ? 'Şifreyi gizle' : 'Şifreyi göster'} onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,255,255,0.3)' }}>
-      {show ? <EyeOff size={17} /> : <Eye size={17} />}
+    <button
+      type="button"
+      aria-label={show ? 'Şifreyi gizle' : 'Şifreyi göster'}
+      onClick={toggle}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-muted)', display: 'flex' }}
+    >
+      {show ? <EyeOff size={16} /> : <Eye size={16} />}
     </button>
   );
 
@@ -175,8 +267,7 @@ export default function AuthPage({ onAuth }) {
     const loginPassword = credentials.password ?? password;
 
     setError('');
-    if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.');
-    if (!'Lütfen tüm alanları doldurun.'.startsWith('✅')) triggerShake(); return; }
+    if (!loginEmail || !loginPassword) { setError('Lütfen tüm alanları doldurun.'); triggerShake(); return; }
 
     if (loginEmail.toLowerCase() === DEMO_EMAIL.toLowerCase() && loginPassword === DEMO_PASSWORD) {
       clearUserScopedCache();
@@ -191,7 +282,7 @@ export default function AuthPage({ onAuth }) {
       });
       return;
     }
-    
+
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: loginEmail.toLowerCase(),
@@ -208,7 +299,6 @@ export default function AuthPage({ onAuth }) {
 
     if (data.user) {
       clearUserScopedCache();
-      // Profil bilgisini çek (opsiyonel, isterseniz app.jsx'de de yapabilirsiniz)
       const { data: existingProfile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
       let profile = existingProfile;
       if (!profile) {
@@ -220,16 +310,16 @@ export default function AuthPage({ onAuth }) {
         }]).select().single();
         profile = createdProfile;
       }
-      
-	    const authData = { 
-        name: profile?.full_name || (data.user.email || 'Kullanıcı').split('@')[0], 
+
+      const authData = {
+        name: profile?.full_name || (data.user.email || 'Kullanıcı').split('@')[0],
         email: data.user.email,
         id: data.user.id,
         phone: profile?.phone_text || '',
         onboardingCompleted: Boolean(profile?.onboarding_completed),
         isDemo: (data.user.email || '').toLowerCase() === DEMO_EMAIL.toLowerCase()
       };
-      
+
       onAuth(authData);
     }
     setLoading(false);
@@ -253,27 +343,23 @@ export default function AuthPage({ onAuth }) {
 
   const handleRegister = async () => {
     setError('');
-    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.');
-    if (!'Lütfen tüm alanları doldurun.'.startsWith('✅')) triggerShake(); return; }
-    
-    // Telefon kontrolü (10 hane + maske karakterleri)
+    if (!name || !email || !password || !confirm) { setError('Lütfen tüm alanları doldurun.'); triggerShake(); return; }
+
     const purePhone = phone.replace(/\D/g, '');
     if (purePhone.length < 10) {
       setError('Lütfen geçerli bir telefon numarası girin.');
-    if (!'Lütfen geçerli bir telefon numarası girin.'.startsWith('✅')) triggerShake();
+      triggerShake();
       return;
     }
     if (!purePhone.startsWith('05') && !purePhone.startsWith('5')) {
       setError('Telefon numarası 5 ile başlamalıdır.');
-    if (!'Telefon numarası 5 ile başlamalıdır.'.startsWith('✅')) triggerShake();
+      triggerShake();
       return;
     }
 
-    if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.');
-    if (!'Şifre en az 6 karakter olmalıdır.'.startsWith('✅')) triggerShake(); return; }
-    if (password !== confirm) { setError('Şifreler eşleşmiyor.');
-    if (!'Şifreler eşleşmiyor.'.startsWith('✅')) triggerShake(); return; }
-    
+    if (password.length < 6) { setError('Şifre en az 6 karakter olmalıdır.'); triggerShake(); return; }
+    if (password !== confirm) { setError('Şifreler eşleşmiyor.'); triggerShake(); return; }
+
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signUp({
       email: email.toLowerCase(),
@@ -281,19 +367,19 @@ export default function AuthPage({ onAuth }) {
     });
 
     if (authError) {
-      // Türkçe hata çevirileri
       const errMsg = authError.message;
       if (errMsg.includes('email sending') || errMsg.includes('rate limit') || errMsg.includes('sending limit')) {
         setError('E-posta gönderim limiti aşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin veya farklı bir e-posta kullanın.');
-    if (!'E-posta gönderim limiti aşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin veya farklı bir e-posta kullanın.'.startsWith('✅')) triggerShake();
+        triggerShake();
       } else if (errMsg.includes('already registered') || errMsg.includes('User already registered')) {
         setError('Bu e-posta zaten kayıtlı. Giriş Yap sekmesini deneyin.');
-    if (!'Bu e-posta zaten kayıtlı. Giriş Yap sekmesini deneyin.'.startsWith('✅')) triggerShake();
+        triggerShake();
       } else if (errMsg.includes('Password')) {
         setError('Şifre en az 6 karakter olmalıdır.');
-    if (!'Şifre en az 6 karakter olmalıdır.'.startsWith('✅')) triggerShake();
+        triggerShake();
       } else {
-        setError(errMsg); if (errMsg && !String(errMsg).startsWith('✅')) triggerShake();
+        setError(errMsg);
+        if (errMsg && !String(errMsg).startsWith('✅')) triggerShake();
       }
       setLoading(false);
       return;
@@ -305,19 +391,18 @@ export default function AuthPage({ onAuth }) {
       ]).select();
       if (profileError) {
         setError('Profil oluşturulamadı. Supabase RLS profil ekleme iznini kontrol edin.');
-    if (!'Profil oluşturulamadı. Supabase RLS profil ekleme iznini kontrol edin.'.startsWith('✅')) triggerShake();
+        triggerShake();
         setLoading(false);
         return;
       }
 
       if (data.session) {
         clearUserScopedCache();
-        const authData = { name: name, email: data.user.email, id: data.user.id, phone, onboardingCompleted: false, isDemo: false };
+        const authData = { name, email: data.user.email, id: data.user.id, phone, onboardingCompleted: false, isDemo: false };
         onAuth(authData);
         return;
       }
       setError('✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.');
-    if (!'✅ Kayıt başarılı! E-postanızı kontrol edin ve doğrulama linkine tıklayın.'.startsWith('✅')) triggerShake();
     }
     setLoading(false);
   };
@@ -327,166 +412,216 @@ export default function AuthPage({ onAuth }) {
     setName(''); setPhone(''); setEmail(''); setPassword(''); setConfirm('');
   };
 
+  const isOk = error.startsWith('✅');
+
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#050714', position: 'relative', overflow: 'hidden', padding: 20,
-    }}>
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-15%', left: '-10%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', bottom: '-15%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)' }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
-        }} />
-      </div>
+    <div
+      className="auth-shell"
+      style={{
+        minHeight: '100vh',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+        background: 'var(--bg-main)',
+      }}
+    >
+      <style>{`
+        @keyframes shake { 0%,100%{transform:translateX(0);} 10%,30%,50%,70%,90%{transform:translateX(-5px);} 20%,40%,60%,80%{transform:translateX(5px);} }
+        .shake { animation: shake .4s ease-in-out !important; }
+        .auth-mobile-brand { display: none; }
+        @media (max-width: 900px) { .auth-mobile-brand { display: flex; } }
+        @media (max-width: 900px) {
+          .auth-shell { grid-template-columns: 1fr !important; }
+          .auth-brand { display: none !important; }
+        }
+      `}</style>
 
-      <div className={shake ? 'shake' : ''} style={{ position: 'relative', width: '100%', maxWidth: 460, zIndex: 10, animation: 'fadeSlideUp 0.4s ease' }}>
-        <style>{`
-          @keyframes fadeSlideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-          @keyframes gradShift { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
-          @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
-          .shake { animation: shake 0.4s ease-in-out !important; }
-          .auth-submit:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
-          .auth-tab-active { background: rgba(124,58,237,0.18) !important; color: #a78bfa !important; border-color: rgba(124,58,237,0.4) !important; }
-        `}</style>
+      <BrandPanel />
 
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 60, height: 60, borderRadius: 18, background: 'linear-gradient(135deg, #7c3aed, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 0 40px rgba(124,58,237,0.5)' }}>
-            <Sparkles size={26} color="#fff" />
+      {/* Form sütunu */}
+      <main style={{
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '48px 28px', position: 'relative',
+      }}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              position: 'absolute', top: 30, left: 28,
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px',
+              fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', fontFamily: 'inherit',
+              transition: 'color .3s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+          >
+            <ArrowLeft size={15} /> Ana sayfa
+          </button>
+        )}
+
+        <div className={shake ? 'shake' : ''} style={{ width: '100%', maxWidth: 424, margin: '0 auto' }}>
+          {/* Mobil marka */}
+          <div className="auth-mobile-brand" style={{ alignItems: 'center', gap: 11, marginBottom: 30 }}>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: P.gradBrand, display: 'grid', placeItems: 'center' }}>
+              <Wallet size={16} color="#0C0E10" strokeWidth={2.4} />
+            </span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--text-primary)' }}>
+              FinCoach<span style={{ color: P.green }}> AI</span>
+            </span>
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#F1F5F9', letterSpacing: '-0.03em', margin: 0 }}>
-            FinCoach<span style={{ background: 'linear-gradient(135deg,#a78bfa,#6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI</span>
-          </h1>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>Gerçek zamanlı bulut senkronizasyonu aktif ☁️</p>
-        </div>
 
-        <div style={{
-          background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.09)',
-          borderRadius: 28, padding: '36px 32px', backdropFilter: 'blur(24px)', boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 32, right: 32, height: 2, background: 'linear-gradient(90deg, #7c3aed, #6366f1, #10b981)', backgroundSize: '300% 100%', animation: 'gradShift 4s ease infinite' }} />
+          <Reveal variant="up">
+            <h1 className="display" style={{ fontSize: 'clamp(30px, 3.4vw, 42px)', color: 'var(--text-primary)', marginBottom: 10 }}>
+              {mode === 'login' ? <>Tekrar <em>hoş geldiniz</em></> : <>Hesabınızı <em>oluşturun</em></>}
+            </h1>
+          </Reveal>
+          <Reveal variant="up" delay={90}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 30, lineHeight: 1.6 }}>
+              {mode === 'login'
+                ? 'Bulut senkronizasyonu aktif. Kaldığınız yerden devam edin.'
+                : 'Otuz saniyede kurulum, kredi kartı gerekmez.'}
+            </p>
+          </Reveal>
 
-          <div style={{ display: 'flex', gap: 8, marginBottom: 28, background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 4 }}>
-            {[['login', 'Giriş Yap'], ['register', 'Kayıt Ol']].map(([key, label]) => (
-              <button key={key} onClick={() => switchMode(key)} className={mode === key ? 'auth-tab-active' : ''} style={{ flex: 1, padding: '10px 0', borderRadius: 11, background: 'transparent', border: '1px solid transparent', color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}>{label}</button>
-            ))}
-          </div>
-
-          {mode === 'login' && (
+          {/* Sekmeler */}
+          <Reveal variant="up" delay={150}>
             <div style={{
-              display: 'grid',
-              gap: 10,
-              background: 'rgba(16,185,129,0.08)',
-              border: '1px solid rgba(16,185,129,0.22)',
-              borderRadius: 16,
-              padding: 14,
-              marginBottom: 22,
+              display: 'flex', gap: 4, marginBottom: 26, padding: 4,
+              background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 13,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <div>
-                  <p style={{ margin: '0 0 3px', fontSize: 12, fontWeight: 900, color: '#6ee7b7', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Canlı Demo</p>
-                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.52)', lineHeight: 1.45 }}>Dolu veri seti, hedefler, raporlar ve WhatsApp kayıt akışı hazır.</p>
-                </div>
+              {[['login', 'Giriş Yap'], ['register', 'Kayıt Ol']].map(([key, label]) => (
                 <button
-                  type="button"
-                  aria-label="Demo hesabı ile giriş yap"
-                  onClick={handleDemoLogin}
-                  disabled={loading}
+                  key={key}
+                  onClick={() => switchMode(key)}
                   style={{
-                    flexShrink: 0,
-                    border: 'none',
-                    borderRadius: 11,
-                    background: '#10B981',
-                    color: '#04130d',
-                    padding: '10px 13px',
-                    fontSize: 12,
-                    fontWeight: 900,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.65 : 1,
+                    flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                    fontSize: 13.5, fontWeight: 600, fontFamily: 'inherit',
+                    border: `1px solid ${mode === key ? 'rgba(195,203,211,0.32)' : 'transparent'}`,
+                    background: mode === key ? 'rgba(195,203,211,0.13)' : 'transparent',
+                    color: mode === key ? P.gold : 'var(--text-muted)',
+                    transition: 'all .4s var(--ease-out-expo)',
                   }}
                 >
-                  Demo Gir
+                  {label}
                 </button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
-                <span>E-posta: <strong style={{ color: '#D1FAE5' }}>{DEMO_EMAIL}</strong></span>
-                <span>Şifre: <strong style={{ color: '#D1FAE5' }}>{DEMO_PASSWORD}</strong></span>
-              </div>
-            </div>
-          )}
-
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#F1F5F9', marginBottom: 6 }}>{mode === 'login' ? 'Tekrar hoş geldin 👋' : 'Hesap oluştur ✨'}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 24 }}>{mode === 'login' ? 'Supabase ile güvenli giriş' : 'Hemen katıl ve akıllı finansal koçunla tanış'}</p>
-
-          {mode === 'register' && (
-            <>
-              <AuthInput icon={User} placeholder="Ad Soyad" value={name} onChange={e => setName(e.target.value)} />
-              <AuthInput 
-                icon={Phone} 
-                placeholder="0 (5xx) xxx xx xx" 
-                value={phone} 
-                onChange={e => setPhone(formatPhone(e.target.value))} 
-                maxLength={17}
-              />
-            </>
-          )}
-          <AuthInput icon={Mail} type="email" placeholder="E-posta" value={email} onChange={e => setEmail(e.target.value)} />
-          <AuthInput icon={Lock} type={showPass ? 'text' : 'password'} placeholder="Şifre" value={password} onChange={e => setPassword(e.target.value)} right={eyeBtn(showPass, () => setShowPass(v => !v))} />
-          {mode === 'register' && <PasswordStrength password={password} />}
-          {mode === 'register' && <AuthInput icon={Lock} type={showConfirm ? 'text' : 'password'} placeholder="Şifre (Tekrar)" value={confirm} onChange={e => setConfirm(e.target.value)} right={eyeBtn(showConfirm, () => setShowConfirm(v => !v))} />}
-
-          {error && <div style={{
-            background: error.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-            border: `1px solid ${error.startsWith('✅') ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
-            borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13,
-            color: error.startsWith('✅') ? '#6ee7b7' : '#fca5a5'
-          }}>{error.startsWith('✅') ? error : `⚠️ ${error}`}</div>}
-
-          <button className="auth-submit" onClick={mode === 'login' ? handleLogin : handleRegister} disabled={loading} style={{ width: '100%', padding: '15px 0', borderRadius: 14, background: loading ? 'rgba(124,58,237,0.4)' : 'linear-gradient(135deg, #7c3aed, #6366f1)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'all 0.2s', boxShadow: loading ? 'none' : '0 12px 32px rgba(124,58,237,0.4)', marginBottom: 20 }}>
-            {loading ? 'Yükleniyor...' : <>{mode === 'login' ? 'Giriş Yap' : 'Kayıt Ol'} <ArrowRight size={17} /></>}
-          </button>
-
-        </div>
-
-        <section style={{ marginTop: 22, display: 'grid', gap: 12 }}>
-          <div style={{
-            borderRadius: 20,
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.035)',
-            padding: 18,
-          }}>
-            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#a78bfa' }}>Satışa Hazır Finans Koçu</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
-              {[
-                ['WhatsApp fiş', 'Fotoğrafı at, işlem yazılsın'],
-                ['AI rapor', 'Gelir, gider, hedef analizi'],
-                ['CSV import', 'Banka ekstresini temiz aktar'],
-              ].map(([title, text]) => (
-                <div key={title} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 12 }}>
-                  <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 900, color: '#F8FAFC' }}>{title}</p>
-                  <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.42)', lineHeight: 1.45 }}>{text}</p>
-                </div>
               ))}
             </div>
-          </div>
+          </Reveal>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {[
-              ['Free', '₺0', 'Manuel takip, CSV ve temel raporlar'],
-              ['Pro', '₺149/ay', 'WhatsApp, OCR, AI koç ve gelişmiş analiz'],
-            ].map(([plan, price, desc]) => (
-              <div key={plan} style={{ borderRadius: 16, border: plan === 'Pro' ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(255,255,255,0.08)', background: plan === 'Pro' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.035)', padding: 14 }}>
-                <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 900, color: plan === 'Pro' ? '#6ee7b7' : '#F8FAFC' }}>{plan}</p>
-                <p style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 900, color: '#fff' }}>{price}</p>
-                <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.44)', lineHeight: 1.45 }}>{desc}</p>
+          {/* Demo kartı */}
+          {mode === 'login' && (
+            <Reveal variant="up" delay={200}>
+              <div style={{
+                border: '1px solid rgba(52,192,138,0.24)', background: 'rgba(52,192,138,0.06)',
+                borderRadius: 16, padding: 16, marginBottom: 22,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 12 }}>
+                  <div>
+                    <p className="eyebrow" style={{ fontSize: 9.5, color: P.green, marginBottom: 5 }}>Canlı Demo</p>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      Dolu veri seti, 26 modül, WhatsApp akışı — kayıt gerekmez.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Demo hesabı ile giriş yap"
+                    onClick={handleDemoLogin}
+                    disabled={loading}
+                    style={{
+                      flexShrink: 0, border: 'none', borderRadius: 10,
+                      background: P.green, color: '#04130d', padding: '10px 15px',
+                      fontSize: 12, fontWeight: 800, fontFamily: 'inherit',
+                      cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.65 : 1,
+                    }}
+                  >
+                    Demo gir
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 11, color: 'var(--text-muted)' }}>
+                  <span>E-posta: <strong className="num" style={{ color: 'var(--text-secondary)' }}>{DEMO_EMAIL}</strong></span>
+                  <span>Şifre: <strong className="num" style={{ color: 'var(--text-secondary)' }}>{DEMO_PASSWORD}</strong></span>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
-      </div>
+            </Reveal>
+          )}
+
+          {/* Form */}
+          <Reveal variant="up" delay={250}>
+            <div>
+              {mode === 'register' && (
+                <>
+                  <AuthInput icon={User} placeholder="Ad Soyad" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
+                  <AuthInput
+                    icon={Phone}
+                    placeholder="0 (5xx) xxx xx xx"
+                    value={phone}
+                    onChange={e => setPhone(formatPhone(e.target.value))}
+                    maxLength={17}
+                    autoComplete="tel"
+                  />
+                </>
+              )}
+              <AuthInput icon={Mail} type="email" placeholder="E-posta" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
+              <AuthInput
+                icon={Lock}
+                type={showPass ? 'text' : 'password'}
+                placeholder="Şifre"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                right={eyeBtn(showPass, () => setShowPass(v => !v))}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+              {mode === 'register' && <PasswordStrength password={password} />}
+              {mode === 'register' && (
+                <AuthInput
+                  icon={Lock}
+                  type={showConfirm ? 'text' : 'password'}
+                  placeholder="Şifre (Tekrar)"
+                  value={confirm}
+                  onChange={e => setConfirm(e.target.value)}
+                  right={eyeBtn(showConfirm, () => setShowConfirm(v => !v))}
+                  autoComplete="new-password"
+                />
+              )}
+
+              {error && (
+                <div style={{
+                  background: isOk ? 'rgba(52,192,138,0.09)' : 'rgba(219,92,78,0.09)',
+                  border: `1px solid ${isOk ? 'rgba(52,192,138,0.28)' : 'rgba(219,92,78,0.28)'}`,
+                  borderRadius: 12, padding: '12px 15px', margin: '4px 0 16px', fontSize: 13,
+                  lineHeight: 1.5, color: isOk ? P.green : P.red,
+                  animation: 'fadeSlideUp .35s var(--ease-out-expo) both',
+                }}>
+                  {isOk ? error : `⚠️ ${error}`}
+                </div>
+              )}
+
+              <button
+                className="btn-gold"
+                onClick={mode === 'login' ? handleLogin : handleRegister}
+                disabled={loading}
+                style={{
+                  width: '100%', marginTop: 8, marginBottom: 20,
+                  opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {loading ? 'Yükleniyor…' : <>{mode === 'login' ? 'Giriş yap' : 'Hesabı oluştur'} <ArrowRight size={16} /></>}
+              </button>
+            </div>
+          </Reveal>
+
+          {/* Güven satırı */}
+          <Reveal variant="fade" delay={340}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px', paddingTop: 6 }}>
+              {['AES-GCM şifreleme', 'KVKK uyumlu', 'İstediğin an sil'].map((t) => (
+                <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--text-muted)' }}>
+                  <Check size={12} color={P.gold} strokeWidth={2.6} /> {t}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </main>
     </div>
   );
 }

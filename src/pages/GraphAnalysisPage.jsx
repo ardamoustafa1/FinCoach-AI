@@ -101,7 +101,7 @@ export default function GraphAnalysisPage() {
         @keyframes drawLine { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
         .edge-path { stroke-dasharray: 1000; animation: drawLine 2s ease-out forwards; }
         .node-circle { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .node-circle:hover { filter: drop-shadow(0 0 16px rgba(124,58,237,0.8)); }
+        .node-circle:hover { filter: drop-shadow(0 0 16px rgba(195,203,211,0.8)); }
       `}</style>
       
       <div style={{ paddingBottom: 40, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -155,7 +155,7 @@ export default function GraphAnalysisPage() {
           <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 20 }}>
             
             {selectedNode ? (
-              <div style={{ background: P.bg2, border: `1px solid ${P.purple}50`, borderRadius: 20, padding: 24, boxShadow: `0 16px 40px rgba(124,58,237,0.15)` }}>
+              <div style={{ background: P.bg2, border: `1px solid ${P.purple}50`, borderRadius: 20, padding: 24, boxShadow: `0 16px 40px rgba(195,203,211,0.15)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div style={{ width: 48, height: 48, borderRadius: 16, background: `${P.purple}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Search size={24} color={P.purple} />
@@ -210,7 +210,7 @@ export default function GraphAnalysisPage() {
             )}
 
             {/* AI INSIGHT */}
-            <div style={{ background: `linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.05))`, border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 20, padding: 24 }}>
+            <div style={{ background: `linear-gradient(135deg, rgba(219,92,78,0.1), rgba(210,137,79,0.05))`, border: `1px solid rgba(219,92,78,0.3)`, borderRadius: 20, padding: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <Zap size={18} color={P.red} />
                 <span style={{ fontSize: 12, fontWeight: 800, color: P.red, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Tespiti: Toksik Zincir</span>

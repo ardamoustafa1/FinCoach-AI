@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Database, ShieldCheck, Download, Fingerprint, Activity, Layers, TerminalSquare, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import useStore from '../store/useStore';
+import { useToast } from '../hooks/useToast';
 
 import { P } from '../styles/palette';
 
@@ -23,6 +24,7 @@ function generateSyntheticProfile(index, focusCategory, riskBias) {
 }
 
 export default function SyntheticDataGeneratorPage() {
+  const toast = useToast();
   const [step, setStep] = useState(0); 
   const [progress, setProgress] = useState(0);
   const [profiles, setProfiles] = useState([]);
@@ -87,26 +89,49 @@ export default function SyntheticDataGeneratorPage() {
     timersRef.current.push(interval);
   };
 
+  const handleExport = () => {
+    const payload = {
+      exportVersion: 1,
+      mode: 'sandbox-preview',
+      generatedAt: new Date().toISOString(),
+      requestedProfileCount: profileCount,
+      filters: { focusCategory, riskBias },
+      privacy: { containsPersonalData: false, kAnonymity: true },
+      schema: ['id', 'risk', 'age', 'salary', 'impulsiveScore', 'category'],
+      previewProfiles: profiles,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fincoach-synthetic-preview-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast.success('KVKK uyumlu sentetik veri önizlemesi JSON olarak indirildi.');
+  };
+
   return (
     <>
       <style>{`
         .gan-bg {
-          background-image: linear-gradient(0deg, transparent 24%, rgba(59, 130, 246, 0.03) 25%, rgba(59, 130, 246, 0.03) 26%, transparent 27%, transparent 74%, rgba(59, 130, 246, 0.03) 75%, rgba(59, 130, 246, 0.03) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(59, 130, 246, 0.03) 25%, rgba(59, 130, 246, 0.03) 26%, transparent 27%, transparent 74%, rgba(59, 130, 246, 0.03) 75%, rgba(59, 130, 246, 0.03) 76%, transparent 77%, transparent);
+          background-image: linear-gradient(0deg, transparent 24%, rgba(110,147,196, 0.03) 25%, rgba(110,147,196, 0.03) 26%, transparent 27%, transparent 74%, rgba(110,147,196, 0.03) 75%, rgba(110,147,196, 0.03) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(110,147,196, 0.03) 25%, rgba(110,147,196, 0.03) 26%, transparent 27%, transparent 74%, rgba(110,147,196, 0.03) 75%, rgba(110,147,196, 0.03) 76%, transparent 77%, transparent);
           background-size: 50px 50px;
         }
         .data-flow {
           position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
-          background: linear-gradient(to bottom, transparent, #3B82F6, transparent);
+          background: linear-gradient(to bottom, transparent, #6E93C4, transparent);
           animation: flow 1.5s infinite linear;
         }
         @keyframes flow { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-        .json-text { font-family: 'Fira Code', monospace; color: #3B82F6; font-size: 12px; }
+        .json-text { font-family: 'Fira Code', monospace; color: #6E93C4; font-size: 12px; }
       `}</style>
 
       <div className="gan-bg" style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, minHeight: '100%' }}>
         <PageHeader
           icon={<Layers size={24} />}
-          color="#3B82F6"
+          color="#6E93C4"
           title="Synthetic Data Generator (GAN)"
           subtitle="Bankaların AI modellerini eğitmesi için %100 istatistiksel doğrulukta, KVKK/GDPR uyumlu sahte finansal profiller üretir."
           badge="B2B Veri Pazarı"
@@ -149,19 +174,19 @@ export default function SyntheticDataGeneratorPage() {
               </div>
               <div>
                 <label style={{ fontSize: 12, color: P.text2, fontWeight: 700, marginBottom: 8, display: 'block' }}>Gizlilik Katmanı (Privacy Shield)</label>
-                <div style={{ background: 'rgba(16,185,129,0.1)', border: `1px solid rgba(16,185,129,0.3)`, padding: '12px 16px', borderRadius: 12, color: P.green, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ background: 'rgba(52,192,138,0.1)', border: `1px solid rgba(52,192,138,0.3)`, padding: '12px 16px', borderRadius: 12, color: P.green, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <ShieldCheck size={16} /> Differential Privacy K-Anonymity Aktif
                 </div>
               </div>
             </div>
 
             <div style={{ marginTop: 'auto' }}>
-              {step === 0 || step === 2 ? (
+              {step === 0 ? (
                 <button 
                   onClick={() => { setStep(0); setProfiles([]); setProgress(0); setTimeout(handleGenerate, 50); }}
-                  style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #3B82F6, #2563EB)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(59,130,246,0.4)' }}
+                  style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #6E93C4, #527CAE)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(110,147,196,0.4)' }}
                 >
-                  {step === 2 ? <><RefreshCw size={18} /> Yeniden Üret</> : <><Database size={18} /> Sentetik Veri Üretimini Başlat</>}
+                  <Database size={18} /> Sentetik Veri Üretimini Başlat
                 </button>
               ) : step === 1 ? (
                 <div style={{ width: '100%', padding: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 16, overflow: 'hidden' }}>
@@ -170,17 +195,26 @@ export default function SyntheticDataGeneratorPage() {
                   </div>
                 </div>
               ) : (
-                <button 
-                  style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: `1px solid rgba(16,185,129,0.3)`, color: P.green, fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                >
-                  <Download size={18} /> Banka API'sine Export Et (JSON)
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    onClick={() => { setStep(0); setProfiles([]); setProgress(0); setTimeout(handleGenerate, 50); }}
+                    style={{ width: '100%', padding: '14px', borderRadius: 16, background: 'linear-gradient(135deg, #6E93C4, #527CAE)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  >
+                    <RefreshCw size={18} /> Yeniden Üret
+                  </button>
+                  <button 
+                    onClick={handleExport}
+                    style={{ width: '100%', padding: '14px', borderRadius: 16, background: 'rgba(52,192,138,0.1)', border: `1px solid rgba(52,192,138,0.3)`, color: P.green, fontSize: 14, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  >
+                    <Download size={18} /> JSON Önizlemesini İndir
+                  </button>
+                </div>
               )}
             </div>
           </div>
 
           {/* RIGHT: DATA PREVIEW */}
-          <div className="animate-enter" style={{ background: '#050714', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', animationDelay: '0.1s', position: 'relative', overflow: 'hidden' }}>
+          <div className="animate-enter" style={{ background: '#0A0B0C', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', animationDelay: '0.1s', position: 'relative', overflow: 'hidden' }}>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -201,7 +235,7 @@ export default function SyntheticDataGeneratorPage() {
                 </div>
               ) : (
                 profiles.filter(Boolean).map((p, i) => (
-                  <div key={i} className="json-text animate-enter" style={{ background: 'rgba(59,130,246,0.05)', padding: 16, borderRadius: 12, border: '1px solid rgba(59,130,246,0.1)' }}>
+                  <div key={i} className="json-text animate-enter" style={{ background: 'rgba(110,147,196,0.05)', padding: 16, borderRadius: 12, border: '1px solid rgba(110,147,196,0.1)' }}>
                     {`{`} <br/>
                     &nbsp;&nbsp;"id": <span style={{ color: P.green }}>"{p.id}"</span>, <br/>
                     &nbsp;&nbsp;"risk_profile": <span style={{ color: p.risk === 'HIGH' ? P.red : P.amber }}>"{p.risk}"</span>, <br/>

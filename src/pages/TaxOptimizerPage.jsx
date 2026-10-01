@@ -78,7 +78,7 @@ export default function TaxOptimizerPage() {
         let y = 20;
 
         // ─── HEADER ───
-        doc.setFillColor(124, 58, 237);
+        doc.setFillColor(195,203,211);
         doc.rect(0, 0, pageWidth, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
@@ -91,7 +91,7 @@ export default function TaxOptimizerPage() {
         y = 52;
 
         // ─── SUMMARY BOX ───
-        doc.setDrawColor(124, 58, 237);
+        doc.setDrawColor(195,203,211);
         doc.setFillColor(245, 243, 255);
         doc.roundedRect(margin, y, pageWidth - margin * 2, 32, 4, 4, 'FD');
         doc.setTextColor(60, 60, 60);
@@ -103,7 +103,7 @@ export default function TaxOptimizerPage() {
         // Col 1: Total Expense
         doc.text('TOPLAM AYLIK GİDER', margin + 8, y + 10);
         doc.setFontSize(16);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(18,20,23);
         doc.text(fmt(data.totalExpense), margin + 8, y + 22);
         
         // Col 2: Deductible
@@ -111,7 +111,7 @@ export default function TaxOptimizerPage() {
         doc.setTextColor(60, 60, 60);
         doc.text('VERGİDEN DÜŞÜLEBİLİR', margin + colWidth + 8, y + 10);
         doc.setFontSize(16);
-        doc.setTextColor(59, 130, 246);
+        doc.setTextColor(110,147,196);
         doc.text(fmt(data.totalDeductible), margin + colWidth + 8, y + 22);
         
         // Col 3: Tax Saved
@@ -119,13 +119,13 @@ export default function TaxOptimizerPage() {
         doc.setTextColor(60, 60, 60);
         doc.text('TAHMİNİ VERGİ İADESİ', margin + colWidth * 2 + 8, y + 10);
         doc.setFontSize(16);
-        doc.setTextColor(16, 185, 129);
+        doc.setTextColor(52,192,138);
         doc.text('+' + fmt(data.taxSaved), margin + colWidth * 2 + 8, y + 22);
         
         y += 42;
 
         // ─── TABLE HEADER ───
-        doc.setFillColor(30, 41, 59);
+        doc.setFillColor(25,27,30);
         doc.rect(margin, y, pageWidth - margin * 2, 10, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9);
@@ -142,7 +142,7 @@ export default function TaxOptimizerPage() {
         doc.setFontSize(9);
 
         if (data.items.length === 0) {
-          doc.setTextColor(148, 163, 184);
+          doc.setTextColor(155,161,166);
           doc.text('Bu dönemde vergiden düşülebilir uygun kalem bulunamadı.', margin + 4, y + 5);
           y += 14;
         } else {
@@ -160,14 +160,14 @@ export default function TaxOptimizerPage() {
             
             doc.setTextColor(71, 85, 105);
             doc.text(item.tarih || '-', margin + 4, y + 5);
-            doc.setTextColor(15, 23, 42);
+            doc.setTextColor(18,20,23);
             doc.text((item.magaza || '-').substring(0, 28), margin + 30, y + 5);
-            doc.setTextColor(100, 116, 139);
+            doc.setTextColor(107,112,117);
             doc.text(item.info?.name || item.kategori || '-', margin + 90, y + 5);
-            doc.setTextColor(15, 23, 42);
+            doc.setTextColor(18,20,23);
             doc.setFont('helvetica', 'bold');
             doc.text(fmt(item.tutar), margin + 125, y + 5);
-            doc.setTextColor(16, 185, 129);
+            doc.setTextColor(52,192,138);
             doc.text('+' + fmt(item.taxBenefit), margin + 145, y + 5);
             doc.setFont('helvetica', 'normal');
             y += 10;
@@ -182,7 +182,7 @@ export default function TaxOptimizerPage() {
         doc.line(margin, y, pageWidth - margin, y);
         y += 8;
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
+        doc.setTextColor(155,161,166);
         doc.setFont('helvetica', 'italic');
         doc.text('Bu rapor FinCoach AI tarafından otomatik olarak oluşturulmuştur.', margin, y);
         y += 5;
@@ -191,7 +191,7 @@ export default function TaxOptimizerPage() {
         doc.text('Detaylı bilgi için bir mali müşavire danışmanız önerilir.', margin, y);
         y += 8;
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(124, 58, 237);
+        doc.setTextColor(195,203,211);
         doc.text('FinCoach AI - Yapay Zeka Destekli Finansal Koçluk Platformu', margin, y);
 
         // ─── SAVE ───
@@ -210,7 +210,7 @@ export default function TaxOptimizerPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Calculator size={24} />}
-          color="#EC4899"
+          color="#C0705C"
           title="Vergi Asistanı"
           subtitle="Giderlerinizi sınıflandırıp vergi tasarrufu adaylarını PDF rapora dönüştürün."
           badge="Kural Motoru"
@@ -220,9 +220,9 @@ export default function TaxOptimizerPage() {
             disabled={generating}
             style={{ 
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none',
-              background: generating ? P.bg3 : `linear-gradient(135deg, #EC4899, #DB2777)`, color: generating ? P.text3 : '#fff',
+              background: generating ? P.bg3 : `linear-gradient(135deg, #C0705C, #A25743)`, color: generating ? P.text3 : '#fff',
               fontSize: 13, fontWeight: 800, cursor: generating ? 'not-allowed' : 'pointer',
-              boxShadow: generating ? 'none' : `0 8px 20px rgba(236,72,153,0.3)`, transition: 'all 0.2s'
+              boxShadow: generating ? 'none' : `0 8px 20px rgba(192,112,92,0.3)`, transition: 'all 0.2s'
             }}
           >
             {generating ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={16} />}
@@ -246,7 +246,7 @@ export default function TaxOptimizerPage() {
             </div>
             <p style={{ fontSize: 24, fontWeight: 900, color: P.blue, margin: 0 }}>{fmt(data.totalDeductible)}</p>
           </div>
-          <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.2)`, borderRadius: 20, padding: 24 }}>
+          <div style={{ background: 'rgba(52,192,138,0.05)', border: `1px solid rgba(52,192,138,0.2)`, borderRadius: 20, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.green, textTransform: 'uppercase' }}>Tahmini Vergi İadesi/Tasarrufu</span>
               <CheckCircle2 size={18} color={P.green} />

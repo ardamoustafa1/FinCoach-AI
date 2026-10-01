@@ -14,15 +14,16 @@ const MOCK_FRIENDS = [
 ];
 
 const MOCK_BADGES = [
-  { id: 1, title: 'FinCoach Muhafızı', desc: 'Bütçeyi aşmadan 1 ay geçirdin.', icon: ShieldCheck, color: '#10B981', unlocked: true },
-  { id: 2, title: 'Hız Tutkunu', desc: 'Aylık hedefine 10 gün erken ulaştın.', icon: Zap, color: '#F59E0B', unlocked: true },
-  { id: 3, title: 'Tasarruf Ustası', desc: '%30 tasarruf oranını geçtin.', icon: Crown, color: '#7C3AED', unlocked: false },
-  { id: 4, title: 'İlk Düello', desc: 'İlk finansal düellonu kazandın.', icon: Medal, color: '#EC4899', unlocked: false },
+  { id: 1, title: 'FinCoach Muhafızı', desc: 'Bütçeyi aşmadan 1 ay geçirdin.', icon: ShieldCheck, color: '#34C08A', unlocked: true },
+  { id: 2, title: 'Hız Tutkunu', desc: 'Aylık hedefine 10 gün erken ulaştın.', icon: Zap, color: '#D2894F', unlocked: true },
+  { id: 3, title: 'Tasarruf Ustası', desc: '%30 tasarruf oranını geçtin.', icon: Crown, color: '#C3CBD3', unlocked: false },
+  { id: 4, title: 'İlk Düello', desc: 'İlk finansal düellonu kazandın.', icon: Medal, color: '#C0705C', unlocked: false },
 ];
 
 export default function LeaguePage() {
   const toast = useToast();
   const [inviting, setInviting] = useState(false);
+  const [ahmetMuted, setAhmetMuted] = useState(false);
   const inviteTimerRef = useRef(null);
   
   const transactions = useStore(state => state.transactions);
@@ -69,6 +70,11 @@ export default function LeaguePage() {
     }, 600);
   };
 
+  const handleMuteAhmet = () => {
+    setAhmetMuted(true);
+    toast.success("Ahmet Yılmaz'ın lig bildirimleri kapatıldı. Sıralamadaki verileri görünmeye devam edecek.");
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 900, margin: '0 auto', paddingBottom: 40 }}>
       <style>{`@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
@@ -84,9 +90,9 @@ export default function LeaguePage() {
           onClick={handleInvite}
           disabled={inviting}
           style={{
-            padding: '12px 20px', borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+            padding: '12px 20px', borderRadius: 14, background: 'linear-gradient(135deg, #C3CBD3, #C0705C)',
             border: 'none', color: '#fff', fontWeight: 800, fontSize: 13, cursor: inviting ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 20px rgba(124,58,237,0.3)',
+            display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 20px rgba(195,203,211,0.3)',
             transition: 'transform 0.2s', opacity: inviting ? 0.7 : 1
           }}
           onMouseEnter={e => { if(!inviting) e.currentTarget.style.transform = 'scale(1.05)' }}
@@ -102,7 +108,7 @@ export default function LeaguePage() {
         {/* Leaderboard */}
         <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, gridColumn: 'span 2' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(210,137,79, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Trophy size={20} color={P.amber} />
             </div>
             <div>
@@ -116,7 +122,7 @@ export default function LeaguePage() {
               <div key={user.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 20px', borderRadius: 16,
-                background: user.isMe ? 'rgba(124,58,237,0.1)' : P.bg3,
+                background: user.isMe ? 'rgba(195,203,211,0.1)' : P.bg3,
                 border: `1px solid ${user.isMe ? P.purple : P.border}`,
                 transition: 'transform 0.2s', cursor: 'default'
               }}
@@ -160,8 +166,8 @@ export default function LeaguePage() {
             </ul>
           </div>
           
-          <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05))', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 20, padding: 24, textAlign: 'center' }}>
-            <div style={{ width: 48, height: 48, background: P.green, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(16,185,129,0.4)', animation: 'float 4s ease-in-out infinite' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(52,192,138,0.1), rgba(30,138,98,0.05))', border: `1px solid rgba(52,192,138,0.3)`, borderRadius: 20, padding: 24, textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, background: P.green, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(52,192,138,0.4)', animation: 'float 4s ease-in-out infinite' }}>
               <Trophy size={24} color="#fff" />
             </div>
             <h3 style={{ fontSize: 18, fontWeight: 900, color: P.text1, marginBottom: 8 }}>Zirvedesin!</h3>
@@ -169,7 +175,7 @@ export default function LeaguePage() {
           </div>
 
           {/* Peer Contagion (Sosyal Bulaşma) AI Warning */}
-          <div className="animate-enter" style={{ background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, border: `1px solid ${P.amber}60`, borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start', boxShadow: `0 8px 32px rgba(245, 158, 11, 0.15)` }}>
+          <div className="animate-enter" style={{ background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, border: `1px solid ${P.amber}60`, borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start', boxShadow: `0 8px 32px rgba(210,137,79, 0.15)` }}>
             <div style={{ padding: 12, background: `${P.amber}15`, borderRadius: 12, border: `1px solid ${P.amber}40` }}>
               <AlertCircle size={24} color={P.amber} />
             </div>
@@ -183,11 +189,12 @@ export default function LeaguePage() {
               <p style={{ fontSize: 13, color: P.text2, margin: '0 0 12px', lineHeight: 1.6 }}>
                 Son 2 aydır 'Dışarıda Yemek' harcamaların <strong>%45</strong> arttı. Algoritmamız, bu artışın gelirindeki bir artışla değil, Tasarruf Ligi'ndeki arkadaşın <strong>Ahmet Yılmaz</strong>'ın harcama desenleriyle %88 korelasyon gösterdiğini tespit etti. Sosyal çevre baskısıyla (Peer Pressure) para harcıyor olabilirsin, dikkat et!
               </p>
-              <button style={{
+              <button onClick={handleMuteAhmet} disabled={ahmetMuted} style={{
                 background: P.amber, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8,
-                fontSize: 12, fontWeight: 800, cursor: 'pointer', boxShadow: `0 4px 12px rgba(245, 158, 11, 0.3)`
+                fontSize: 12, fontWeight: 800, cursor: ahmetMuted ? 'default' : 'pointer', boxShadow: `0 4px 12px rgba(210,137,79, 0.3)`,
+                opacity: ahmetMuted ? 0.65 : 1
               }}>
-                Ahmet'i Sustur (Bildirimleri Kapat)
+                {ahmetMuted ? 'Ahmet Susturuldu' : "Ahmet'i Sustur (Bildirimleri Kapat)"}
               </button>
             </div>
           </div>

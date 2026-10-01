@@ -12,7 +12,7 @@ import { P } from '../styles/palette';
 const MOCK_SUBSCRIPTIONS = [
   { id: 'sub_1', name: 'Netflix', price: 229.99, cycle: 'Aylık', icon: Video, color: '#E50914', category: 'Eğlence' },
   { id: 'sub_2', name: 'Spotify', price: 59.99, cycle: 'Aylık', icon: Music, color: '#1DB954', category: 'Eğlence' },
-  { id: 'sub_3', name: 'MacFit', price: 850.00, cycle: 'Aylık', icon: Dumbbell, color: '#F59E0B', category: 'Sağlık' },
+  { id: 'sub_3', name: 'MacFit', price: 850.00, cycle: 'Aylık', icon: Dumbbell, color: '#D2894F', category: 'Sağlık' },
   { id: 'sub_4', name: 'YouTube Premium', price: 57.99, cycle: 'Aylık', icon: PlayCircle, color: '#FF0000', category: 'Eğlence' },
 ];
 
@@ -41,7 +41,7 @@ export default function SubscriptionsPage() {
           let color = P.purple;
           if (name.toLowerCase().includes('netflix')) { icon = Video; color = '#E50914'; }
           else if (name.toLowerCase().includes('spotify')) { icon = Music; color = '#1DB954'; }
-          else if (name.toLowerCase().includes('macfit') || name.toLowerCase().includes('spor')) { icon = Dumbbell; color = '#F59E0B'; }
+          else if (name.toLowerCase().includes('macfit') || name.toLowerCase().includes('spor')) { icon = Dumbbell; color = '#D2894F'; }
           else if (name.toLowerCase().includes('youtube')) { icon = PlayCircle; color = '#FF0000'; }
 
           subMap[name] = {
@@ -109,8 +109,8 @@ export default function SubscriptionsPage() {
     <>
       <style>{`
         @keyframes pulse-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.2); }
-          50% { box-shadow: 0 0 40px rgba(124,58,237,0.6); }
+          0%, 100% { box-shadow: 0 0 20px rgba(195,203,211,0.2); }
+          50% { box-shadow: 0 0 40px rgba(195,203,211,0.6); }
         }
         @keyframes scanline {
           0% { transform: translateY(-100%); }
@@ -123,7 +123,7 @@ export default function SubscriptionsPage() {
         
         <PageHeader
           icon={<ShieldAlert size={24} />}
-          color="#EF4444"
+          color="#DB5C4E"
           title="Abonelik Takipçisi"
           subtitle="Unuttuğunuz abonelikleri tespit edin ve FinCoach içindeki iptal takip kaydını tamamlayın."
           badge="Cancel Tracker"
@@ -143,7 +143,7 @@ export default function SubscriptionsPage() {
                 position: 'relative', overflow: 'hidden',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 opacity: isCanceled ? 0.6 : 1,
-                boxShadow: isCanceling ? '0 0 32px rgba(124,58,237,0.3)' : '0 12px 32px rgba(0,0,0,0.2)',
+                boxShadow: isCanceling ? '0 0 32px rgba(195,203,211,0.3)' : '0 12px 32px rgba(0,0,0,0.2)',
                 filter: isCanceled ? 'grayscale(100%)' : 'none'
               }}>
                 {/* Accent line */}
@@ -172,7 +172,7 @@ export default function SubscriptionsPage() {
                 {isCanceled ? (
                   <div style={{
                     width: '100%', padding: '12px', borderRadius: 12,
-                    background: 'rgba(16,185,129,0.1)', border: '1px dashed rgba(16,185,129,0.3)',
+                    background: 'rgba(52,192,138,0.1)', border: '1px dashed rgba(52,192,138,0.3)',
                     color: P.green, fontSize: 13, fontWeight: 800, textAlign: 'center',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
                   }}>
@@ -189,7 +189,7 @@ export default function SubscriptionsPage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { if(!cancelingId) { e.currentTarget.style.background = 'linear-gradient(135deg, #EF4444, #7C3AED)'; e.currentTarget.style.border = '1px solid transparent'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(239,68,68,0.4)'; } }}
+                    onMouseEnter={e => { if(!cancelingId) { e.currentTarget.style.background = 'linear-gradient(135deg, #DB5C4E, #C3CBD3)'; e.currentTarget.style.border = '1px solid transparent'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(219,92,78,0.4)'; } }}
                     onMouseLeave={e => { if(!cancelingId) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; } }}
                   >
                     {isCanceling ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Bot size={18} />}
@@ -210,9 +210,9 @@ export default function SubscriptionsPage() {
           }}>
             <div className="agent-modal-enter" style={{
               width: '100%', maxWidth: 700,
-              background: '#09090b', border: '1px solid rgba(124,58,237,0.4)',
+              background: '#09090b', border: '1px solid rgba(195,203,211,0.4)',
               borderRadius: 24, overflow: 'hidden',
-              boxShadow: '0 0 80px rgba(124,58,237,0.3)',
+              boxShadow: '0 0 80px rgba(195,203,211,0.3)',
               position: 'relative'
             }}>
               {/* Header */}
@@ -221,16 +221,16 @@ export default function SubscriptionsPage() {
                 padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Bot size={24} color="#c4b5fd" className={agentStep < 6 ? "animate-pulse" : ""} />
+                  <Bot size={24} color="#F1F4F6" className={agentStep < 6 ? "animate-pulse" : ""} />
                   <div>
                     <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '0.05em' }}>Cancel Tracker Terminal</h3>
-                    <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>İptal kontrol listesi ve abonelik durumu güncelleniyor.</p>
+                    <p style={{ fontSize: 11, color: '#9BA1A6', margin: 0 }}>İptal kontrol listesi ve abonelik durumu güncelleniyor.</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ef4444' }} />
-                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#f59e0b' }} />
-                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#DB5C4E' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#D2894F' }} />
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#34C08A' }} />
                 </div>
               </div>
 
@@ -244,14 +244,14 @@ export default function SubscriptionsPage() {
                     const isSuccess = log.includes('Success');
                     return (
                       <div key={i} style={{
-                        color: isSuccess ? '#10b981' : (isLast && agentStep < 6) ? '#c4b5fd' : '#64748b',
+                        color: isSuccess ? '#34C08A' : (isLast && agentStep < 6) ? '#F1F4F6' : '#6B7075',
                         fontSize: 14, display: 'flex', gap: 12, lineHeight: 1.5,
                         animation: 'fadeSlideUp 0.3s ease'
                       }}>
-                        <span style={{ color: '#3b82f6', userSelect: 'none' }}>~ %</span>
+                        <span style={{ color: '#6E93C4', userSelect: 'none' }}>~ %</span>
                         <span>{log}</span>
                         {(isLast && agentStep < 6) && (
-                          <span style={{ width: 8, height: 16, background: '#c4b5fd', display: 'inline-block', animation: 'pulse 1s infinite', marginLeft: 4 }} />
+                          <span style={{ width: 8, height: 16, background: '#F1F4F6', display: 'inline-block', animation: 'pulse 1s infinite', marginLeft: 4 }} />
                         )}
                       </div>
                     );
@@ -260,7 +260,7 @@ export default function SubscriptionsPage() {
               </div>
               
               {agentStep === 6 && (
-                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at center, rgba(16,185,129,0.2) 0%, transparent 70%)', animation: 'ping 2s ease-out' }} />
+                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at center, rgba(52,192,138,0.2) 0%, transparent 70%)', animation: 'ping 2s ease-out' }} />
               )}
             </div>
           </div>

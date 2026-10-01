@@ -100,7 +100,7 @@ export default function RealEstatePage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
         <PageHeader
           icon={<Home size={24} />}
-          color="#14B8A6"
+          color="#45939C"
           title="Ev & Kredi Hesaplayıcı"
           subtitle="Almak istediğiniz evin kredinizi batırıp batırmayacağını yapay zeka analiz etsin."
           badge="AI Gayrimenkul"
@@ -167,8 +167,8 @@ export default function RealEstatePage() {
               <>
                 {/* AI DECISION BANNER */}
                 <div style={{
-                  background: analysis.decision === 'rejected' ? 'rgba(239,68,68,0.1)' : analysis.decision === 'warning' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
-                  border: `1px solid ${analysis.decision === 'rejected' ? 'rgba(239,68,68,0.3)' : analysis.decision === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)'}`,
+                  background: analysis.decision === 'rejected' ? 'rgba(219,92,78,0.1)' : analysis.decision === 'warning' ? 'rgba(210,137,79,0.1)' : 'rgba(52,192,138,0.1)',
+                  border: `1px solid ${analysis.decision === 'rejected' ? 'rgba(219,92,78,0.3)' : analysis.decision === 'warning' ? 'rgba(210,137,79,0.3)' : 'rgba(52,192,138,0.3)'}`,
                   borderRadius: 24, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start'
                 }}>
                   <div style={{ width: 48, height: 48, borderRadius: 16, background: analysis.decision === 'rejected' ? P.red : analysis.decision === 'warning' ? P.amber : P.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

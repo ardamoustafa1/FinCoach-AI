@@ -242,9 +242,9 @@ export default function FederatedLearningPage() {
         
         .pulse-node { animation: pulseGlow 2s infinite; }
         @keyframes pulseGlow {
-          0% { filter: drop-shadow(0 0 2px rgba(16,185,129,0.3)); }
-          50% { filter: drop-shadow(0 0 10px rgba(16,185,129,0.8)); }
-          100% { filter: drop-shadow(0 0 2px rgba(16,185,129,0.3)); }
+          0% { filter: drop-shadow(0 0 2px rgba(52,192,138,0.3)); }
+          50% { filter: drop-shadow(0 0 10px rgba(52,192,138,0.8)); }
+          100% { filter: drop-shadow(0 0 2px rgba(52,192,138,0.3)); }
         }
       `}</style>
 
@@ -286,12 +286,12 @@ export default function FederatedLearningPage() {
               onClick={startTraining}
               disabled={trainingState !== 'idle' && trainingState !== 'done'}
               style={{
-                background: trainingState === 'idle' || trainingState === 'done' ? `linear-gradient(135deg, ${P.blue}, #2563EB)` : P.bg3,
+                background: trainingState === 'idle' || trainingState === 'done' ? `linear-gradient(135deg, ${P.blue}, #527CAE)` : P.bg3,
                 color: trainingState === 'idle' || trainingState === 'done' ? '#fff' : P.text3,
                 border: 'none',
                 padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s',
-                boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 20px rgba(59,130,246,0.3)' : 'none'
+                boxShadow: trainingState === 'idle' || trainingState === 'done' ? '0 8px 20px rgba(110,147,196,0.3)' : 'none'
               }}
             >
               {trainingState === 'idle' || trainingState === 'done' ? <Cpu size={16} /> : <Loader2 size={16} className="animate-spin" />}
@@ -404,12 +404,12 @@ export default function FederatedLearningPage() {
         {/* TERMINAL LOGS */}
         <div className="animate-enter" style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', minHeight: 280 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <Terminal size={18} color="#94a3b8" />
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>FEDERATED AI P2P LOGLARI</span>
+            <Terminal size={18} color="#9BA1A6" />
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#9BA1A6', letterSpacing: '0.1em' }}>FEDERATED AI P2P LOGLARI</span>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontFamily: 'monospace' }}>
-            {logs.length === 0 && <span style={{ color: '#475569', fontSize: 13 }}>Sistem hazır. TensorFlow.js ve WebRTC P2P akışını başlatmak için butona basın.</span>}
+            {logs.length === 0 && <span style={{ color: '#53575C', fontSize: 13 }}>Sistem hazır. TensorFlow.js ve WebRTC P2P akışını başlatmak için butona basın.</span>}
             {logs.map((log) => (
               <div key={log.id} className="animate-enter" style={{ color: log.color, fontSize: 13, lineHeight: 1.5 }}>
                 {log.msg}

@@ -146,7 +146,7 @@ export default function StressTestPage() {
   return (
     <>
       <style>{`
-        @keyframes pulseAlert { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes pulseAlert { 0% { box-shadow: 0 0 0 0 rgba(219,92,78, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(219,92,78, 0); } 100% { box-shadow: 0 0 0 0 rgba(219,92,78, 0); } }
         @keyframes scanline { 0% { top: -100%; } 100% { top: 100%; } }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);} 20%, 40%, 60%, 80% {transform: translateX(5px);} }
       `}</style>
@@ -197,10 +197,10 @@ export default function StressTestPage() {
 
         {/* MONTE CARLO ANIMATION */}
         {isMonteCarloRunning && (
-          <div style={{ height: 400, background: '#0a0a0f', borderRadius: 24, border: `1px solid ${P.red}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', animation: 'shake 0.5s infinite' }}>
+          <div style={{ height: 400, background: '#0A0B0C', borderRadius: 24, border: `1px solid ${P.red}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', animation: 'shake 0.5s infinite' }}>
              {/* Scanline Effect */}
-             <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(239,68,68,0.1) 2px, rgba(239,68,68,0.1) 4px)' }} />
-             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, transparent, rgba(239,68,68,0.3))', animation: 'scanline 1s linear infinite' }} />
+             <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(219,92,78,0.1) 2px, rgba(219,92,78,0.1) 4px)' }} />
+             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to bottom, transparent, rgba(219,92,78,0.3))', animation: 'scanline 1s linear infinite' }} />
              
              <Activity size={64} color={P.red} style={{ marginBottom: 16, position: 'relative', zIndex: 1 }} />
              <h2 style={{ fontSize: 48, fontWeight: 900, color: P.red, margin: '0 0 8px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
@@ -223,20 +223,20 @@ export default function StressTestPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeSlideUp 0.4s ease' }}>
             
             {activeScenarioId === 'doomsday' ? (
-              <div style={{ background: 'rgba(239,68,68,0.1)', border: `1px solid rgba(239,68,68,0.4)`, borderRadius: 24, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 16px 60px rgba(239,68,68,0.2)' }}>
+              <div style={{ background: 'rgba(219,92,78,0.1)', border: `1px solid rgba(219,92,78,0.4)`, borderRadius: 24, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 16px 60px rgba(219,92,78,0.2)' }}>
                  <ShieldAlert size={48} color={P.red} style={{ marginBottom: 16, animation: 'pulseAlert 2s infinite', borderRadius: '50%' }} />
                  <h2 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: '0 0 16px' }}>Kıyamet Senaryosu Tamamlandı</h2>
-                 <p style={{ fontSize: 18, color: '#e2e8f0', lineHeight: 1.6, maxWidth: 800, margin: '0 0 24px' }}>
+                 <p style={{ fontSize: 18, color: '#DFE3E7', lineHeight: 1.6, maxWidth: 800, margin: '0 0 24px' }}>
                    "Şu an aniden işten çıkarılırsan, enflasyon %80'e çıkarsa ve ev sahibin kiranı %50 artırırsa, elindeki nakit ve yatırımlarla sıfır gelirle tam..."
                  </p>
-                 <div style={{ background: '#0a0a0f', padding: '24px 48px', borderRadius: 24, border: `1px solid ${P.red}`, display: 'inline-block' }}>
+                 <div style={{ background: '#0A0B0C', padding: '24px 48px', borderRadius: 24, border: `1px solid ${P.red}`, display: 'inline-block' }}>
                    <p style={{ fontSize: 13, fontWeight: 800, color: P.red, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>SURVIVAL RUNWAY (HAYATTA KALMA PİSTİ)</p>
                    <p style={{ fontSize: 56, fontWeight: 900, color: '#fff', margin: 0, fontFamily: 'monospace' }}>{metrics.doomsdayRunwayDays} GÜN</p>
                  </div>
               </div>
             ) : (
-              <div style={{ background: activeScenarioId === 'base' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', border: `1px solid ${activeScenarioId === 'base' ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: 16, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                 <div style={{ width: 48, height: 48, borderRadius: 16, background: activeScenarioId === 'base' ? '#10B981' : P.amber, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ background: activeScenarioId === 'base' ? 'rgba(52,192,138,0.1)' : 'rgba(210,137,79,0.1)', border: `1px solid ${activeScenarioId === 'base' ? 'rgba(52,192,138,0.3)' : 'rgba(210,137,79,0.3)'}`, borderRadius: 16, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                 <div style={{ width: 48, height: 48, borderRadius: 16, background: activeScenarioId === 'base' ? '#34C08A' : P.amber, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                    <Zap size={24} color="#fff" />
                  </div>
                  <div>

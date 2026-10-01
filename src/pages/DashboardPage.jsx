@@ -32,7 +32,8 @@ function useCountUp(target, duration = 1500) {
       if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
     rafRef.current = requestAnimationFrame(animate);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    const settle = setTimeout(() => setVal(target), duration + 400);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); clearTimeout(settle); };
   }, [target, duration]);
   return val;
 }
@@ -40,73 +41,71 @@ function useCountUp(target, duration = 1500) {
 function StatCard({ label, target, icon: Icon, color, isCurrency = true, change, delay = 0 }) {
   const [visible, setVisible] = useState(false);
   const [hov, setHov] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const cardRef = useRef(null);
-  
-  const animated = useCountUp(target, 1800); // Daha uzun ve yumuşak sayım
-  
+
+  const animated = useCountUp(target, 1800);
+
   useEffect(() => { const t = setTimeout(() => setVisible(true), delay); return () => clearTimeout(t); }, [delay]);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`);
+    el.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`);
   };
 
   const isPos = change > 0;
+
   return (
     <div
       ref={cardRef}
-      onMouseEnter={() => setHov(true)} 
+      className="glass-card spotlight conic-ring"
+      onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       onMouseMove={handleMouseMove}
       style={{
-        padding: '22px 24px', borderRadius: 20,
-        background: P.bg2,
-        border: `1px solid ${hov ? 'transparent' : P.border}`,
-        transition: `transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease ${delay}ms`,
-        transform: visible ? (hov ? 'translateY(-4px)' : 'none') : 'translateY(24px)',
+        padding: '22px 24px',
         opacity: visible ? 1 : 0,
-        boxShadow: hov ? `0 12px 32px rgba(0,0,0,0.5)` : '0 4px 24px rgba(0,0,0,0.4)',
-        position: 'relative', overflow: 'hidden',
+        transform: visible ? 'none' : 'translateY(22px)',
+        transition: `opacity .7s var(--ease-out-expo) ${delay}ms, transform .8s var(--ease-out-expo) ${delay}ms, box-shadow .5s ease, border-color .4s ease, background .4s ease`,
       }}
     >
-      {/* ── Spotlight Glow Efekti ── */}
       <div style={{
-        position: 'absolute', inset: 0, zIndex: 0,
-        background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${color}15, transparent 40%)`,
-        opacity: hov ? 1 : 0, transition: 'opacity 0.3s ease',
-        pointerEvents: 'none'
+        position: 'absolute', top: -46, right: -46, width: 130, height: 130, borderRadius: '50%',
+        background: color, opacity: 0.08, filter: 'blur(38px)', pointerEvents: 'none',
       }} />
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 0, borderRadius: 20,
-        padding: 1, background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, ${color}50, transparent 40%)`,
-        opacity: hov ? 1 : 0, transition: 'opacity 0.3s ease',
-        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-        WebkitMaskComposite: 'xor', maskComposite: 'exclude',
-        pointerEvents: 'none'
-      }} />
-      
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: color, opacity: 0.08, filter: 'blur(28px)', pointerEvents: 'none' }} />
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</p>
-          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8, fontVariantNumeric: 'tabular-nums' }}>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow" style={{ fontSize: 9.5, letterSpacing: '0.2em', marginBottom: 13 }}>{label}</p>
+          <p className="num kpi-underline is-in" style={{
+            fontSize: 27, color: 'var(--text-primary)', lineHeight: 1, display: 'inline-block',
+          }}>
             {isCurrency
-              ? <><span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>{Math.round(animated).toLocaleString('tr-TR')}</>
+              ? <><span style={{ fontSize: 16, color: 'var(--text-muted)', marginRight: 3 }}>₺</span>{Math.round(animated).toLocaleString('tr-TR')}</>
               : `%${animated.toFixed(1)}`}
           </p>
           {change !== undefined && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              {isPos ? <ArrowUpRight size={12} color={P.green} /> : <ArrowDownRight size={12} color={P.red} />}
-              <span style={{ fontSize: 12, color: isPos ? P.green : P.red, fontWeight: 600 }}>%{Math.abs(change).toFixed(1)} geçen aya göre</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 12 }}>
+              {isPos
+                ? <ArrowUpRight size={12} color={P.green} strokeWidth={2.4} />
+                : <ArrowDownRight size={12} color={P.red} strokeWidth={2.4} />}
+              <span className="num" style={{ fontSize: 11.5, color: isPos ? P.green : P.red }}>%{Math.abs(change).toFixed(1)}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>geçen aya göre</span>
             </div>
           )}
         </div>
-        <div style={{ width: 46, height: 46, borderRadius: 14, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease', transform: hov ? 'scale(1.05) rotate(5deg)' : 'none' }}>
-          <Icon size={20} color={color} style={{ filter: hov ? `drop-shadow(0 0 8px ${color}60)` : 'none' }} />
-        </div>
+
+        <span style={{
+          width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+          background: `${color}14`, border: `1px solid ${color}30`,
+          display: 'grid', placeItems: 'center',
+          transition: 'transform .45s var(--ease-out-expo)',
+          transform: hov ? 'scale(1.06) rotate(4deg)' : 'none',
+        }}>
+          <Icon size={18} color={color} strokeWidth={1.8} />
+        </span>
       </div>
     </div>
   );
@@ -117,6 +116,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { transactions, limits, loading } = useSupabaseData();
   const [bankingSyncing, setBankingSyncing] = useState(false);
+  const [dismissedBiasIds, setDismissedBiasIds] = useState([]);
 
   const handleBankSync = () => {
     setBankingSyncing(true);
@@ -166,6 +166,12 @@ export default function DashboardPage() {
   }, [limits, stats.harcamaMap, loading, toast]);
 
   const cognitiveBiases = useMemo(() => detectCognitiveBiases(transactions), [transactions]);
+  const visibleCognitiveBiases = cognitiveBiases.filter(bias => !dismissedBiasIds.includes(bias.id));
+
+  const handleBiasAction = (bias) => {
+    setDismissedBiasIds(current => [...current, bias.id]);
+    toast.success(`${bias.name} için güvenli ilan taslağı oluşturuldu. Yayınlamadan önce son kontrol sizde.`);
+  };
 
   if (loading) {
     return (
@@ -234,9 +240,9 @@ export default function DashboardPage() {
                 disabled={bankingSyncing}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-                  background: bankingSyncing ? P.bg3 : `linear-gradient(135deg, ${P.green}, #059669)`, color: bankingSyncing ? P.text3 : '#fff',
+                  background: bankingSyncing ? P.bg3 : `linear-gradient(135deg, ${P.green}, #1E8A62)`, color: bankingSyncing ? P.text3 : '#fff',
                   fontSize: 13, fontWeight: 800, cursor: bankingSyncing ? 'not-allowed' : 'pointer', border: 'none',
-                  boxShadow: bankingSyncing ? 'none' : '0 8px 20px rgba(16,185,129,0.3)', transition: 'all 0.2s'
+                  boxShadow: bankingSyncing ? 'none' : '0 8px 20px rgba(52,192,138,0.3)', transition: 'all 0.2s'
                 }}
               >
                 {bankingSyncing ? <RefreshCw size={16} className="animate-spin" /> : <Building2 size={16} />}
@@ -246,9 +252,9 @@ export default function DashboardPage() {
                 onClick={() => navigate('/shop-sim')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 12,
-                  background: `linear-gradient(135deg, #EC4899, ${P.purple})`, color: '#fff',
+                  background: `linear-gradient(135deg, #C0705C, ${P.purple})`, color: '#fff',
                   fontSize: 13, fontWeight: 800, cursor: 'pointer', border: 'none',
-                  boxShadow: '0 8px 20px rgba(236,72,153,0.3)', transition: 'all 0.2s'
+                  boxShadow: '0 8px 20px rgba(192,112,92,0.3)', transition: 'all 0.2s'
                 }}
               >
                 <ShoppingCart size={16} />
@@ -258,15 +264,15 @@ export default function DashboardPage() {
           </PageHeader>
         </div>
 
-        {cognitiveBiases.length > 0 && (
+        {visibleCognitiveBiases.length > 0 && (
           <div className="stagger-2" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {cognitiveBiases.map(b => (
+            {visibleCognitiveBiases.map(b => (
               <div key={b.id} style={{ 
                 background: `linear-gradient(135deg, ${P.bg2}, ${P.bg0})`, 
                 border: `1px solid ${P.red}50`, 
                 borderRadius: 16, padding: 20, 
                 display: 'flex', gap: 16, alignItems: 'flex-start',
-                boxShadow: `0 8px 32px rgba(239, 68, 68, 0.1)`
+                boxShadow: `0 8px 32px rgba(219,92,78, 0.1)`
               }}>
                 <div style={{ padding: 12, background: `${P.red}15`, borderRadius: 12, border: `1px solid ${P.red}40` }}>
                   <Zap size={24} color={P.red} />
@@ -281,7 +287,7 @@ export default function DashboardPage() {
                   <p style={{ fontSize: 14, color: P.text2, margin: '0 0 12px', lineHeight: 1.5 }}>
                     {b.message}
                   </p>
-                  <button style={{
+                  <button onClick={() => handleBiasAction(b)} style={{
                     background: P.red, color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 8,
                     fontSize: 12, fontWeight: 700, cursor: 'pointer'
                   }}>
@@ -326,7 +332,7 @@ export default function DashboardPage() {
         {/* ── KÜSURAT YATIRIMI & EŞLİ BÜTÇE ── */}
         <div className="stagger-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {/* Otomatik küsurat hesabı — gerçek hesaplama */}
-          <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: 'linear-gradient(135deg, #181A1D, #101113)', border: `1px solid ${P.amber}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.amber, filter: 'blur(60px)', opacity: 0.15 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 44, height: 44, borderRadius: 14, background: `${P.amber}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${P.amber}50` }}>
@@ -376,7 +382,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Eşli Ortak Bütçe — Coming Soon */}
-          <div style={{ background: 'linear-gradient(135deg, #1C2038, #0D0F1E)', border: `1px solid ${P.pink}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: 'linear-gradient(135deg, #181A1D, #101113)', border: `1px solid ${P.pink}40`, borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: P.pink, filter: 'blur(60px)', opacity: 0.15 }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

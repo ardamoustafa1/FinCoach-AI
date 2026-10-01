@@ -226,7 +226,7 @@ export default function WealthPage() {
             <p style={{ fontSize: 11, color: P.text3, margin: 0 }}>Zaman çizelgesine göre (Yıllık)</p>
           </div>
           
-          <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.2)`, borderRadius: 20, padding: 24 }}>
+          <div style={{ background: 'rgba(52,192,138,0.05)', border: `1px solid rgba(52,192,138,0.2)`, borderRadius: 20, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', color: P.green, textTransform: 'uppercase' }}>Optimize Edilen Getiri</span>
               <TrendingUp size={18} color={P.green} />
@@ -236,8 +236,8 @@ export default function WealthPage() {
           </div>
 
           {/* MACRO-ECONOMIC NLP SENTIMENT */}
-          <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 20, padding: 24, gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
-            <div style={{ flexShrink: 0, width: 64, height: 64, borderRadius: 16, background: 'rgba(239,68,68,0.1)', border: `2px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'rgba(219,92,78,0.05)', border: `1px solid rgba(219,92,78,0.2)`, borderRadius: 20, padding: 24, gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
+            <div style={{ flexShrink: 0, width: 64, height: 64, borderRadius: 16, background: 'rgba(219,92,78,0.1)', border: `2px solid ${P.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                <Gauge size={32} color={P.red} />
             </div>
             <div style={{ flex: 1, minWidth: 280 }}>
@@ -294,7 +294,7 @@ export default function WealthPage() {
 
           {/* OPTIMAL ALLOCATION */}
           <div className="animate-enter" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '0.4s' }}>
-            <div style={{ background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, borderRadius: 24, padding: 32, flex: 1 }}>
+            <div style={{ background: 'rgba(219,92,78,0.05)', border: `1px solid rgba(219,92,78,0.2)`, borderRadius: 24, padding: 32, flex: 1 }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, margin: '0 0 24px' }}>Robotik Yeniden Dengeleme Önerisi</h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

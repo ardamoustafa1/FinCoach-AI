@@ -96,7 +96,7 @@ export default function SystemMonitorPage() {
         .pulse-active { animation: pulseActive 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulseActive { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
         
-        .flow-line { position: absolute; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent); background-size: 200% 100%; animation: flowAnim 1s linear infinite; }
+        .flow-line { position: absolute; background: linear-gradient(90deg, transparent, rgba(110,147,196, 0.8), transparent); background-size: 200% 100%; animation: flowAnim 1s linear infinite; }
         @keyframes flowAnim { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
       `}</style>
 
@@ -109,7 +109,7 @@ export default function SystemMonitorPage() {
           subtitle="Gömülü event bus, yerel RAG indeksi, EWMA projeksiyonu ve fraud skorlamasını canlı izleyin."
           badge="Canlı Sandbox"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'rgba(52,192,138,0.1)', border: '1px solid rgba(52,192,138,0.3)', borderRadius: 12 }}>
             <Activity size={16} color={P.green} />
             <span style={{ fontSize: 13, fontWeight: 800, color: P.green }}>0ms Gecikme</span>
           </div>
@@ -123,11 +123,11 @@ export default function SystemMonitorPage() {
             {/* SOURCE */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: 140 }}>
               <div style={{ width: 64, height: 64, borderRadius: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Server size={32} color="#cbd5e1" />
+                <Server size={32} color="#C8CDD2" />
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#f8fafc' }}>Banka API</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Açık Bankacılık</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#F7F9FA' }}>Banka API</div>
+                <div style={{ fontSize: 11, color: '#6B7075' }}>Açık Bankacılık</div>
               </div>
             </div>
 
@@ -138,12 +138,12 @@ export default function SystemMonitorPage() {
 
             {/* KAFKA BROKER */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: 180 }}>
-              <div className={activeNodes.kafka ? 'pulse-active' : ''} style={{ width: 80, height: 80, borderRadius: 20, background: activeNodes.kafka ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.05)', border: `2px solid ${activeNodes.kafka ? P.blue : 'rgba(59, 130, 246, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
+              <div className={activeNodes.kafka ? 'pulse-active' : ''} style={{ width: 80, height: 80, borderRadius: 20, background: activeNodes.kafka ? 'rgba(110,147,196, 0.2)' : 'rgba(110,147,196, 0.05)', border: `2px solid ${activeNodes.kafka ? P.blue : 'rgba(110,147,196, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
                 <GitMerge size={40} color={P.blue} />
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 15, fontWeight: 900, color: P.blue }}>Embedded Event Bus</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Tarayıcı içi stream</div>
+                <div style={{ fontSize: 11, color: '#6B7075' }}>Tarayıcı içi stream</div>
               </div>
             </div>
 
@@ -175,29 +175,29 @@ export default function SystemMonitorPage() {
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 240, width: 180 }}>
               
               {/* Fraud Node */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.fraud ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.fraud ? P.red : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
-                <ShieldAlert size={24} color={activeNodes.fraud ? P.red : '#64748b'} className={activeNodes.fraud ? 'pulse-active' : ''} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.fraud ? 'rgba(219,92,78, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.fraud ? P.red : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
+                <ShieldAlert size={24} color={activeNodes.fraud ? P.red : '#6B7075'} className={activeNodes.fraud ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.fraud ? P.red : '#f8fafc' }}>İzolasyon Ormanı</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Fraud Tespiti</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.fraud ? P.red : '#F7F9FA' }}>İzolasyon Ormanı</div>
+                  <div style={{ fontSize: 10, color: '#6B7075' }}>Fraud Tespiti</div>
                 </div>
               </div>
 
               {/* CashFlow Node */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.cashflow ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.cashflow ? P.green : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
-                <Cpu size={24} color={activeNodes.cashflow ? P.green : '#64748b'} className={activeNodes.cashflow ? 'pulse-active' : ''} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.cashflow ? 'rgba(52,192,138, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.cashflow ? P.green : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
+                <Cpu size={24} color={activeNodes.cashflow ? P.green : '#6B7075'} className={activeNodes.cashflow ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#f8fafc' }}>EWMA Projeksiyon</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Yerel tahmin motoru</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.cashflow ? P.green : '#F7F9FA' }}>EWMA Projeksiyon</div>
+                  <div style={{ fontSize: 10, color: '#6B7075' }}>Yerel tahmin motoru</div>
                 </div>
               </div>
 
               {/* Vector DB Node */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.rag ? 'rgba(124, 58, 237, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.rag ? P.purple : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
-                <Database size={24} color={activeNodes.rag ? P.purple : '#64748b'} className={activeNodes.rag ? 'pulse-active' : ''} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: activeNodes.rag ? 'rgba(195,203,211, 0.1)' : 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: 16, border: `1px solid ${activeNodes.rag ? P.purple : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
+                <Database size={24} color={activeNodes.rag ? P.purple : '#6B7075'} className={activeNodes.rag ? 'pulse-active' : ''} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#f8fafc' }}>Local RAG</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Cosine index</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: activeNodes.rag ? P.purple : '#F7F9FA' }}>Local RAG</div>
+                  <div style={{ fontSize: 10, color: '#6B7075' }}>Cosine index</div>
                 </div>
               </div>
 
@@ -210,15 +210,15 @@ export default function SystemMonitorPage() {
           
           <div className="animate-enter" style={{ background: P.bg0, border: `1px solid ${P.border}`, borderRadius: 24, padding: 32, animationDelay: '0.2s', flex: '1 1 500px', minHeight: 300 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <Terminal size={18} color="#94a3b8" />
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>SİSTEM LOGLARI (CANLI)</span>
+              <Terminal size={18} color="#9BA1A6" />
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#9BA1A6', letterSpacing: '0.1em' }}>SİSTEM LOGLARI (CANLI)</span>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: 'monospace' }}>
-              {logs.length === 0 && <span style={{ color: '#475569' }}>Sistem dinleniyor. Event bekleniyor...</span>}
+              {logs.length === 0 && <span style={{ color: '#53575C' }}>Sistem dinleniyor. Event bekleniyor...</span>}
               {logs.map((log) => (
                 <div key={log.id} className="animate-enter" style={{ 
-                  color: log.color === 'red' ? '#ef4444' : log.color === 'green' ? '#10b981' : log.color === 'blue' ? '#3b82f6' : log.color === 'purple' ? '#a855f7' : '#cbd5e1',
+                  color: log.color === 'red' ? '#DB5C4E' : log.color === 'green' ? '#34C08A' : log.color === 'blue' ? '#6E93C4' : log.color === 'purple' ? '#C7CED5' : '#C8CDD2',
                   fontSize: 13, lineHeight: 1.5
                 }}>
                   {log.msg}
@@ -230,12 +230,12 @@ export default function SystemMonitorPage() {
           <div className="animate-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24, flex: '1 1 350px', animationDelay: '0.3s' }}>
             
             {/* Zero Trust Panel */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.05), transparent)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 24, padding: 24 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(52,192,138,0.05), transparent)', border: `1px solid rgba(52,192,138,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                 <div style={{ background: 'rgba(16,185,129,0.2)', padding: 8, borderRadius: 12 }}><ShieldCheck size={20} color={P.green} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS</h3>
+                 <div style={{ background: 'rgba(52,192,138,0.2)', padding: 8, borderRadius: 12 }}><ShieldCheck size={20} color={P.green} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#F7F9FA', margin: 0 }}>Sıfır Güven (Zero-Trust) & RLS</h3>
                </div>
-               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+               <p style={{ fontSize: 13, color: '#9BA1A6', lineHeight: 1.6, margin: '0 0 16px' }}>
                  Supabase RLS şema seviyesinde, local demo modunda ise aynı yetki sınırı tarayıcı sandbox katmanında uygulanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -249,12 +249,12 @@ export default function SystemMonitorPage() {
             </div>
 
             {/* Edge Computing Panel */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.05), transparent)', border: `1px solid rgba(59,130,246,0.3)`, borderRadius: 24, padding: 24 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(110,147,196,0.05), transparent)', border: `1px solid rgba(110,147,196,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                 <div style={{ background: 'rgba(59,130,246,0.2)', padding: 8, borderRadius: 12 }}><Globe size={20} color={P.blue} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Edge Computing</h3>
+                 <div style={{ background: 'rgba(110,147,196,0.2)', padding: 8, borderRadius: 12 }}><Globe size={20} color={P.blue} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#F7F9FA', margin: 0 }}>Edge Computing</h3>
                </div>
-               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+               <p style={{ fontSize: 13, color: '#9BA1A6', lineHeight: 1.6, margin: '0 0 16px' }}>
                  Markowitz optimizasyonu ve AI çıkarımları bu oturumda yerel edge runtime üzerinde hesaplanır.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
@@ -267,12 +267,12 @@ export default function SystemMonitorPage() {
             </div>
 
             {/* Data Lake & ETL Panel */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.05), transparent)', border: `1px solid rgba(124,58,237,0.3)`, borderRadius: 24, padding: 24 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(195,203,211,0.05), transparent)', border: `1px solid rgba(195,203,211,0.3)`, borderRadius: 24, padding: 24 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                 <div style={{ background: 'rgba(124,58,237,0.2)', padding: 8, borderRadius: 12 }}><Database size={20} color={P.purple} /></div>
-                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc', margin: 0 }}>Data Lake & ETL Pipeline</h3>
+                 <div style={{ background: 'rgba(195,203,211,0.2)', padding: 8, borderRadius: 12 }}><Database size={20} color={P.purple} /></div>
+                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#F7F9FA', margin: 0 }}>Data Lake & ETL Pipeline</h3>
                </div>
-               <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+               <p style={{ fontSize: 13, color: '#9BA1A6', lineHeight: 1.6, margin: '0 0 16px' }}>
                  Açık bankacılık sandbox verisi, local store ve event stream aynı işlem modeline normalize edilir.
                </p>
                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg2, padding: '12px 16px', borderRadius: 12, border: `1px solid ${P.border}` }}>
@@ -281,7 +281,7 @@ export default function SystemMonitorPage() {
                    <span style={{ fontSize: 13, color: P.text2, fontWeight: 600 }}>Son ETL Senkronizasyonu:</span>
                  </div>
                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', boxShadow: '0 0 8px #10b981', animation: 'pulseActive 2s infinite' }} />
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, display: 'inline-block', boxShadow: '0 0 8px #34C08A', animation: 'pulseActive 2s infinite' }} />
                     <span style={{ fontSize: 12, fontWeight: 900, color: P.green }}>BAŞARILI (2sn önce)</span>
                  </div>
                </div>

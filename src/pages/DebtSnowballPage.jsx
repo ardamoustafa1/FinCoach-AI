@@ -139,8 +139,8 @@ export default function DebtSnowballPage() {
 
         {/* AI ADVICE BANNER */}
         <div style={{
-          background: plan.extraPayment < 0 ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.1)',
-          border: `1px solid ${plan.extraPayment < 0 ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}`,
+          background: plan.extraPayment < 0 ? 'rgba(219,92,78,0.1)' : 'rgba(110,147,196,0.1)',
+          border: `1px solid ${plan.extraPayment < 0 ? 'rgba(219,92,78,0.3)' : 'rgba(110,147,196,0.3)'}`,
           borderRadius: 20, padding: 24, display: 'flex', gap: 16, alignItems: 'flex-start'
         }}>
           <div style={{ width: 48, height: 48, borderRadius: 16, background: plan.extraPayment < 0 ? P.red : P.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

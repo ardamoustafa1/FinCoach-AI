@@ -72,8 +72,8 @@ export default function DeadMansSwitchPage() {
       <style>{`
         .web3-bg {
           background-image: 
-            radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+            radial-gradient(circle at 100% 0%, rgba(195,203,211, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(219,92,78, 0.05) 0%, transparent 50%);
         }
         .code-font { font-family: 'Fira Code', monospace; }
         .glitch { animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; }
@@ -89,16 +89,16 @@ export default function DeadMansSwitchPage() {
           animation: pulse-border 2s infinite;
         }
         @keyframes pulse-border {
-          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-          70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+          0% { box-shadow: 0 0 0 0 rgba(219,92,78, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(219,92,78, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(219,92,78, 0); }
         }
       `}</style>
 
       <div className="web3-bg" style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40, minHeight: '100%' }}>
         <PageHeader
           icon={<Skull size={24} />}
-          color="#EF4444"
+          color="#DB5C4E"
           title="Dead Man's Switch (Web3 Vasiyet)"
           subtitle="İnaktiflik ve oracle sinyallerine göre dijital varlık devir paketini sandbox custody ledger üzerinde çalıştırır."
           badge="Custody Sandbox"
@@ -110,7 +110,7 @@ export default function DeadMansSwitchPage() {
           <div className="animate-enter" style={{ background: P.bg2, border: `1px solid ${step === 1 ? P.red : step === 3 ? P.green : P.border}`, borderRadius: 24, padding: 32, transition: 'all 0.5s' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div className={step === 1 ? 'pulse-border' : ''} style={{ width: 48, height: 48, borderRadius: 12, background: step === 3 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className={step === 1 ? 'pulse-border' : ''} style={{ width: 48, height: 48, borderRadius: 12, background: step === 3 ? 'rgba(52,192,138,0.1)' : 'rgba(219,92,78,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {step === 3 ? <CheckCircle2 size={24} color={P.green} /> : <FileWarning size={24} color={P.red} />}
                 </div>
                 <div>
@@ -118,7 +118,7 @@ export default function DeadMansSwitchPage() {
                   <p className="code-font" style={{ fontSize: 12, color: P.text3, margin: 0 }}>Network: FinCoach Sandbox Ledger</p>
                 </div>
               </div>
-              <div style={{ padding: '6px 12px', borderRadius: 99, background: step === 3 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${step === 3 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
+              <div style={{ padding: '6px 12px', borderRadius: 99, background: step === 3 ? 'rgba(52,192,138,0.1)' : 'rgba(219,92,78,0.1)', border: `1px solid ${step === 3 ? 'rgba(52,192,138,0.3)' : 'rgba(219,92,78,0.3)'}` }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: step === 3 ? P.green : P.red, textTransform: 'uppercase' }}>
                   {step === 0 ? 'MONITORING' : step === 1 ? 'CRITICAL ALERT' : step === 2 ? 'EXECUTING' : 'COMPLETED'}
                 </span>
@@ -167,14 +167,14 @@ export default function DeadMansSwitchPage() {
             {step === 1 && (
               <button 
                 onClick={() => setStep(2)}
-                style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #EF4444, #991B1B)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(239,68,68,0.4)' }}
+                style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'linear-gradient(135deg, #DB5C4E, #991B1B)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 30px rgba(219,92,78,0.4)' }}
               >
                 <Fingerprint size={18} /> Otonom Transfer Paketini Onayla
               </button>
             )}
             {step === 3 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: P.green, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <div style={{ width: '100%', padding: '16px', borderRadius: 16, background: 'rgba(52,192,138,0.1)', border: '1px solid rgba(52,192,138,0.3)', color: P.green, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                   <Lock size={18} /> Varlık Devir Paketi Tamamlandı
                 </div>
                 <button onClick={startSimulation} style={{ padding: '12px', borderRadius: 12, background: P.bg3, border: `1px solid ${P.border}`, color: P.text1, fontWeight: 700, cursor: 'pointer' }}>Testi Sıfırla</button>
@@ -188,12 +188,12 @@ export default function DeadMansSwitchPage() {
           </div>
 
           {/* RIGHT: EVM EXECUTION TERMINAL */}
-          <div className="animate-enter" style={{ background: '#050714', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', display: 'flex', flexDirection: 'column', animationDelay: '0.1s' }}>
+          <div className="animate-enter" style={{ background: '#0A0B0C', border: `1px solid ${P.border}`, borderRadius: 24, padding: 24, position: 'relative', display: 'flex', flexDirection: 'column', animationDelay: '0.1s' }}>
             <h3 style={{ fontSize: 14, fontWeight: 800, color: P.text2, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid rgba(255,255,255,0.1)`, paddingBottom: 16 }}>
               <Terminal size={16} /> Sandbox Execution Console
             </h3>
 
-            <div className="code-font" style={{ flex: 1, fontSize: 13, lineHeight: 1.8, color: '#a1a1aa' }}>
+            <div className="code-font" style={{ flex: 1, fontSize: 13, lineHeight: 1.8, color: '#9BA1A6' }}>
               {step === 0 && <span style={{ opacity: 0.5 }}>Standby. Listening to sandbox oracle checks...</span>}
               {step === 1 && (
                 <div style={{ color: P.red, fontWeight: 700, marginBottom: 16 }}>
@@ -204,7 +204,7 @@ export default function DeadMansSwitchPage() {
               )}
               {step >= 2 && logs.map((log, i) => (
                 <div key={i} style={{ 
-                  color: (log && (log.includes('ERROR') || log.includes('WARNING'))) ? P.red : (log && log.includes('success')) ? P.green : '#a1a1aa',
+                  color: (log && (log.includes('ERROR') || log.includes('WARNING'))) ? P.red : (log && log.includes('success')) ? P.green : '#9BA1A6',
                   marginBottom: 8,
                   display: 'flex', alignItems: 'flex-start', gap: 8
                 }}>

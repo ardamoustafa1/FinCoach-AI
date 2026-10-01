@@ -103,7 +103,7 @@ export default function AnomalyPage() {
     <>
       <style>{`
         .pulse-red { animation: pulseRed 2s infinite; }
-        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(219,92,78, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(219,92,78, 0); } 100% { box-shadow: 0 0 0 0 rgba(219,92,78, 0); } }
       `}</style>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 40 }}>
@@ -120,9 +120,9 @@ export default function AnomalyPage() {
             className={!walletLocked ? 'pulse-red' : ''}
             style={{ 
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 14, border: 'none',
-              background: walletLocked ? P.bg3 : `linear-gradient(135deg, ${P.red}, #B91C1C)`, color: walletLocked ? P.text3 : '#fff',
+              background: walletLocked ? P.bg3 : `linear-gradient(135deg, ${P.red}, #973B31)`, color: walletLocked ? P.text3 : '#fff',
               fontSize: 13, fontWeight: 800, cursor: walletLocked ? 'not-allowed' : 'pointer',
-              boxShadow: walletLocked ? 'none' : `0 8px 20px rgba(239,68,68,0.3)`, transition: 'all 0.2s'
+              boxShadow: walletLocked ? 'none' : `0 8px 20px rgba(219,92,78,0.3)`, transition: 'all 0.2s'
             }}
           >
             {walletLocked ? <CheckCircle2 size={16} /> : <Lock size={16} />}
@@ -131,7 +131,7 @@ export default function AnomalyPage() {
         </PageHeader>
 
         {walletLocked && (
-          <div className="animate-enter" style={{ background: 'rgba(239,68,68,0.1)', border: `1px solid ${P.red}`, padding: 20, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 12, color: P.red }}>
+          <div className="animate-enter" style={{ background: 'rgba(219,92,78,0.1)', border: `1px solid ${P.red}`, padding: 20, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 12, color: P.red }}>
              <ShieldAlert size={24} />
              <div>
                <h4 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800 }}>Tüm İşlemler Donduruldu</h4>
@@ -188,7 +188,7 @@ export default function AnomalyPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {anomalies.map(anomaly => (
                   <div key={anomaly.id} style={{ 
-                    background: 'rgba(239,68,68,0.05)', border: `1px solid rgba(239,68,68,0.2)`, 
+                    background: 'rgba(219,92,78,0.05)', border: `1px solid rgba(219,92,78,0.2)`, 
                     borderRadius: 16, padding: 16, position: 'relative', overflow: 'hidden' 
                   }}>
                     <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: P.red }} />

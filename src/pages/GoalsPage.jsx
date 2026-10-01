@@ -67,8 +67,8 @@ export default function GoalsPage() {
   const triggerConfetti = () => {
     const end = Date.now() + 3000;
     const frame = () => {
-      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#7c3aed', '#10b981', '#d946ef'] });
-      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#7c3aed', '#10b981', '#d946ef'] });
+      confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#C3CBD3', '#34C08A', '#C0705C'] });
+      confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#C3CBD3', '#34C08A', '#C0705C'] });
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
@@ -107,7 +107,7 @@ export default function GoalsPage() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 8px 32px rgba(124,58,237,0.45)', transition: 'transform 0.15s, opacity 0.2s' }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, background: 'linear-gradient(135deg, #C3CBD3 0%, #5C646B 100%)', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 8px 32px rgba(195,203,211,0.45)', transition: 'transform 0.15s, opacity 0.2s' }}
           onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'none'}
         >
@@ -118,24 +118,24 @@ export default function GoalsPage() {
       {/* STAT CARDS EXACTLY LIKE DASHBOARD */}
       {goals.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 40 }}>
-          <StatCard label="Toplam Hedef" value={goals.length} icon={Target} color="#7c3aed" />
-          <StatCard label="Tamamlanan" value={tamamlanan.length} icon={CheckSquare} color="#10b981" />
-          <StatCard label="Toplam Birikim" value={totalCurrent} icon={Wallet} color="#f59e0b" isCurrency />
+          <StatCard label="Toplam Hedef" value={goals.length} icon={Target} color="#C3CBD3" />
+          <StatCard label="Tamamlanan" value={tamamlanan.length} icon={CheckSquare} color="#34C08A" />
+          <StatCard label="Toplam Birikim" value={totalCurrent} icon={Wallet} color="#D2894F" isCurrency />
         </div>
       )}
 
       {/* OTONOM ARBİTRAJ VE FIRSAT AJANI (WEB SCRAPING AGENT) */}
       {aktif.length > 0 && (
-        <div className="animate-enter" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(14,165,233,0.05))', border: `1px solid rgba(6,182,212,0.3)`, borderRadius: 24, padding: 32, marginBottom: 40, position: 'relative', overflow: 'hidden' }}>
+        <div className="animate-enter" style={{ background: 'linear-gradient(135deg, rgba(69,147,156,0.1), rgba(14,165,233,0.05))', border: `1px solid rgba(69,147,156,0.3)`, borderRadius: 24, padding: 32, marginBottom: 40, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1, pointerEvents: 'none' }}>
-            <ShoppingCart size={200} color="#06b6d4" />
+            <ShoppingCart size={200} color="#45939C" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative', zIndex: 1 }}>
-            <div style={{ background: 'rgba(6,182,212,0.2)', padding: 10, borderRadius: 14 }}>
-              <Bot size={24} color="#06b6d4" />
+            <div style={{ background: 'rgba(69,147,156,0.2)', padding: 10, borderRadius: 14 }}>
+              <Bot size={24} color="#45939C" />
             </div>
             <div>
-              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#06b6d4' }}>Otonom Fırsat Avcısı Ajan</span>
+              <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#45939C' }}>Otonom Fırsat Avcısı Ajan</span>
               <h2 style={{ fontSize: 22, fontWeight: 900, color: P.text1, margin: 0, letterSpacing: '-0.01em' }}>Arbitraj & Flaş İndirim Tespiti</h2>
             </div>
           </div>
@@ -150,8 +150,8 @@ export default function GoalsPage() {
               setTimeout(() => toast.success('Amazon Türkiye üzerinde %18 indirimli ürün sepetinize eklenebilir!'), 1500);
             }}
             style={{
-            background: '#06b6d4', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 12,
-            fontSize: 14, fontWeight: 800, cursor: 'pointer', position: 'relative', zIndex: 1, boxShadow: '0 8px 24px rgba(6,182,212,0.4)'
+            background: '#45939C', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 12,
+            fontSize: 14, fontWeight: 800, cursor: 'pointer', position: 'relative', zIndex: 1, boxShadow: '0 8px 24px rgba(69,147,156,0.4)'
           }}>
             Hemen Satın Al (Fırsata Git)
           </button>
@@ -159,12 +159,12 @@ export default function GoalsPage() {
       )}
 
       {/* BEHAVIORAL ECONOMICS (HYPERBOLIC DISCOUNTING) PANEL */}
-      <div className="animate-enter" style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.05), rgba(124,58,237,0.05))', border: `1px solid rgba(244,63,94,0.2)`, borderRadius: 24, padding: 32, marginBottom: 40, position: 'relative', overflow: 'hidden' }}>
+      <div className="animate-enter" style={{ background: 'linear-gradient(135deg, rgba(219,92,78,0.05), rgba(195,203,211,0.05))', border: `1px solid rgba(219,92,78,0.2)`, borderRadius: 24, padding: 32, marginBottom: 40, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, pointerEvents: 'none' }}>
           <Brain size={200} color={P.red} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative', zIndex: 1 }}>
-          <div style={{ background: 'rgba(244,63,94,0.15)', padding: 10, borderRadius: 14 }}>
+          <div style={{ background: 'rgba(219,92,78,0.15)', padding: 10, borderRadius: 14 }}>
             <BrainCircuit size={24} color={P.red} />
           </div>
           <div>
@@ -182,7 +182,7 @@ export default function GoalsPage() {
              <div style={{ fontSize: 11, color: P.text3, textTransform: 'uppercase', fontWeight: 800, marginBottom: 6 }}>İnsan Hatası (Human Error)</div>
              <div style={{ fontSize: 15, color: P.text1, fontWeight: 600 }}>Aylık tek seferde <span style={{ color: P.red }}>1.350₺</span> ayırma stresi ve başarısızlık ihtimali.</div>
           </div>
-          <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid rgba(16,185,129,0.3)`, borderRadius: 16, padding: '16px 20px', flex: '1 1 250px' }}>
+          <div style={{ background: 'rgba(52,192,138,0.05)', border: `1px solid rgba(52,192,138,0.3)`, borderRadius: 16, padding: '16px 20px', flex: '1 1 250px' }}>
              <div style={{ fontSize: 11, color: P.green, textTransform: 'uppercase', fontWeight: 800, marginBottom: 6 }}>Nudge (Dürtme) Çözümü</div>
              <div style={{ fontSize: 15, color: P.text1, fontWeight: 600 }}>Zihne acı vermeyen, hissettirmeden her gün <span style={{ color: P.green }}>45₺</span> otomatik mikro-aktarım.</div>
           </div>
@@ -192,7 +192,7 @@ export default function GoalsPage() {
       {/* AKTİF HEDEFLER */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <span style={{ fontSize: 12, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.16em', whiteSpace: 'nowrap' }}>Aktif Hedefler ({aktif.length})</span>
-        <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(124,58,237,0.3), transparent)` }} />
+        <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(195,203,211,0.3), transparent)` }} />
       </div>
 
       {aktif.length > 0 ? (
@@ -201,8 +201,8 @@ export default function GoalsPage() {
         </div>
       ) : (
         <div style={{ borderRadius: 24, padding: '72px 32px', textAlign: 'center', background: P.bg2, border: `1px dashed ${P.border}`, marginBottom: 40 }}>
-          <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 20, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Target size={30} color="#7c3aed" />
+          <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: 20, background: 'rgba(195,203,211,0.1)', border: '1px solid rgba(195,203,211,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Target size={30} color="#C3CBD3" />
           </div>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 8 }}>Aktif hedefin yok</h3>
           <p style={{ fontSize: 14, color: P.text3, margin: 0 }}>Hemen yeni bir hedef ekleyerek birikim yapmaya başla.</p>
@@ -228,7 +228,7 @@ export default function GoalsPage() {
         <div style={{ paddingTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
             <span style={{ fontSize: 12, fontWeight: 800, color: P.text3, textTransform: 'uppercase', letterSpacing: '0.16em', whiteSpace: 'nowrap' }}>Tamamlanan Hedefler ({tamamlanan.length})</span>
-            <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(16,185,129,0.3), transparent)` }} />
+            <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(52,192,138,0.3), transparent)` }} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
             {tamamlanan.map(g => <GoalCard key={g.id} hedef={g} onEdit={() => handleOpenModal(g)} onDelete={() => handleDelete(g.id)} isCompleted />)}
@@ -243,13 +243,13 @@ export default function GoalsPage() {
 
       {completedModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)', animation: 'fadeSlideUp 0.2s ease' }} onClick={e => e.target === e.currentTarget && setCompletedModal(null)}>
-          <div style={{ width: '100%', maxWidth: 380, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
-            <div style={{ width: 88, height: 88, margin: '0 auto 24px', borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>🎉</div>
+          <div style={{ width: '100%', maxWidth: 380, background: 'linear-gradient(160deg, #121417 0%, #0A0B0C 100%)', border: '1px solid rgba(195,203,211,0.35)', borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+            <div style={{ width: 88, height: 88, margin: '0 auto 24px', borderRadius: '50%', background: 'rgba(52,192,138,0.12)', border: '1px solid rgba(52,192,138,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>🎉</div>
             <h2 style={{ fontSize: 28, fontWeight: 900, color: P.text1, marginBottom: 14 }}>Tebrikler!</h2>
             <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.65, marginBottom: 28 }}>
-              <strong style={{ color: '#a78bfa' }}>{completedModal}</strong> hedefine başarıyla ulaştın. Hayallerine bir adım daha yaklaştın!
+              <strong style={{ color: '#E4E9ED' }}>{completedModal}</strong> hedefine başarıyla ulaştın. Hayallerine bir adım daha yaklaştın!
             </p>
-            <button onClick={() => setCompletedModal(null)} style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(16,185,129,0.35)', transition: 'opacity 0.2s' }}>
+            <button onClick={() => setCompletedModal(null)} style={{ width: '100%', padding: 16, borderRadius: 16, background: 'linear-gradient(135deg, #34C08A 0%, #1E8A62 100%)', color: '#fff', fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 28px rgba(52,192,138,0.35)', transition: 'opacity 0.2s' }}>
               Harika! 🚀
             </button>
           </div>
@@ -259,9 +259,9 @@ export default function GoalsPage() {
       {/* ── SİL ONAY MODALI (native confirm() yerine) ── */}
       {deleteConfirm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 65, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(14px)' }} onClick={e => e.target === e.currentTarget && setDeleteConfirm(null)}>
-          <div style={{ width: '100%', maxWidth: 360, background: 'linear-gradient(160deg, #1a0e0e 0%, #0e0c1a 100%)', border: '1px solid rgba(244,63,94,0.35)', borderRadius: 28, padding: '36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
-            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: '50%', background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AlertTriangle size={30} color="#f43f5e" />
+          <div style={{ width: '100%', maxWidth: 360, background: 'linear-gradient(160deg, #17110F 0%, #0A0B0C 100%)', border: '1px solid rgba(219,92,78,0.35)', borderRadius: 28, padding: '36px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,0.85)' }}>
+            <div style={{ width: 72, height: 72, margin: '0 auto 20px', borderRadius: '50%', background: 'rgba(219,92,78,0.12)', border: '1px solid rgba(219,92,78,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={30} color="#DB5C4E" />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: P.text1, marginBottom: 10 }}>Hedefi Sil</h2>
             <p style={{ fontSize: 14, color: P.text2, lineHeight: 1.6, marginBottom: 28 }}>
@@ -271,7 +271,7 @@ export default function GoalsPage() {
               <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text1, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
                 Vazgeç
               </button>
-              <button onClick={confirmDelete} style={{ flex: 1, padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #f43f5e, #b91c1c)', color: '#fff', fontWeight: 800, fontSize: 14, border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(244,63,94,0.35)' }}>
+              <button onClick={confirmDelete} style={{ flex: 1, padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #DB5C4E, #973B31)', color: '#fff', fontWeight: 800, fontSize: 14, border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(219,92,78,0.35)' }}>
                 Evet, Sil
               </button>
             </div>
