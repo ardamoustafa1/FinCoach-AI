@@ -9,9 +9,9 @@ import { useState, useEffect } from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import GlassCard from './GlassCard';
 import AnimNumber from './AnimNumber';
-
 import { P } from '../../styles/palette';
-export default function StatCard({ label, value, icon: Icon, color, change, isCurrency = true, delay = 0 }) {
+
+export default function StatCard({ label, value, icon: Icon, color = P.green, change, isCurrency = true, delay = 0 }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -26,56 +26,57 @@ export default function StatCard({ label, value, icon: Icon, color, change, isCu
     <GlassCard
       glow
       style={{
-        padding: '22px 24px',
+        padding: '24px 26px',
         opacity: visible ? 1 : 0,
-        transform: visible ? 'none' : 'translateY(16px)',
-        transition: `opacity 0.5s ease ${delay}ms, transform 0.5s ease ${delay}ms, background 0.3s, border 0.3s, box-shadow 0.3s`,
+        transform: visible ? 'none' : 'translateY(18px)',
+        transition: `opacity .7s var(--ease-out-expo) ${delay}ms, transform .8s var(--ease-out-expo) ${delay}ms, box-shadow .5s ease, border-color .4s ease, background .4s ease`,
       }}
     >
-      {/* Arka plan degrade */}
+      {/* Yumuşak renk imzası */}
       <div style={{
-        position: 'absolute', top: -30, right: -30,
-        width: 100, height: 100, borderRadius: '50%',
-        background: color, opacity: 0.08, filter: 'blur(30px)',
+        position: 'absolute', top: -40, right: -40,
+        width: 130, height: 130, borderRadius: '50%',
+        background: color, opacity: 0.07, filter: 'blur(38px)',
         pointerEvents: 'none',
       }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: P.text3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow" style={{ fontSize: 9.5, letterSpacing: '0.2em', marginBottom: 14 }}>
             {label}
           </p>
-          <p style={{ fontSize: 26, fontWeight: 800, color: P.text1, lineHeight: 1, marginBottom: 8 }}>
-            {isCurrency ? (
-              <>
-                <span style={{ fontSize: 16, fontWeight: 600, color: P.text2, marginRight: 2 }}>₺</span>
-                <AnimNumber value={numVal} />
-              </>
-            ) : (
-              <AnimNumber value={numVal} />
+
+          <p className="num" style={{
+            fontSize: 28, fontWeight: 500, color: 'var(--text-primary)',
+            lineHeight: 1, marginBottom: 10, letterSpacing: '-0.035em',
+          }}>
+            {isCurrency && (
+              <span style={{ fontSize: 17, color: 'var(--text-muted)', marginRight: 3 }}>₺</span>
             )}
+            <AnimNumber value={numVal} />
           </p>
 
           {change !== undefined && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {isPositive
-                ? <ArrowUpRight size={12} color={P.green} />
-                : <ArrowDownRight size={12} color={P.red} />}
-              <span style={{ fontSize: 12, color: isPositive ? P.green : P.red, fontWeight: 600 }}>
-                {Math.abs(change)}% bu ay
+                ? <ArrowUpRight size={13} color={P.green} strokeWidth={2.2} />
+                : <ArrowDownRight size={13} color={P.red} strokeWidth={2.2} />}
+              <span className="num" style={{ fontSize: 12, color: isPositive ? P.green : P.red }}>
+                {Math.abs(change)}%
               </span>
+              <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>bu ay</span>
             </div>
           )}
         </div>
 
-        <div style={{
-          width: 46, height: 46, borderRadius: 14,
-          background: `${color}22`,
-          border: `1px solid ${color}33`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        <span style={{
+          width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+          background: `${color}14`,
+          border: `1px solid ${color}2E`,
+          display: 'grid', placeItems: 'center',
         }}>
-          <Icon size={20} color={color} />
-        </div>
+          {Icon && <Icon size={18} color={color} strokeWidth={1.7} />}
+        </span>
       </div>
     </GlassCard>
   );

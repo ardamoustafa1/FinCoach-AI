@@ -8,15 +8,15 @@ const GUN_ISIMLERI = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
 function getCellStyle(tutar, maxTutar, isSelected) {
   if (tutar === 0) {
-    return { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', border: `1px solid ${isSelected ? '#7c3aed' : 'rgba(255,255,255,0.06)'}` };
+    return { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', border: `1px solid ${isSelected ? '#C3CBD3' : 'rgba(255,255,255,0.06)'}` };
   }
   const oran = Math.min(tutar / maxTutar, 1);
   let bg, color;
-  if (oran < 0.25)      { bg = 'rgba(99,102,241,0.15)';  color = '#a5b4fc'; }
-  else if (oran < 0.5)  { bg = 'rgba(99,102,241,0.28)';  color = '#818cf8'; }
-  else if (oran < 0.75) { bg = 'rgba(99,102,241,0.45)';  color = '#e0e7ff'; }
-  else                  { bg = 'rgba(124,58,237,0.75)';   color = '#ffffff'; }
-  return { background: bg, color, border: `1px solid ${isSelected ? '#a78bfa' : 'rgba(124,58,237,0.2)'}` };
+  if (oran < 0.25)      { bg = 'rgba(139,148,157,0.15)';  color = '#a5b4fc'; }
+  else if (oran < 0.5)  { bg = 'rgba(139,148,157,0.28)';  color = '#99A2AA'; }
+  else if (oran < 0.75) { bg = 'rgba(139,148,157,0.45)';  color = '#e0e7ff'; }
+  else                  { bg = 'rgba(195,203,211,0.75)';   color = '#ffffff'; }
+  return { background: bg, color, border: `1px solid ${isSelected ? '#E4E9ED' : 'rgba(195,203,211,0.2)'}` };
 }
 
 export default function HeatmapCalendar({ islemler }) {
@@ -60,7 +60,7 @@ export default function HeatmapCalendar({ islemler }) {
 
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', bottom: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(195,203,211,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>Günlük Harcama Haritası</h2>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>{currentDate} · Güne tıklayarak detay görün</p>
 
@@ -83,7 +83,7 @@ export default function HeatmapCalendar({ islemler }) {
               borderRadius: 8,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, cursor: 'pointer', transition: 'all 0.2s',
-              boxShadow: isSelected ? '0 0 12px rgba(124,58,237,0.5)' : 'none',
+              boxShadow: isSelected ? '0 0 12px rgba(195,203,211,0.5)' : 'none',
               transform: isSelected ? 'scale(1.1)' : 'none',
               ...cellStyle,
             }}>
@@ -102,7 +102,7 @@ export default function HeatmapCalendar({ islemler }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, fontSize: 11, color: P.text3 }}>
         <span>Az</span>
         <div style={{ display: 'flex', gap: 3 }}>
-          {['rgba(255,255,255,0.04)', 'rgba(99,102,241,0.15)', 'rgba(99,102,241,0.28)', 'rgba(99,102,241,0.45)', 'rgba(124,58,237,0.75)'].map((bg, i) => (
+          {['rgba(255,255,255,0.04)', 'rgba(139,148,157,0.15)', 'rgba(139,148,157,0.28)', 'rgba(139,148,157,0.45)', 'rgba(195,203,211,0.75)'].map((bg, i) => (
             <div key={i} style={{ width: 16, height: 11, borderRadius: 3, background: bg, border: '1px solid rgba(255,255,255,0.08)' }} />
           ))}
         </div>
@@ -112,7 +112,7 @@ export default function HeatmapCalendar({ islemler }) {
       {/* Day modal */}
       {seciliGun && (
         <div onClick={() => setSeciliGun(null)} style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 440, background: 'linear-gradient(160deg, #1a1030 0%, #0e0c1a 100%)', border: '1px solid rgba(124,58,237,0.35)', borderRadius: 24, padding: 28, boxShadow: '0 40px 120px rgba(0,0,0,0.8)', animation: 'slideUp 0.22s ease' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 440, background: 'linear-gradient(160deg, #121417 0%, #0A0B0C 100%)', border: '1px solid rgba(195,203,211,0.35)', borderRadius: 24, padding: 28, boxShadow: '0 40px 120px rgba(0,0,0,0.8)', animation: 'slideUp 0.22s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h3 style={{ fontSize: 17, fontWeight: 800, color: P.text1 }}>{seciliGun} {currentDate}</h3>
               <button onClick={() => setSeciliGun(null)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: `1px solid ${P.border}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.text2 }}>

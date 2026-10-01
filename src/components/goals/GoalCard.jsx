@@ -45,12 +45,12 @@ const GoalCard = memo(function GoalCard({ hedef, onEdit, onDelete, onQuickAdd, i
           <div>
             <p style={{ fontSize: 17, fontWeight: 800, color: P.text1, margin: '0 0 5px', lineHeight: 1.2 }}>{hedef.name}</p>
             {isCompleted ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: P.green, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.22)', padding: '3px 10px', borderRadius: 99 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: P.green, background: 'rgba(52,192,138,0.12)', border: '1px solid rgba(52,192,138,0.22)', padding: '3px 10px', borderRadius: 99 }}>
                 <CheckCircle size={10} /> Tamamlandı
               </span>
             ) : (
               <p style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: P.text3, margin: 0 }}>
-                {urgent && <Flame size={12} color="#f59e0b" />}
+                {urgent && <Flame size={12} color="#D2894F" />}
                 <Calendar size={12} /> {kalanGun > 0 ? `${kalanGun} gün kaldı` : 'Süresi doldu'}
               </p>
             )}
@@ -63,17 +63,17 @@ const GoalCard = memo(function GoalCard({ hedef, onEdit, onDelete, onQuickAdd, i
             <button
               onClick={() => onQuickAdd(hedef.id, 500)}
               title="500₺ Hızlı Ekle"
-              style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', color: '#10b981', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.25)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(52,192,138,0.12)', border: '1px solid rgba(52,192,138,0.25)', color: '#34C08A', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(52,192,138,0.25)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(52,192,138,0.12)'; e.currentTarget.style.transform = 'scale(1)'; }}
             >
               <Plus size={14} />
             </button>
           )}
-          <button onClick={onEdit} title="Düzenle" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(124,58,237,0.18)'; e.currentTarget.style.color = '#c4b5fd'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; }}>
+          <button onClick={onEdit} title="Düzenle" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(195,203,211,0.18)'; e.currentTarget.style.color = '#F1F4F6'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; }}>
             <Edit2 size={14} />
           </button>
-          <button onClick={onDelete} title="Sil" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(244,63,94,0.15)'; e.currentTarget.style.color = '#f87171'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; }}>
+          <button onClick={onDelete} title="Sil" style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${P.border}`, color: P.text2, cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(219,92,78,0.15)'; e.currentTarget.style.color = '#EC8A7E'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = P.text2; }}>
             <Trash2 size={14} />
           </button>
         </div>

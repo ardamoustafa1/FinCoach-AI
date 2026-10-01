@@ -5,7 +5,7 @@
  * @param {{ color?: string, size?: number, top?: number|string, left?: number|string, right?: number|string, bottom?: number|string, opacity?: number }} props
  */
 export default function GlowOrb({
-  color = '#7C3AED',
+  color = '#C3CBD3',
   size = 320,
   top,
   left,

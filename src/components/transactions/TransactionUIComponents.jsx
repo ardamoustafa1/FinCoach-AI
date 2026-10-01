@@ -4,9 +4,9 @@ import { TUM_KATEGORILER, fmt } from '../../utils/categories';
 
 import { P } from '../../styles/palette';
 const CAT_COLORS = {
-  Market: '#10B981', Ulaşım: '#3B82F6', Fatura: '#F59E0B', Eğlence: '#A855F7',
-  Yemek: '#EF4444', 'Yemek Siparişi': '#F97316', Alışveriş: '#EC4899',
-  Sağlık: '#06B6D4', Eğitim: '#8B5CF6', Diğer: '#64748B',
+  Market: '#34C08A', Ulaşım: '#6E93C4', Fatura: '#D2894F', Eğlence: '#C7CED5',
+  Yemek: '#DB5C4E', 'Yemek Siparişi': '#C0705C', Alışveriş: '#C0705C',
+  Sağlık: '#45939C', Eğitim: '#AAB3BB', Diğer: '#6B7075',
 };
 const CAT_ICONS = {
   Market: '🛒', Ulaşım: '🚌', Fatura: '📄', Eğlence: '🎮',
@@ -48,10 +48,10 @@ export function FiltreBadge({ etiket, onRemove }) {
       padding: '4px 10px', borderRadius: 8,
       background: P.purpleDim, color: P.purpleLight,
       fontSize: 11, fontWeight: 700,
-      border: `1px solid rgba(124,58,237,0.3)`,
+      border: `1px solid rgba(195,203,211,0.3)`,
     }}>
       {etiket}
-      <button onClick={onRemove} style={{
+      <button aria-label={`${etiket} filtresini kaldır`} onClick={onRemove} style={{
         background: 'none', border: 'none', color: 'inherit',
         cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center',
         opacity: 0.7,

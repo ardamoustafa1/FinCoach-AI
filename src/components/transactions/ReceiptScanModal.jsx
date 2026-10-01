@@ -86,7 +86,7 @@ export default function ReceiptScanModal({ onSonuc, onApiError, onKapat }) {
             </div>
             <p style={{ fontSize: 14, fontWeight: 700, color: P.text1, marginBottom: 4 }}>Fotoğrafı buraya sürükle-bırak</p>
             <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>JPG, PNG veya telefon kamerası fotoğrafı</p>
-            <button type="button" onClick={e => { e.stopPropagation(); inputRef.current?.click(); }} style={{ padding: '9px 20px', borderRadius: 11, border: 'none', background: `linear-gradient(135deg, ${P.green}, #059669)`, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" onClick={e => { e.stopPropagation(); inputRef.current?.click(); }} style={{ padding: '9px 20px', borderRadius: 11, border: 'none', background: `linear-gradient(135deg, ${P.green}, #1E8A62)`, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
               Fotoğraf Seç
             </button>
           </div>
@@ -95,7 +95,7 @@ export default function ReceiptScanModal({ onSonuc, onApiError, onKapat }) {
             <div style={{ background: P.bg3, border: `1px solid ${P.border}`, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: P.text3 }}>
               <span style={{ fontWeight: 700, color: P.text1 }}>{fileInfo.name}</span>
               {' '}· {(fileInfo.size / 1024 / 1024).toFixed(2)} MB
-              {fileInfo.compressed && <span style={{ color: '#A78BFA', fontWeight: 700 }}> · Sıkıştırıldı</span>}
+              {fileInfo.compressed && <span style={{ color: '#E4E9ED', fontWeight: 700 }}> · Sıkıştırıldı</span>}
             </div>
           )}
           {error && (
@@ -106,7 +106,7 @@ export default function ReceiptScanModal({ onSonuc, onApiError, onKapat }) {
           <button onClick={handleAnalyze} disabled={!compressed || loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '13px 0', borderRadius: 13, border: 'none',
-            background: !compressed || loading ? P.bg4 : `linear-gradient(135deg, ${P.green}, #059669)`,
+            background: !compressed || loading ? P.bg4 : `linear-gradient(135deg, ${P.green}, #1E8A62)`,
             color: !compressed || loading ? P.text3 : '#fff',
             fontSize: 14, fontWeight: 800, cursor: !compressed || loading ? 'not-allowed' : 'pointer',
             boxShadow: compressed && !loading ? `0 4px 16px ${P.green}40` : 'none',

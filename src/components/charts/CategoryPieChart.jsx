@@ -5,7 +5,7 @@ import {
 import { ChevronUp } from 'lucide-react';
 
 import { P } from '../../styles/palette';
-const RENKLER = ['#7C3AED', '#10b981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#14b8a6', '#f97316'];
+const RENKLER = ['#C3CBD3', '#34C08A', '#D2894F', '#DB5C4E', '#6E93C4', '#C0705C', '#45939C', '#C0705C'];
 
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
 
@@ -46,7 +46,7 @@ export default function CategoryPieChart({ islemler }) {
 
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(195,203,211,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>Kategori Dağılımı</h2>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Dilime tıklayarak detay görün</p>
 
@@ -65,7 +65,7 @@ export default function CategoryPieChart({ islemler }) {
             {pieData.map((_, i) => <Cell key={i} fill={RENKLER[i % RENKLER.length]} stroke="none" />)}
           </Pie>
           <Tooltip
-            contentStyle={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, boxShadow: '0 8px 32px rgba(124,58,237,0.2)', color: P.text1 }}
+            contentStyle={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, boxShadow: '0 8px 32px rgba(195,203,211,0.2)', color: P.text1 }}
             formatter={(v, name) => [fmt(v), name]}
           />
         </PieChart>
@@ -103,7 +103,7 @@ export default function CategoryPieChart({ islemler }) {
                   <p style={{ fontSize: 13, fontWeight: 600, color: P.text1 }}>{tx.aciklama}</p>
                   <p style={{ fontSize: 11, color: P.text3 }}>{tx.tarih}</p>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#EF4444' }}>{fmt(tx.tutar)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#DB5C4E' }}>{fmt(tx.tutar)}</span>
               </div>
             ))}
           </div>

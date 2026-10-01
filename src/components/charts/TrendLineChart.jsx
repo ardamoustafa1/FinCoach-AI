@@ -15,10 +15,10 @@ function CustomTooltip({ active, payload, label }) {
   const gider = payload.find(p => p.dataKey === 'gider')?.value || 0;
   const fark = gelir - gider;
   return (
-    <div style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 8px 32px rgba(124,58,237,0.2), inset 0 0 16px rgba(124,58,237,0.05)', fontSize: 13 }}>
+    <div style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-hover)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 8px 32px rgba(195,203,211,0.2), inset 0 0 16px rgba(195,203,211,0.05)', fontSize: 13 }}>
       <p style={{ fontWeight: 800, color: P.text1, marginBottom: 8, fontSize: 14 }}>{label}</p>
-      <p style={{ color: '#818cf8', marginBottom: 3, fontWeight: 500 }}>Gelir: {fmt(gelir)}</p>
-      <p style={{ color: '#f87171', marginBottom: 6, fontWeight: 500 }}>Gider: {fmt(gider)}</p>
+      <p style={{ color: '#99A2AA', marginBottom: 3, fontWeight: 500 }}>Gelir: {fmt(gelir)}</p>
+      <p style={{ color: '#EC8A7E', marginBottom: 6, fontWeight: 500 }}>Gider: {fmt(gider)}</p>
       <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 8, marginTop: 4 }}>
         <p style={{ color: fark >= 0 ? P.green : P.red, fontWeight: 800 }}>Net Bakiye: {fmt(fark)}</p>
       </div>
@@ -60,7 +60,7 @@ export default function TrendLineChart({ islemler, gelirler }) {
 
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -40, left: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: -40, left: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(195,203,211,0.06)', filter: 'blur(36px)', pointerEvents: 'none' }} />
       <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em', marginBottom: 3 }}>6 Aylık Trend</h2>
       <p style={{ fontSize: 12, color: P.text3, marginBottom: 16 }}>Gelir ve gider karşılaştırması</p>
 
@@ -72,16 +72,16 @@ export default function TrendLineChart({ islemler, gelirler }) {
           <Tooltip content={<CustomTooltip />} />
           <Legend formatter={(val) => <span style={{ fontSize: 12, color: P.text2 }}>{val === 'gelir' ? 'Gelir' : 'Gider'}</span>} />
           {refAreas.map((a, i) => (
-            <ReferenceArea key={i} x1={a.x1} x2={a.x2} fill="#ef4444" fillOpacity={0.06} />
+            <ReferenceArea key={i} x1={a.x1} x2={a.x2} fill="#DB5C4E" fillOpacity={0.06} />
           ))}
           <Line type="monotone" dataKey="gelir" stroke={P.purple} strokeWidth={2.5}
-            dot={{ r: 4, fill: P.purple, strokeWidth: 2, stroke: '#0D0F1E' }}
-            activeDot={{ r: 6, fill: '#A78BFA' }}
+            dot={{ r: 4, fill: P.purple, strokeWidth: 2, stroke: '#101113' }}
+            activeDot={{ r: 6, fill: '#E4E9ED' }}
             animationDuration={1500} animationEasing="ease-out"
           />
           <Line type="monotone" dataKey="gider" stroke={P.red} strokeWidth={2.5}
-            dot={{ r: 4, fill: P.red, strokeWidth: 2, stroke: '#0D0F1E' }}
-            activeDot={{ r: 6, fill: '#f87171' }}
+            dot={{ r: 4, fill: P.red, strokeWidth: 2, stroke: '#101113' }}
+            activeDot={{ r: 6, fill: '#EC8A7E' }}
             animationDuration={1500} animationEasing="ease-out"
           />
         </LineChart>

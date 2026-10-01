@@ -26,7 +26,9 @@ export default function AnimNumber({ value, prefix = '', suffix = '', duration =
     };
 
     rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
+    // Emniyet: kare akışı kısıtlanırsa sayaç yarıda kalmasın.
+    const settle = setTimeout(() => setDisplay(target), duration + 400);
+    return () => { cancelAnimationFrame(rafRef.current); clearTimeout(settle); };
   }, [value, duration]);
 
   return (

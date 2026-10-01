@@ -36,21 +36,21 @@ export default function KesintiSimulator({ goals }) {
   })).sort((a, b) => b.tasarruf - a.tasarruf)[0];
 
   return (
-    <div style={{ marginTop: 48, borderRadius: 32, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.3)', background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-main) 100%)', marginBottom: 48, boxShadow: '0 32px 80px rgba(0,0,0,0.4)', position: 'relative' }}>
+    <div style={{ marginTop: 48, borderRadius: 32, overflow: 'hidden', border: '1px solid rgba(195,203,211,0.3)', background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-main) 100%)', marginBottom: 48, boxShadow: '0 32px 80px rgba(0,0,0,0.4)', position: 'relative' }}>
       {/* Glow effects */}
-      <div style={{ position: 'absolute', top: 0, left: '20%', width: 400, height: 400, background: 'rgba(124,58,237,0.1)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 300, height: 300, background: 'rgba(16,185,129,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: '20%', width: 400, height: 400, background: 'rgba(195,203,211,0.1)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 300, height: 300, background: 'rgba(52,192,138,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-      <div style={{ padding: '16px 28px', background: 'rgba(124,58,237,0.1)', borderBottom: `1px solid rgba(124,58,237,0.2)`, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Scissors size={18} color="#c4b5fd" />
-        <span style={{ fontSize: 13, fontWeight: 900, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Ne Kessem Ne Birikirim?</span>
+      <div style={{ padding: '16px 28px', background: 'rgba(195,203,211,0.1)', borderBottom: `1px solid rgba(195,203,211,0.2)`, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Scissors size={18} color="#F1F4F6" />
+        <span style={{ fontSize: 13, fontWeight: 900, color: '#F1F4F6', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Ne Kessem Ne Birikirim?</span>
       </div>
 
       <div className="flex flex-col lg:flex-row position-relative z-10">
         {/* LEFT */}
         <div style={{ flex: 1.3, padding: '40px 48px', borderRight: `1px solid rgba(255,255,255,0.06)` }}>
           <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 8, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-            Ufak kesintiler, <span style={{ color: '#a78bfa' }}>büyük hedefler.</span>
+            Ufak kesintiler, <span style={{ color: '#E4E9ED' }}>büyük hedefler.</span>
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 36 }}>Aylık harcamalarından küçük yüzdeler kısarak hedefine ne kadar erken ulaşacağını gör.</p>
 
@@ -71,7 +71,7 @@ export default function KesintiSimulator({ goals }) {
                       </div>
                     </div>
                     {tasarruf > 0 && (
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#10b981', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', padding: '6px 12px', borderRadius: 10, boxShadow: '0 0 12px rgba(16,185,129,0.2)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: '#34C08A', background: 'rgba(52,192,138,0.15)', border: '1px solid rgba(52,192,138,0.3)', padding: '6px 12px', borderRadius: 10, boxShadow: '0 0 12px rgba(52,192,138,0.2)' }}>
                         +{liraFmt(tasarruf)}
                       </span>
                     )}
@@ -83,7 +83,7 @@ export default function KesintiSimulator({ goals }) {
                       onChange={e => setOranlar(p => ({ ...p, [k.id]: Number(e.target.value) }))}
                       style={{
                         flex: 1, height: 6, borderRadius: 99, cursor: 'pointer', appearance: 'none',
-                        background: `linear-gradient(90deg, #7c3aed ${oran}%, rgba(255,255,255,0.1) ${oran}%)`,
+                        background: `linear-gradient(90deg, #C3CBD3 ${oran}%, rgba(255,255,255,0.1) ${oran}%)`,
                         outline: 'none'
                       }}
                       className="slider-thumb-premium"
@@ -91,12 +91,12 @@ export default function KesintiSimulator({ goals }) {
                     <style>{`
                       .slider-thumb-premium::-webkit-slider-thumb {
                         appearance: none; width: 20px; height: 20px; border-radius: 50%;
-                        background: #fff; border: 4px solid #7c3aed; box-shadow: 0 0 10px rgba(124,58,237,0.6);
+                        background: #fff; border: 4px solid #C3CBD3; box-shadow: 0 0 10px rgba(195,203,211,0.6);
                         cursor: pointer; transition: transform 0.1s;
                       }
                       .slider-thumb-premium::-webkit-slider-thumb:hover { transform: scale(1.2); }
                     `}</style>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: '#c4b5fd', width: 40, textAlign: 'right' }}>%{oran}</span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: '#F1F4F6', width: 40, textAlign: 'right' }}>%{oran}</span>
                   </div>
                 </div>
               );
@@ -111,12 +111,12 @@ export default function KesintiSimulator({ goals }) {
             <select value={etkinId} onChange={e => setSeciliHedefId(e.target.value)} style={{ width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,0.1)`, color: '#fff', fontSize: 15, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
               {goals.map(g => <option key={g.id} value={g.id} style={{ background: '#1e1b4b' }}>{g.icon} {g.name}</option>)}
             </select>
-            <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#a78bfa' }}>▼</div>
+            <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#E4E9ED' }}>▼</div>
           </div>
 
-          <div style={{ marginTop: 40, background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1))', border: '1px solid rgba(16,185,129,0.2)', padding: '24px', borderRadius: 20, textAlign: 'center' }}>
-            <p style={{ fontSize: 12, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Aylık Ek Tasarruf</p>
-            <div style={{ fontSize: 48, fontWeight: 900, color: '#10b981', lineHeight: 1, letterSpacing: '-0.03em', textShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
+          <div style={{ marginTop: 40, background: 'linear-gradient(135deg, rgba(52,192,138,0.1), rgba(69,147,156,0.1))', border: '1px solid rgba(52,192,138,0.2)', padding: '24px', borderRadius: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#63D6AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Aylık Ek Tasarruf</p>
+            <div style={{ fontSize: 48, fontWeight: 900, color: '#34C08A', lineHeight: 1, letterSpacing: '-0.03em', textShadow: '0 0 20px rgba(52,192,138,0.4)' }}>
               +{liraFmt(ekTasarruf)}
             </div>
           </div>
@@ -126,13 +126,13 @@ export default function KesintiSimulator({ goals }) {
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600 }}>Eski Tarih</p>
               <p style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{tarihFmt(eskiTarih)}</p>
             </div>
-            <div style={{ padding: 20, borderRadius: 16, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', boxShadow: '0 8px 24px rgba(16,185,129,0.15)' }}>
-              <p style={{ fontSize: 12, color: '#6ee7b7', marginBottom: 6, fontWeight: 600 }}>Yeni Tarih</p>
-              <p style={{ fontSize: 16, fontWeight: 900, color: '#10b981' }}>{tarihFmt(yeniTarih)}</p>
+            <div style={{ padding: 20, borderRadius: 16, background: 'rgba(52,192,138,0.08)', border: '1px solid rgba(52,192,138,0.25)', boxShadow: '0 8px 24px rgba(52,192,138,0.15)' }}>
+              <p style={{ fontSize: 12, color: '#9BE0C2', marginBottom: 6, fontWeight: 600 }}>Yeni Tarih</p>
+              <p style={{ fontSize: 16, fontWeight: 900, color: '#34C08A' }}>{tarihFmt(yeniTarih)}</p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 28, fontSize: 17, fontWeight: 800, color: erkenAy > 0 ? '#10b981' : '#a78bfa' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 28, fontSize: 17, fontWeight: 800, color: erkenAy > 0 ? '#34C08A' : '#E4E9ED' }}>
             <TrendingUp size={24} />
             {erkenAy > 0 ? `Tam ${erkenAy} ay daha erken ulaşıyorsun! 🚀` : 'Sihri görmek için kesinti yap.'}
           </div>
@@ -140,14 +140,14 @@ export default function KesintiSimulator({ goals }) {
           <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 20 }}>
             {[
               { label: 'Eski plan', ay: mevcutAy, bar: 100, fill: 'rgba(255,255,255,0.2)', track: 'rgba(255,255,255,0.05)', tc: 'var(--text-muted)' },
-              { label: 'Yeni plan', ay: yeniAy, bar: yeniBar, fill: 'linear-gradient(90deg, #7c3aed, #a78bfa)', track: 'rgba(124,58,237,0.1)', tc: '#c4b5fd' },
+              { label: 'Yeni plan', ay: yeniAy, bar: yeniBar, fill: 'linear-gradient(90deg, #C3CBD3, #E4E9ED)', track: 'rgba(195,203,211,0.1)', tc: '#F1F4F6' },
             ].map(item => (
               <div key={item.label}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 800, marginBottom: 10, color: item.tc }}>
                   <span>{item.label}</span><span>{item.ay} ay</span>
                 </div>
                 <div style={{ height: 12, borderRadius: 99, overflow: 'hidden', background: item.track, border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ height: '100%', borderRadius: 99, transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)', width: `${item.bar}%`, background: item.fill, boxShadow: '0 0 10px rgba(124,58,237,0.5)' }} />
+                  <div style={{ height: '100%', borderRadius: 99, transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)', width: `${item.bar}%`, background: item.fill, boxShadow: '0 0 10px rgba(195,203,211,0.5)' }} />
                 </div>
               </div>
             ))}
@@ -156,9 +156,9 @@ export default function KesintiSimulator({ goals }) {
           <div style={{ flex: 1 }} />
 
           {erkenAy > 0 && (
-            <div style={{ marginTop: 32, padding: '18px 24px', borderRadius: 16, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)' }}>
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: '#e2e8f0', margin: 0 }}>
-                💡 En çok <strong style={{ color: '#fff' }}>{enBuyuk.ad}</strong> kategorisinden kesinti yaptın. Bu sayede {hedef?.name || 'hedefine'} <strong style={{ color: '#10b981', fontWeight: 900 }}>{erkenAy} ay</strong> daha erken kavuşacaksın.
+            <div style={{ marginTop: 32, padding: '18px 24px', borderRadius: 16, background: 'rgba(195,203,211,0.15)', border: '1px solid rgba(195,203,211,0.3)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: '#DFE3E7', margin: 0 }}>
+                💡 En çok <strong style={{ color: '#fff' }}>{enBuyuk.ad}</strong> kategorisinden kesinti yaptın. Bu sayede {hedef?.name || 'hedefine'} <strong style={{ color: '#34C08A', fontWeight: 900 }}>{erkenAy} ay</strong> daha erken kavuşacaksın.
               </p>
             </div>
           )}

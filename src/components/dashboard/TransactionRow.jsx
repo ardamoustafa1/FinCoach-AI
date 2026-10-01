@@ -1,12 +1,12 @@
 /**
- * TransactionRow — Son işlemler listesi için tekil işlem satır bileşeni.
- * Stagger animasyonu, hover renk geçişi ve gelir/gider renk kodlamasını içerir.
+ * TransactionRow — Son işlemler listesi için tekil işlem satırı.
+ * Gelir/gider renk kodlaması, hover geçişi ve monospace tutar hizası.
  *
  * @param {{ tx: import('../../types').Transaction, index: number, onClick?: (tx: any) => void }} props
  */
-import { useState, useEffect } from 'react';
-
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { P } from '../../styles/palette';
+
 const fmt = (v) =>
   new Intl.NumberFormat('tr-TR', {
     style: 'currency',
@@ -14,63 +14,58 @@ const fmt = (v) =>
     maximumFractionDigits: 0,
   }).format(v);
 
-export default function TransactionRow({ tx, index, onClick }) {
+export default function TransactionRow({ tx, onClick }) {
   const isIncome = tx.type === 'income' || tx.tur === 'gelir';
   const amount = Math.abs(Number(tx.amount || tx.tutar || 0));
   const color = isIncome ? P.green : P.red;
-
-  const [vis, setVis] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVis(true), index * 80);
-    return () => clearTimeout(t);
-  }, [index]);
+  const Icon = isIncome ? ArrowDownLeft : ArrowUpRight;
 
   return (
     <div
       onClick={() => onClick?.(tx)}
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 16px', borderRadius: 14,
-        background: vis ? P.bg3 : 'transparent',
-        border: `1px solid ${vis ? P.border : 'transparent'}`,
-        opacity: vis ? 1 : 0,
-        transform: vis ? 'none' : 'translateX(-12px)',
-        transition: `all 0.4s ease ${index * 80}ms`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '11px 14px', borderRadius: 13,
+        background: 'transparent',
+        border: '1px solid transparent',
         cursor: onClick ? 'pointer' : 'default',
+        transition: 'background .35s var(--ease-out-expo), border-color .35s ease, transform .35s var(--ease-out-expo)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = `${color}0D`;
-        e.currentTarget.style.borderColor = `${color}33`;
+        e.currentTarget.style.borderColor = `${color}2E`;
+        e.currentTarget.style.transform = 'translateX(3px)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = P.bg3;
-        e.currentTarget.style.borderColor = P.border;
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.borderColor = 'transparent';
+        e.currentTarget.style.transform = 'none';
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 12,
-          background: `${color}18`, border: `1px solid ${color}30`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18,
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <span style={{
+          width: 36, height: 36, borderRadius: 11, flexShrink: 0,
+          background: `${color}12`, border: `1px solid ${color}2A`,
+          display: 'grid', placeItems: 'center',
         }}>
-          {isIncome ? '📈' : '📉'}
-        </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: P.text1, marginBottom: 2 }}>
-            {tx.title || tx.baslik || 'İşlem'}
+          <Icon size={15} color={color} strokeWidth={2} />
+        </span>
+        <div style={{ minWidth: 0 }}>
+          <p style={{
+            fontSize: 13.5, fontWeight: 550, color: 'var(--text-primary)', marginBottom: 3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {tx.title || tx.baslik || tx.aciklama || tx.magaza || 'İşlem'}
           </p>
-          <p style={{ fontSize: 12, color: P.text3 }}>
+          <p style={{ fontSize: 11.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {tx.category || tx.kategori || 'Genel'} · {tx.date || tx.tarih || '—'}
           </p>
         </div>
       </div>
 
-      <div style={{ textAlign: 'right' }}>
-        <p style={{ fontSize: 15, fontWeight: 700, color }}>
-          {isIncome ? '+' : '-'}{fmt(amount)}
-        </p>
-      </div>
+      <p className="num" style={{ fontSize: 13.5, color, flexShrink: 0 }}>
+        {isIncome ? '+' : '−'}{fmt(amount)}
+      </p>
     </div>
   );
 }

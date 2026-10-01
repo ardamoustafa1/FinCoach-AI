@@ -9,7 +9,7 @@ export default function StatCard({ label, value, icon: Icon, color, isCurrency =
       onMouseLeave={() => setHov(false)}
       style={{
         padding: 24, borderRadius: 24, background: P.bg2,
-        border: `1px solid ${hov ? 'rgba(124,58,237,0.4)' : P.border}`,
+        border: `1px solid ${hov ? 'rgba(195,203,211,0.4)' : P.border}`,
         transition: 'all 0.3s ease',
         transform: hov ? 'translateY(-3px)' : 'none',
         boxShadow: hov ? '0 12px 32px rgba(0,0,0,0.3)' : 'none',

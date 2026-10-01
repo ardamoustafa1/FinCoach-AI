@@ -1,7 +1,6 @@
 /**
- * BalanceTrendChart — Bakiye trend alanı grafik bileşeni.
- * 1A / 3A / 6A / 1Y zaman dilimi filtrelemesini ve
- * Recharts AreaChart'ı kapsülleyen bağımsız bileşen.
+ * BalanceTrendChart — Bakiye trend alanı grafiği.
+ * 1A / 3A / 6A / 1Y zaman dilimi filtresi ve çizilerek gelen alan eğrisi.
  *
  * @param {{ data: Array<{month?: string, bakiye?: number}> }} props
  */
@@ -12,8 +11,8 @@ import {
 } from 'recharts';
 import GlassCard from './GlassCard';
 import ChartTooltip from './ChartTooltip';
-
 import { P } from '../../styles/palette';
+
 const fmt = (v) =>
   new Intl.NumberFormat('tr-TR', {
     style: 'currency',
@@ -37,28 +36,33 @@ export default function BalanceTrendChart({ data }) {
   })();
 
   return (
-    <GlassCard style={{ padding: '28px 32px', marginBottom: 24 }}>
+    <GlassCard style={{ padding: '28px 30px' }}>
       {/* Başlık satırı */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        gap: 16, flexWrap: 'wrap', marginBottom: 26,
+      }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: P.text1, marginBottom: 4 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>
             Bakiye Trendi
-          </h2>
-          <p style={{ fontSize: 13, color: P.text3 }}>Son 12 aylık bakiye gelişimi</p>
+          </h3>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Son 12 aylık bakiye gelişimi</p>
         </div>
 
         {/* Zaman filtresi */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6, padding: 4, borderRadius: 999, border: '1px solid var(--border-color)' }}>
           {RANGES.map((t) => (
             <button
               key={t}
               onClick={() => setRange(t)}
+              className="num"
               style={{
-                padding: '6px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                border: `1px solid ${range === t ? P.purple : P.border}`,
-                background: range === t ? P.purpleDim : 'transparent',
-                color: range === t ? P.purpleLight : P.text3,
-                cursor: 'pointer', transition: 'all 0.2s',
+                padding: '6px 14px', borderRadius: 999, fontSize: 11.5,
+                border: 'none',
+                background: range === t ? 'rgba(52,192,138,0.14)' : 'transparent',
+                color: range === t ? P.green : 'var(--text-muted)',
+                cursor: 'pointer',
+                transition: 'all .4s var(--ease-out-expo)',
               }}
             >
               {t}
@@ -67,29 +71,34 @@ export default function BalanceTrendChart({ data }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220} minHeight={220}>
-        <AreaChart data={filtered} margin={{ top: 5, right: 5, bottom: 0, left: 10 }}>
-          <defs>
-            <linearGradient id="balanceGradChart" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={P.purple} stopOpacity={0.4} />
-              <stop offset="100%" stopColor={P.purple} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis dataKey="month" tick={{ fill: P.text3, fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: P.text3, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
-          <Tooltip content={<ChartTooltip formatter={fmt} />} />
-          <Area
-            type="monotone"
-            dataKey="bakiye"
-            stroke={P.purple}
-            strokeWidth={2.5}
-            fill="url(#balanceGradChart)"
-            dot={false}
-            activeDot={{ r: 5, fill: P.purple, strokeWidth: 0 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="draw-in">
+        <ResponsiveContainer width="100%" height={230} minHeight={230}>
+          <AreaChart data={filtered} margin={{ top: 5, right: 5, bottom: 0, left: 10 }}>
+            <defs>
+              <linearGradient id="balanceGradChart" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={P.green} stopOpacity={0.34} />
+                <stop offset="55%" stopColor={P.green} stopOpacity={0.08} />
+                <stop offset="100%" stopColor={P.green} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--hairline)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
+            <Tooltip cursor={{ stroke: 'var(--hairline)' }} content={<ChartTooltip formatter={fmt} />} />
+            <Area
+              type="monotone"
+              dataKey="bakiye"
+              name="Bakiye"
+              stroke={P.green}
+              strokeWidth={2}
+              fill="url(#balanceGradChart)"
+              dot={false}
+              activeDot={{ r: 4.5, fill: P.green, strokeWidth: 0 }}
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </GlassCard>
   );
 }
