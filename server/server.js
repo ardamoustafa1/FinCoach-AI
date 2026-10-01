@@ -9,17 +9,15 @@ import { fileURLToPath } from 'node:url';
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import Redis from 'ioredis';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import * as cheerio from 'cheerio';
 import qrcode from 'qrcode-terminal';
 import { createClient } from '@supabase/supabase-js';
-import pkg from 'whatsapp-web.js';
 import {
   createBotReplyTracker,
   createSupabaseTransactionStore,
   createWhatsAppMessageHandler,
 } from './whatsappBot.js';
-const { Client, LocalAuth } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,22 +76,93 @@ const whatsappStatus = {
   lastMessageAt: null,
   lastSavedAt: null,
   lastError: null,
-  state: process.env.WHATSAPP_ENABLED === 'false' ? 'disabled' : 'starting',
+  state: process.env.WHATSAPP_ENABLED === 'true' ? 'starting' : 'disabled',
 };
 
-// Google Gemini İstemcisi
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+// Google Gemini İstemcisi. Uygulamanın eski model arayüzünü küçük bir adaptörle
+// korurken güncel SDK, düşük düşünme gecikmesi ve kesin timeout kullanılır.
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash';
+const AI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 30_000);
+const AI_PRIMARY_TIMEOUT_MS = Number(process.env.GEMINI_PRIMARY_TIMEOUT_MS || 8_000);
+const baseGenerationConfig = {
+  thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+  temperature: 0.3,
+};
+
+function legacyGeminiResponse(response) {
+  return { response: { text: () => String(response?.text || '') } };
+}
+
+function isRetryableAIError(error) {
+  const status = Number(error?.status || error?.code || 0);
+  const message = String(error?.message || '');
+  return status === 429 || status === 503 || error?.name === 'AbortError' || /429|503|quota|high demand|timeout|aborted/i.test(message);
+}
+
+async function generateWithFallback(contents, config) {
+  try {
+    return await genAI.models.generateContent({
+      model: GEMINI_MODEL,
+      contents,
+      config: { ...config, abortSignal: AbortSignal.timeout(AI_PRIMARY_TIMEOUT_MS) },
+    });
+  } catch (error) {
+    if (!isRetryableAIError(error) || GEMINI_FALLBACK_MODEL === GEMINI_MODEL) throw error;
+    console.warn(`[Gemini] ${GEMINI_MODEL} geçici olarak kullanılamıyor; ${GEMINI_FALLBACK_MODEL} deneniyor.`);
+    return genAI.models.generateContent({
+      model: GEMINI_FALLBACK_MODEL,
+      contents,
+      config: { ...config, abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS) },
+    });
+  }
+}
+
+const model = {
+  async generateContent(contents) {
+    const response = await generateWithFallback(contents, {
+      ...baseGenerationConfig,
+      maxOutputTokens: 2048,
+      abortSignal: AbortSignal.timeout(AI_PRIMARY_TIMEOUT_MS),
+    });
+    return legacyGeminiResponse(response);
+  },
+  startChat({ history = [], generationConfig = {} } = {}) {
+    const createChat = (modelName) => genAI.chats.create({ model: modelName, history, config: { ...baseGenerationConfig, ...generationConfig } });
+    let chat = createChat(GEMINI_MODEL);
+    return {
+      async sendMessage(message) {
+        const config = { ...baseGenerationConfig, ...generationConfig, abortSignal: AbortSignal.timeout(AI_PRIMARY_TIMEOUT_MS) };
+        let response;
+        try {
+          response = await chat.sendMessage({ message, config });
+        } catch (error) {
+          if (!isRetryableAIError(error) || GEMINI_FALLBACK_MODEL === GEMINI_MODEL) throw error;
+          console.warn(`[Gemini Chat] ${GEMINI_MODEL} geçici olarak kullanılamıyor; ${GEMINI_FALLBACK_MODEL} deneniyor.`);
+          chat = createChat(GEMINI_FALLBACK_MODEL);
+          response = await chat.sendMessage({ message, config: { ...config, abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS) } });
+        }
+        return legacyGeminiResponse(response);
+      },
+    };
+  },
+};
 
 // ─── Güvenlik Headers ──────────────────────────────────────────
 app.use((req, res, next) => {
+  const developmentConnectSources = process.env.NODE_ENV === 'production'
+    ? ''
+    : ' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*';
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' data: https://fonts.gstatic.com; frame-src 'none'");
-  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+  res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:${developmentConnectSources}; font-src 'self' data: https://fonts.gstatic.com; frame-src 'none'`);
+  // Voice entry is a first-party feature. Keep camera/location disabled while
+  // allowing microphone access only to this origin and only after user consent.
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=(self)');
   next();
 });
 
@@ -105,7 +174,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,ht
 app.use(cors({
   origin: (origin, cb) => {
     // Allow non-browser requests (Postman, WhatsApp bot internal calls) and whitelisted origins
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.railway.app') || origin.endsWith('.vercel.app')) {
+    if (!origin || allowedOrigins.includes(origin)) {
       return cb(null, true);
     }
     // Safe reject instead of throwing a 500 crash exception
@@ -471,11 +540,46 @@ const aiLimiter = rateLimit({
 // ─── ENDPOINTS ──────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({
+    status: 'ok',
+    ai: AI_ENABLED ? `configured (${GEMINI_MODEL}; fallback ${GEMINI_FALLBACK_MODEL})` : 'missing GEMINI_API_KEY',
+    auth: DEMO_MODE ? 'demo-mode (INSECURE)' : (supabaseAdmin ? 'configured' : 'missing SUPABASE_SERVICE_ROLE_KEY'),
+    uptime: Math.round(process.uptime()),
+  });
 });
 
+/**
+ * Yapay zekâ uçları için yapılandırma kapısı.
+ * GEMINI_API_KEY yoksa istek SDK içinde patlayıp 500 dönmek yerine,
+ * operatörün anlayabileceği net bir 503 ile reddedilir.
+ */
+const AI_ENABLED = Boolean(process.env.GEMINI_API_KEY);
+
+function requireAI(res) {
+  if (AI_ENABLED) return false;
+  res.status(503).json({
+    error: 'Yapay zekâ servisi yapılandırılmamış. Sunucuda GEMINI_API_KEY tanımlayın.',
+    code: 'AI_NOT_CONFIGURED',
+  });
+  return true;
+}
+
+/**
+ * DEMO_MODE kimlik doğrulamasını tamamen atlar; yalnızca yerel geliştirme
+ * ve e2e testleri içindir. Üretimde kazara açık kalırsa tüm /api uçları
+ * korumasız kalacağı için burada sert biçimde devre dışı bırakılır.
+ */
+const DEMO_MODE = process.env.DEMO_MODE === 'true';
+if (DEMO_MODE) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[GÜVENLİK] DEMO_MODE üretim ortamında kullanılamaz. Sunucu başlatılmıyor.');
+    process.exit(1);
+  }
+  console.warn('[GÜVENLİK UYARISI] DEMO_MODE=true — /api kimlik doğrulaması devre dışı. Yalnızca geliştirme/test için.');
+}
+
 async function requireAuth(req, res, next) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (DEMO_MODE) {
     req.user = { id: 'demo-local-123', email: 'demo@fincoach.app' };
     return next();
   }
@@ -534,6 +638,9 @@ app.post('/api/events', (req, res) => {
 app.get('/api/whatsapp/status', (req, res) => {
   res.json({
     ...whatsappStatus,
+    // `status`, API genelinde tutarlılık için `state` ile aynı değeri taşır
+    // (/health de `status` döndürüyor). Eski `state` alanı korunur.
+    status: whatsappStatus.state,
     hasSupabaseStore: Boolean(supabaseAdmin),
     defaultUserMode: Boolean(process.env.WHATSAPP_DEFAULT_USER_ID),
   });
@@ -541,6 +648,7 @@ app.get('/api/whatsapp/status', (req, res) => {
 
 // Chat Endpoint
 app.post('/api/chat', chatLimiter, async (req, res) => {
+  if (requireAI(res)) return;
   try {
     const { userContext } = req.body;
     const messages = normalizeChatMessages(req.body?.messages);
@@ -642,6 +750,7 @@ Başka hiçbir markdown bloğu veya kod işareti kullanma (Özel JSON'lar hariç
 
 // Categorize Endpoint
 app.post('/api/categorize', aiLimiter, async (req, res) => {
+  if (requireAI(res)) return;
   try {
     const transactions = Array.isArray(req.body?.transactions) ? req.body.transactions.slice(0, 200) : [];
     if (!transactions.length) return res.json([]);
@@ -669,6 +778,7 @@ Format: [{"id": "...", "kategori": "..."}]
 
 // OCR Endpoint
 app.post('/api/ocr', aiLimiter, async (req, res) => {
+  if (requireAI(res)) return;
   try {
     const { image, mimeType } = req.body;
     if (!ALLOWED_IMAGE_MIME_TYPES.has(mimeType)) {
@@ -701,6 +811,7 @@ app.post('/api/ocr', aiLimiter, async (req, res) => {
 
 // Analyze Endpoint
 app.post('/api/analyze', aiLimiter, async (req, res) => {
+  if (requireAI(res)) return;
   try {
     const aylikVeri = req.body?.aylikVeri || {};
     const limitler = req.body?.limitler || {};
@@ -719,6 +830,7 @@ Veriler: ${JSON.stringify({ aylikVeri, limitler, hedefler })}`;
 
 // Voice Parse Endpoint
 app.post('/api/voice', aiLimiter, async (req, res) => {
+  if (requireAI(res)) return;
   try {
     const text = cleanPromptValue(req.body?.text, TEXT_INPUT_MAX_CHARS);
     if (!text) return res.status(400).json({ error: 'Metin boş olamaz.' });
@@ -749,6 +861,13 @@ Cümle: "${text}"
 if (process.env.WHATSAPP_ENABLED !== 'true') {
   console.log('[FinCoach AI WhatsApp] WHATSAPP_ENABLED=false, bot başlatılmadı.');
 } else {
+  // whatsapp-web.js ~300MB'lık Puppeteer zincirini beraberinde getirir.
+  // Yalnızca özellik açıkken yüklenir: kapalıyken açılış süresi, bellek
+  // kullanımı ve saldırı yüzeyi bu bağımlılıktan tamamen arınır.
+  void (async () => {
+  const { default: pkg } = await import('whatsapp-web.js');
+  const { Client, LocalAuth } = pkg;
+
   if (!supabaseAdmin) {
     console.warn('[FinCoach AI WhatsApp] Supabase admin anahtarı yok. Fişler okunur ama transactions tablosuna kaydedilemez.');
     whatsappStatus.lastError = 'Supabase admin anahtarı yok.';
@@ -836,6 +955,18 @@ if (process.env.WHATSAPP_ENABLED !== 'true') {
   });
 
   whatsappClient.initialize();
+  })().catch((err) => {
+    const msg = String(err?.message || err);
+    // whatsapp-web.js isteğe bağlı bağımlılıktır (npm ci --omit=optional ile atlanabilir)
+    const missing = /Cannot find (module|package)|ERR_MODULE_NOT_FOUND/.test(msg);
+    console.error(
+      missing
+        ? '[FinCoach AI WhatsApp] whatsapp-web.js kurulu değil. Botu kullanmak için: cd server && npm install whatsapp-web.js'
+        : `[FinCoach AI WhatsApp] Bot başlatılamadı: ${msg}`,
+    );
+    whatsappStatus.state = 'error';
+    whatsappStatus.lastError = missing ? 'whatsapp-web.js kurulu değil (isteğe bağlı bağımlılık).' : msg;
+  });
 }
 
 // Standalone Mode: Serve React frontend static files with high-performance Brotli/Gzip caching
@@ -845,6 +976,12 @@ app.use(express.static(distPath, {
   etag: true,
   lastModified: true
 }));
+
+// Bilinmeyen API uçları: HTML değil, JSON 404 döndür.
+// (Aksi hâlde SPA fallback'i devreye girip API istemcilerine index.html gidiyordu.)
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Bilinmeyen API ucu.', path: req.path });
+});
 
 // Single Page App Router fallback
 app.get('*', (req, res, next) => {
