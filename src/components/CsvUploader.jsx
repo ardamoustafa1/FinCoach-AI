@@ -164,6 +164,7 @@ export default function CsvUploader({ onImport, onKapat }) {
           </div>
         </div>
         <button
+          aria-label="CSV yükleyiciyi kapat"
           onClick={onKapat}
           className="p-1.5 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-700 dark:text-surface-200 transition-colors cursor-pointer"
         >

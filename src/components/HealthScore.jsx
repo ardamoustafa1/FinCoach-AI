@@ -8,9 +8,9 @@ import useStore from '../store/useStore';
 
 /* ─── Helpers ─── */
 function skorRenk(s) {
-  if (s >= 1350) return '#10b981'; // Sağlıklı
-  if (s >= 750) return '#f59e0b'; // Orta
-  return '#ef4444'; // Riskli
+  if (s >= 1350) return '#34C08A'; // Sağlıklı
+  if (s >= 750) return '#D2894F'; // Orta
+  return '#DB5C4E'; // Riskli
 }
 
 function skorEtiket(s) {
@@ -61,7 +61,7 @@ function ArcProgress({ skor, renk }) {
         style={{ transform: `rotate(160deg)`, transformOrigin: `${CX}px ${CY}px`, transition: 'stroke 0.5s ease', filter: `drop-shadow(0 0 12px ${renk}99)` }}
       />
       <text x={CX} y={CY - 12} textAnchor="middle" fontSize={36} fontWeight={900} fill={renk}>{Math.round(animSkor)}</text>
-      <text x={CX} y={CY + 12} textAnchor="middle" fontSize={11} fill="#64748B" fontWeight={700} letterSpacing="0.05em">/ 1900 FİNCOACH SKORU</text>
+      <text x={CX} y={CY + 12} textAnchor="middle" fontSize={11} fill="#6B7075" fontWeight={700} letterSpacing="0.05em">/ 1900 FİNCOACH SKORU</text>
       <text x={CX} y={CY + 36} textAnchor="middle" fontSize={12} fill={renk} fontWeight={800}>{skorEtiket(animSkor)}</text>
     </svg>
   );
@@ -74,7 +74,7 @@ function MetrikBar({ etiket, puan, max }) {
     const t = setTimeout(() => setW((puan / max) * 100), 100);
     return () => clearTimeout(t);
   }, [puan, max]);
-  const renk = puan / max >= 0.8 ? '#10b981' : puan / max >= 0.5 ? '#f59e0b' : '#ef4444';
+  const renk = puan / max >= 0.8 ? '#34C08A' : puan / max >= 0.5 ? '#D2894F' : '#DB5C4E';
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -153,17 +153,17 @@ export default function HealthScore({ islemler, gelirler }) {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
               <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 1900]} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <ReferenceLine y={1350} stroke="#10b981" strokeDasharray="4 2" opacity={0.5} label={{ value: 'İyi', fill: '#10b981', fontSize: 10, position: 'right' }} />
-              <ReferenceLine y={750} stroke="#f59e0b" strokeDasharray="4 2" opacity={0.5} label={{ value: 'Orta', fill: '#f59e0b', fontSize: 10, position: 'right' }} />
+              <ReferenceLine y={1350} stroke="#34C08A" strokeDasharray="4 2" opacity={0.5} label={{ value: 'İyi', fill: '#34C08A', fontSize: 10, position: 'right' }} />
+              <ReferenceLine y={750} stroke="#D2894F" strokeDasharray="4 2" opacity={0.5} label={{ value: 'Orta', fill: '#D2894F', fontSize: 10, position: 'right' }} />
               <Tooltip content={<SkorTooltip />} />
               <Line
                 type="monotone" dataKey="skor"
-                stroke="#7C3AED" strokeWidth={2.5}
+                stroke="#C3CBD3" strokeWidth={2.5}
                 dot={(props) => {
                   const { cx, cy, payload } = props;
-                  return <circle key={payload.name} cx={cx} cy={cy} r={5} fill={skorRenk(payload.skor)} stroke="#0D0F1E" strokeWidth={2} />;
+                  return <circle key={payload.name} cx={cx} cy={cy} r={5} fill={skorRenk(payload.skor)} stroke="#101113" strokeWidth={2} />;
                 }}
-                activeDot={{ r: 7, fill: '#A78BFA', stroke: '#0D0F1E', strokeWidth: 2 }}
+                activeDot={{ r: 7, fill: '#E4E9ED', stroke: '#101113', strokeWidth: 2 }}
                 animationDuration={1800}
                 animationEasing="ease-out"
               />
@@ -172,7 +172,7 @@ export default function HealthScore({ islemler, gelirler }) {
 
           {/* Legend */}
           <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-            {[['#10b981', '71–100 Sağlıklı'], ['#f59e0b', '41–70 Orta'], ['#ef4444', '0–40 Riskli']].map(([c, l]) => (
+            {[['#34C08A', '71–100 Sağlıklı'], ['#D2894F', '41–70 Orta'], ['#DB5C4E', '0–40 Riskli']].map(([c, l]) => (
               <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block' }} />
                 {l}

@@ -1,74 +1,152 @@
 /**
- * PageHeader — Unified page header component for consistent design across all pages.
- * Usage:
- *   <PageHeader icon={<Calculator size={24} />} color="#EC4899"
- *     title="Vergi Asistanı" subtitle="Yasal kesintilerinizi hesaplayın" badge="AI Powered" />
+ * PageHeader — Tüm sayfalarda ortak, sinematik sayfa başlığı.
+ *
+ * Kullanım (değişmedi):
+ *   <PageHeader icon={<Calculator size={24} />} color="#34C08A"
+ *     title="Vergi Asistanı" subtitle="Yasal kesintilerinizi hesaplayın" badge="AI Destekli" />
  */
-
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
-
 import { P } from '../styles/palette';
-export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, badge, children }) {
+
+/** Başlığı kelime kelime akıtan yardımcı. */
+function TitleReveal({ text, color }) {
+  const words = String(text || '').split(' ');
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setOn(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <span aria-label={text}>
+      {words.map((w, i) => (
+        <span key={`${w}-${i}`} className="split-word" aria-hidden="true">
+          <span
+            style={{
+              '--w-delay': `${i * 68}ms`,
+              transform: on ? 'translateY(0)' : 'translateY(112%)',
+              opacity: on ? 1 : 0,
+              ...(i === words.length - 1 && words.length > 1 ? { color } : null),
+            }}
+          >
+            {w}{i < words.length - 1 ? ' ' : ''}
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export default function PageHeader({ icon, color = P.green, title, subtitle, badge, children }) {
   const [hov, setHov] = useState(false);
+  const ref = useRef(null);
 
   const openTour = () => {
     window.dispatchEvent(new CustomEvent('fincoach:open-tour'));
   };
 
-  return (
-    <div style={{
-      padding: '32px 0 28px',
-      animation: 'fadeSlideUp 0.5s cubic-bezier(0.16,1,0.3,1) both',
-    }}>
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes tourPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.35); }
-          50%       { box-shadow: 0 0 0 8px rgba(124,58,237,0); }
-        }
-      `}</style>
+  const onMove = (e) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+    el.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+  };
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        {/* Left: icon + text */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-            background: `${color}18`, border: `1px solid ${color}35`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: `0 0 20px ${color}20`,
-          }}>
-            <span style={{ color }}>{icon}</span>
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: 24, fontWeight: 900, color: P.text1, letterSpacing: '-0.02em', margin: 0 }}>
-                {title}
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMove}
+      className="spotlight"
+      style={{
+        position: 'relative',
+        padding: '40px 0 26px',
+        isolation: 'isolate',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Sinematik zemin */}
+      <div
+        aria-hidden="true"
+        className="aurora"
+        style={{
+          width: 460, height: 460, top: -260, left: -140,
+          background: `${color}22`, filter: 'blur(80px)',
+          '--aurora-duration': '20s',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none',
+          backgroundImage:
+            'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)',
+          backgroundSize: '58px 58px',
+          color: 'var(--text-primary)',
+          opacity: 0.035,
+          maskImage: 'radial-gradient(ellipse 70% 130% at 12% 0%, #000 10%, transparent 72%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 130% at 12% 0%, #000 10%, transparent 72%)',
+        }}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+        {/* Sol: ikon + metin */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18, minWidth: 0 }}>
+          <span
+            style={{
+              width: 52, height: 52, borderRadius: 15, flexShrink: 0,
+              background: `${color}14`, border: `1px solid ${color}30`,
+              display: 'grid', placeItems: 'center', color,
+              boxShadow: `0 12px 32px ${color}1A`,
+              animation: 'fade-in-up .8s var(--ease-out-expo) both',
+            }}
+          >
+            {icon}
+          </span>
+
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+              <h1
+                className="display"
+                style={{ fontSize: 'clamp(27px, 3.1vw, 40px)', color: 'var(--text-primary)', lineHeight: 1.06 }}
+              >
+                <TitleReveal text={title} color={color} />
               </h1>
               {badge && (
-                <span style={{
-                  fontSize: 10, fontWeight: 800, letterSpacing: '0.12em',
-                  color, background: `${color}15`, border: `1px solid ${color}30`,
-                  padding: '3px 10px', borderRadius: 99, textTransform: 'uppercase',
-                }}>
+                <span
+                  className="eyebrow"
+                  style={{
+                    fontSize: 9, letterSpacing: '0.18em', color,
+                    background: `${color}14`, border: `1px solid ${color}30`,
+                    padding: '4px 10px', borderRadius: 99,
+                    animation: 'fade-in-up .8s var(--ease-out-expo) .35s both',
+                  }}
+                >
                   {badge}
                 </span>
               )}
             </div>
             {subtitle && (
-              <p style={{ fontSize: 14, color: P.text2, margin: '4px 0 0', lineHeight: 1.5 }}>
+              <p
+                style={{
+                  fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 640,
+                  animation: 'fade-in-up .9s var(--ease-out-expo) .28s both',
+                }}
+              >
                 {subtitle}
               </p>
             )}
           </div>
         </div>
 
-        {/* Right: action buttons + tour button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        {/* Sağ: aksiyonlar + tanıtım */}
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+            animation: 'fade-in-up .8s var(--ease-out-expo) .18s both',
+          }}
+        >
           {children}
           <button
             onClick={openTour}
@@ -76,82 +154,98 @@ export default function PageHeader({ icon, color = '#7C3AED', title, subtitle, b
             onMouseLeave={() => setHov(false)}
             title="Tanıtımı tekrar göster"
             style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: hov ? '8px 14px' : '8px 10px',
-              borderRadius: 99,
-              background: hov ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.08)',
-              border: `1px solid ${hov ? 'rgba(124,58,237,0.45)' : 'rgba(124,58,237,0.2)'}`,
-              color: '#A78BFA',
-              fontSize: 12, fontWeight: 700,
-              cursor: 'pointer',
-              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
-              animation: 'tourPulse 3s ease-in-out infinite',
-              whiteSpace: 'nowrap', overflow: 'hidden',
-              maxWidth: hov ? 140 : 36,
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '9px 14px', borderRadius: 99,
+              background: hov ? `${color}14` : 'transparent',
+              border: `1px solid ${hov ? `${color}55` : 'var(--border-color)'}`,
+              color: hov ? color : 'var(--text-muted)',
+              fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'all .4s var(--ease-out-expo)',
             }}
           >
-            <Sparkles size={14} style={{ flexShrink: 0 }} />
-            <span style={{ opacity: hov ? 1 : 0, transition: 'opacity 0.2s', maxWidth: hov ? 100 : 0 }}>
-              Tanıtım
-            </span>
+            <Sparkles size={13} style={{ flexShrink: 0 }} />
+            Tanıtım
           </button>
         </div>
       </div>
 
-      {/* Divider with color accent */}
-      <div style={{
-        marginTop: 20, height: 1,
-        background: `linear-gradient(90deg, ${color}40, transparent 70%)`,
-      }} />
+      {/* Soldan sağa çizilen ayırıcı */}
+      <div style={{ marginTop: 26, height: 1, background: 'var(--hairline)', overflow: 'hidden' }}>
+        <div
+          className="fill-bar"
+          style={{
+            height: '100%', width: '100%',
+            background: `linear-gradient(90deg, ${color}, ${color}22 34%, transparent 72%)`,
+          }}
+        />
+      </div>
     </div>
   );
 }
 
-/** Reusable stat card used in page summaries */
-export function StatCard({ label, value, sub, color = '#7C3AED', icon }) {
+/** Sayfa özetlerinde kullanılan tekrar kullanılabilir istatistik kartı */
+export function StatCard({ label, value, sub, color = P.green, icon }) {
   return (
-    <div style={{
-      background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20,
-      padding: '20px 24px', position: 'relative', overflow: 'hidden',
-      transition: 'border-color 0.2s, box-shadow 0.2s',
-    }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.boxShadow = `0 0 24px ${color}15`; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = P.border; e.currentTarget.style.boxShadow = 'none'; }}
+    <div
+      className="glass-card spotlight"
+      style={{ padding: '22px 24px' }}
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+        e.currentTarget.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+      }}
     >
-      {/* Glow blob */}
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, background: color, opacity: 0.07, filter: 'blur(40px)', pointerEvents: 'none' }} />
+      <div style={{
+        position: 'absolute', top: -40, right: -40, width: 120, height: 120,
+        background: color, opacity: 0.07, filter: 'blur(38px)', pointerEvents: 'none', borderRadius: '50%',
+      }} />
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div>
-          <p style={{ fontSize: 12, fontWeight: 700, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>{label}</p>
-          <p style={{ fontSize: 26, fontWeight: 900, color, letterSpacing: '-0.02em', margin: '0 0 4px' }}>{value}</p>
-          {sub && <p style={{ fontSize: 12, color: P.text2, margin: 0 }}>{sub}</p>}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow" style={{ fontSize: 9.5, letterSpacing: '0.2em', marginBottom: 12 }}>{label}</p>
+          <p className="num kpi-underline" style={{ fontSize: 26, color, marginBottom: 10, lineHeight: 1, display: 'inline-block' }}>{value}</p>
+          {sub && <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{sub}</p>}
         </div>
         {icon && (
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${color}15`, border: `1px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ color }}>{icon}</span>
-          </div>
+          <span style={{
+            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+            background: `${color}14`, border: `1px solid ${color}30`,
+            display: 'grid', placeItems: 'center', color,
+          }}>
+            {icon}
+          </span>
         )}
       </div>
     </div>
   );
 }
 
-/** Unified loading spinner */
+/** Ortak yükleme göstergesi */
 export function PageLoader({ message = 'Yükleniyor...' }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: 16 }}>
-      <div style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid rgba(124,58,237,0.15)', borderTopColor: '#7C3AED', animation: 'spin 0.8s linear infinite' }} />
-      <p style={{ fontSize: 14, fontWeight: 600, color: P.text2, letterSpacing: '0.04em' }}>{message}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: 18 }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: '50%',
+        border: '2px solid rgba(195,203,211,0.14)', borderTopColor: P.green,
+        animation: 'spin .9s linear infinite',
+      }} />
+      <p className="eyebrow" style={{ fontSize: 9.5 }}>{message}</p>
     </div>
   );
 }
 
-/** Unified section heading */
-export function SectionTitle({ children, color = '#7C3AED' }) {
+/** Ortak bölüm başlığı */
+export function SectionTitle({ children, color = P.green }) {
   return (
-    <h2 style={{ fontSize: 13, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ width: 3, height: 14, background: color, borderRadius: 99, display: 'inline-block' }} />
+    <h2 style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      fontFamily: 'var(--font-sans)',
+      fontSize: 10.5, fontWeight: 600, letterSpacing: '0.22em',
+      textTransform: 'uppercase', color: 'var(--text-muted)',
+      margin: '0 0 18px',
+    }}>
+      <span style={{ width: 18, height: 1, background: color, display: 'inline-block' }} />
       {children}
     </h2>
   );

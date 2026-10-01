@@ -35,31 +35,31 @@ export default function PersonalityCard({ islemler }) {
           </div>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: tip.renk, marginBottom: 4 }}>Harcama Kişiliğin</p>
-            <h3 style={{ fontSize: 19, fontWeight: 800, color: '#F1F5F9', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{tip.ad}</h3>
+            <h3 style={{ fontSize: 19, fontWeight: 800, color: '#F2F4F5', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{tip.ad}</h3>
           </div>
         </div>
-        <button onClick={() => setAcik(!acik)} style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}>
-          <ChevronDown size={18} color="#94A3B8" style={{ transform: acik ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s ease' }} />
+        <button aria-label={acik ? 'Harcama kişiliği ayrıntılarını daralt' : 'Harcama kişiliği ayrıntılarını genişlet'} aria-expanded={acik} onClick={() => setAcik(!acik)} style={{ padding: 8, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}>
+          <ChevronDown size={18} color="#9BA1A6" style={{ transform: acik ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s ease' }} />
         </button>
       </div>
 
       {/* Collapsible content */}
       <div style={{ overflow: 'hidden', maxHeight: acik ? '800px' : '0px', transition: 'max-height 0.5s cubic-bezier(0.4,0,0.2,1)', position: 'relative', zIndex: 1 }}>
-        <p style={{ fontSize: 14, color: '#94A3B8', marginTop: 16, lineHeight: 1.75 }}>{tip.aciklama}</p>
+        <p style={{ fontSize: 14, color: '#9BA1A6', marginTop: 16, lineHeight: 1.75 }}>{tip.aciklama}</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
-            <CheckCircle size={15} color="#10b981" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(52,192,138,0.1)', border: '1px solid rgba(52,192,138,0.2)' }}>
+            <CheckCircle size={15} color="#34C08A" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Güçlü Yön</p>
-              <p style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.55 }}>{tip.guclu}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#34C08A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Güçlü Yön</p>
+              <p style={{ fontSize: 12, color: '#9BA1A6', lineHeight: 1.55 }}>{tip.guclu}</p>
             </div>
           </div>
-          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-            <AlertTriangle size={15} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(210,137,79,0.1)', border: '1px solid rgba(210,137,79,0.2)' }}>
+            <AlertTriangle size={15} color="#D2894F" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Dikkat Et</p>
-              <p style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.55 }}>{tip.dikkat}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#D2894F', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Dikkat Et</p>
+              <p style={{ fontSize: 12, color: '#9BA1A6', lineHeight: 1.55 }}>{tip.dikkat}</p>
             </div>
           </div>
         </div>
@@ -67,13 +67,13 @@ export default function PersonalityCard({ islemler }) {
         <div style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <Lightbulb size={15} color={tip.renk} />
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#F1F5F9' }}>Sana Özel Tavsiyeler</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#F2F4F5' }}>Sana Özel Tavsiyeler</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {tip.tavsiyeler.map((t, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ width: 18, height: 18, borderRadius: 6, background: `${tip.renk}22`, border: `1px solid ${tip.renk}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: tip.renk, flexShrink: 0 }}>{i + 1}</span>
-                <span style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>{t}</span>
+                <span style={{ fontSize: 13, color: '#9BA1A6', lineHeight: 1.6 }}>{t}</span>
               </div>
             ))}
           </div>

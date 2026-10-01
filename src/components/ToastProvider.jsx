@@ -3,10 +3,10 @@ import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react';
 import { ToastContext } from '../contexts/toastContext';
 
 const TIP_STIL = {
-  info:    { icon: Info,          color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
-  success: { icon: CheckCircle,   color: '#10B981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)' },
-  warning: { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' },
-  error:   { icon: XCircle,       color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)' },
+  info:    { icon: Info,          color: '#6E93C4', bg: 'rgba(110,147,196,0.1)',  border: 'rgba(110,147,196,0.25)' },
+  success: { icon: CheckCircle,   color: '#34C08A', bg: 'rgba(52,192,138,0.1)', border: 'rgba(52,192,138,0.25)' },
+  warning: { icon: AlertTriangle, color: '#D2894F', bg: 'rgba(210,137,79,0.1)', border: 'rgba(210,137,79,0.25)' },
+  error:   { icon: XCircle,       color: '#DB5C4E', bg: 'rgba(219,92,78,0.1)',  border: 'rgba(219,92,78,0.25)' },
 };
 
 export function ToastProvider({ children }) {
@@ -54,8 +54,8 @@ export function ToastProvider({ children }) {
               <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: stil.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon size={17} color={stil.color} />
               </div>
-              <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, flex: 1, color: '#F1F5F9', paddingTop: 6 }}>{toast.message}</p>
-              <button onClick={() => removeToast(toast.id)} style={{ padding: 4, borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748B', flexShrink: 0 }} aria-label="Kapat">
+              <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, flex: 1, color: '#F2F4F5', paddingTop: 6 }}>{toast.message}</p>
+              <button onClick={() => removeToast(toast.id)} style={{ padding: 4, borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#6B7075', flexShrink: 0 }} aria-label="Kapat">
                 <X size={14} />
               </button>
             </div>

@@ -22,6 +22,7 @@ import { trackPageView } from '../utils/analytics';
 import { Mic } from 'lucide-react';
 import { authFetch } from '../utils/api';
 
+import { pageTitleFor } from '../config/pageTitles';
 import { P } from '../styles/palette';
 export default function Layout({ theme, onToggleTheme }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -34,9 +35,70 @@ export default function Layout({ theme, onToggleTheme }) {
   const toast = useToast();
   const location = useLocation();
   const haftalik = useMemo(() => weeklySummary(useStore.getState().budgetLimits), []);
+  const pageTitle = pageTitleFor(location.pathname);
 
   useEffect(() => {
     trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  /* ── Premium giriş & scroll koreografisi ──────────────────────────────
+     Sayfadaki her kart (.glass-card / .panel) hareketle gelir:
+       · İlk ekranda olanlar  → sıralı (staggered) giriş, anında tetiklenir
+       · Aşağıda kalanlar     → kaydırınca IntersectionObserver ile açılır
+     Emniyet: gözlemci kurulamazsa hiçbir içerik gizli kalmaz.            */
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let io;
+    const timers = [];
+    const timer = setTimeout(() => {
+      const cards = document.querySelectorAll(
+        '.page-content .glass-card:not([data-revealed]), .page-content .panel:not([data-revealed])',
+      );
+      if (!cards.length) return;
+
+      try {
+        io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+      } catch { io = null; }
+
+      const vh = window.innerHeight;
+      let aboveFold = 0;
+
+      cards.forEach((el, i) => {
+        el.setAttribute('data-revealed', '1');
+        el.classList.add('reveal-lift');
+
+        if (el.getBoundingClientRect().top < vh * 0.94) {
+          // İlk ekran: sıralı giriş
+          el.style.setProperty('--reveal-delay', `${Math.min(aboveFold, 8) * 85}ms`);
+          aboveFold += 1;
+          timers.push(setTimeout(() => el.classList.add('is-in'), 40));
+        } else {
+          el.style.setProperty('--reveal-delay', `${(i % 3) * 80}ms`);
+          if (io) io.observe(el);
+          else el.classList.add('is-in');
+        }
+      });
+
+      // Emniyet ağı: 6 sn sonra hâlâ açılmamış kart kalmasın
+      timers.push(setTimeout(() => {
+        document.querySelectorAll('.page-content .reveal-lift:not(.is-in)').forEach((el) => {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('is-in');
+        });
+      }, 6000));
+    }, 120);
+
+    return () => {
+      clearTimeout(timer);
+      timers.forEach(clearTimeout);
+      io?.disconnect();
+    };
   }, [location.pathname]);
 
   useEffect(() => {
@@ -131,9 +193,15 @@ export default function Layout({ theme, onToggleTheme }) {
 
       {/* Demo Modu Bildirimi */}
       {useStore.getState().userProfile?.email?.includes('demo') && (
-        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 9998, background: 'rgba(245, 158, 11, 0.95)', color: '#000', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(245,158,11,0.3)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 16 }}>🧪</span>
-          Demo Modu — AI yanıtları simüle edilmektedir
+        <div style={{
+          position: 'fixed', top: 76, left: '50%', transform: 'translateX(-50%)', zIndex: 9998,
+          background: 'rgba(195,203,211,0.12)', border: '1px solid rgba(195,203,211,0.3)',
+          backdropFilter: 'blur(18px)', color: P.goldLight,
+          padding: '7px 15px', borderRadius: 999, fontSize: 11.5, fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: 8, letterSpacing: '0.02em',
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: 99, background: P.green }} />
+          Demo modu — AI yanıtları simüle edilmektedir
         </div>
       )}
 
@@ -147,93 +215,108 @@ export default function Layout({ theme, onToggleTheme }) {
 
       {/* Main Content */}
       <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden', paddingBottom: 'calc(80px + env(safe-area-inset-bottom))', position: 'relative' }}>
-        {/* Top Bar */}
+        {/* Üst Bar */}
         <header style={{
-          position: 'sticky', top: 0, zIndex: 30, minHeight: 60,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-          padding: '0 12px', background: 'var(--header-bg)', backdropFilter: 'blur(24px)',
-          borderBottom: `1px solid ${P.border}`, flexWrap: 'nowrap'
+          position: 'sticky', top: 0, zIndex: 30, minHeight: 64,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+          padding: '0 18px', background: 'var(--header-bg)',
+          backdropFilter: 'blur(26px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(26px) saturate(150%)',
+          borderBottom: '1px solid var(--border-color)', flexWrap: 'nowrap',
         }}>
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.24em', color: '#a78bfa', margin: 0 }}>FinCoach AI</p>
-            <p className="hidden sm:block" style={{ fontSize: 13, color: P.text2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Akıllı bütçe, hedef ve harcama koçu</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--text-primary)', lineHeight: 1.15 }}>
+              {pageTitle}
+            </p>
+            <p className="hidden sm:block eyebrow" style={{ fontSize: 8.5, letterSpacing: '0.2em', marginTop: 2 }}>
+              Akıllı bütçe · hedef · harcama koçu
+            </p>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <button
               onClick={startListeningGlobal}
               disabled={isListening}
               style={{
-                display: 'flex', alignItems: 'center', gap: 4, padding: '8px 10px', borderRadius: 10,
-                border: `1px solid ${isListening ? P.red : 'rgba(124,58,237,0.2)'}`,
-                background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(124,58,237,0.1)',
-                color: isListening ? P.red : '#c4b5fd',
-                cursor: isListening ? 'wait' : 'pointer', transition: 'background 0.2s',
-                fontWeight: 700, fontSize: 12, flexShrink: 0
+                display: 'flex', alignItems: 'center', gap: 7, padding: '9px 14px', borderRadius: 999,
+                border: `1px solid ${isListening ? 'rgba(219,92,78,0.4)' : 'var(--border-color)'}`,
+                background: isListening ? 'rgba(219,92,78,0.10)' : 'transparent',
+                color: isListening ? P.red : 'var(--text-secondary)',
+                cursor: isListening ? 'wait' : 'pointer',
+                fontWeight: 600, fontSize: 12.5, flexShrink: 0, fontFamily: 'inherit',
+                transition: 'all .35s var(--ease-out-expo)',
               }}
+              onMouseEnter={e => { if (!isListening) { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; } }}
+              onMouseLeave={e => { if (!isListening) { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
             >
-              {isListening ? <Mic className="animate-pulse" size={16} /> : <Mic size={16} />}
+              {isListening ? <Mic className="animate-pulse" size={15} /> : <Mic size={15} />}
               <span className="hidden sm:inline">Sesle Ekle</span>
             </button>
+
             <button
               onClick={() => setShowQrModal(true)}
               className="hidden md:flex"
               style={{
-                alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10,
-                border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(124,58,237,0.1)',
-                cursor: 'pointer', transition: 'background 0.2s'
+                alignItems: 'center', gap: 7, padding: '9px 14px', borderRadius: 999,
+                border: '1px solid var(--border-color)', background: 'transparent',
+                color: 'var(--text-secondary)', cursor: 'pointer',
+                fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit',
+                transition: 'all .35s var(--ease-out-expo)',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(124,58,237,0.1)'}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
             >
-              <QrCode size={16} color="#c4b5fd" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>Sunum QR</span>
+              <QrCode size={15} />
+              <span>Sunum QR</span>
             </button>
+
             <div className="hidden md:flex" style={{
-              alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10,
-              border: '1px solid rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'
+              alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 999,
+              border: '1px solid rgba(52,192,138,0.24)', background: 'rgba(52,192,138,0.07)',
             }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: P.green, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#6ee7b7' }}>Demo hazır</span>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: P.green, animation: 'ping 2.4s ease-out infinite' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: P.green }}>Demo hazır</span>
             </div>
+
             <ThemeToggle theme={theme} onToggleTheme={onToggleTheme} onToggle={onToggleTheme} />
           </div>
         </header>
 
         {showWeeklySummary && (
-          <div style={{ padding: '32px 24px 0 24px', maxWidth: 1540, margin: '0 auto' }}>
-            <div style={{
-              padding: 1, borderRadius: 16, background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)',
-              animation: 'fadeSlideUp 0.4s ease', boxShadow: '0 12px 32px rgba(124,58,237,0.15)'
+          <div style={{ padding: '26px 18px 0', maxWidth: 1540, margin: '0 auto' }}>
+            <div className="glass-card animate-enter" style={{
+              padding: '18px 22px', display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
             }}>
-              <div style={{
-                background: P.bg2, borderRadius: 16, padding: '16px 20px',
-                display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-                flexWrap: 'wrap'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Sparkles size={22} color="#a78bfa" />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 800, color: P.text1, margin: '0 0 4px 0' }}>Haftalık Özeti</h3>
-                    <p style={{ fontSize: 14, color: P.text2, margin: 0 }}>
-                      Geçen hafta <strong style={{ color: P.red, fontWeight: 800 }}>{fmt(haftalik.total)}</strong> harcadın, bu haftaki hedefin <strong style={{ color: P.green, fontWeight: 800 }}>{fmt(2000)}</strong>.
-                    </p>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <span style={{
+                  width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                  background: 'rgba(195,203,211,0.11)', border: '1px solid rgba(195,203,211,0.2)',
+                  display: 'grid', placeItems: 'center',
+                }}>
+                  <Sparkles size={19} color={P.green} strokeWidth={1.7} />
+                </span>
+                <div>
+                  <p className="eyebrow" style={{ fontSize: 9, marginBottom: 5 }}>Haftalık Özet</p>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    Geçen hafta <strong className="num" style={{ color: P.red }}>{fmt(haftalik.total)}</strong> harcadınız;
+                    bu haftaki hedefiniz <strong className="num" style={{ color: P.green }}>{fmt(2000)}</strong>.
+                  </p>
                 </div>
-                <button
-                  onClick={closeWeeklySummary}
-                  style={{
-                    padding: '8px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.06)',
-                    border: `1px solid ${P.border}`, color: P.text1, fontSize: 12, fontWeight: 800,
-                    cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-                >
-                  Anladım
-                </button>
               </div>
+              <button
+                onClick={closeWeeklySummary}
+                style={{
+                  padding: '10px 18px', borderRadius: 999, background: 'transparent',
+                  border: '1px solid var(--border-color)', color: 'var(--text-primary)',
+                  fontSize: 12.5, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+                  transition: 'all .35s var(--ease-out-expo)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+              >
+                Anladım
+              </button>
             </div>
           </div>
         )}
@@ -251,7 +334,9 @@ export default function Layout({ theme, onToggleTheme }) {
               </div>
             </div>
           }>
-            <Outlet />
+            <div key={location.pathname} className="page-enter">
+              <Outlet />
+            </div>
           </Suspense>
         </div>
       </main>

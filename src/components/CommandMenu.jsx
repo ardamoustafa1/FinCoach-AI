@@ -128,9 +128,9 @@ export default function CommandMenu() {
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 640, margin: '0 16px',
-          background: 'linear-gradient(145deg, #1A1D36, #0D0F1E)',
-          borderRadius: 24, border: '1px solid rgba(124,58,237,0.5)',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset, 0 0 40px rgba(124,58,237,0.15)',
+          background: 'linear-gradient(145deg, #1A1D36, #101113)',
+          borderRadius: 24, border: '1px solid rgba(195,203,211,0.5)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset, 0 0 40px rgba(195,203,211,0.15)',
           overflow: 'hidden', animation: 'slideDownK 0.25s cubic-bezier(0.16,1,0.3,1)'
         }}
       >
@@ -168,16 +168,16 @@ export default function CommandMenu() {
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '14px 16px', borderRadius: 14,
-                    background: isActive ? 'linear-gradient(90deg, rgba(124,58,237,0.2), rgba(124,58,237,0.05))' : 'transparent',
+                    background: isActive ? 'linear-gradient(90deg, rgba(195,203,211,0.2), rgba(195,203,211,0.05))' : 'transparent',
                     border: 'none', cursor: 'pointer', transition: 'all 0.1s',
                     color: isActive ? '#fff' : P.text2,
-                    borderLeft: isActive ? '3px solid #7c3aed' : '3px solid transparent'
+                    borderLeft: isActive ? '3px solid #C3CBD3' : '3px solid transparent'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ 
                       width: 36, height: 36, borderRadius: 10, 
-                      background: isActive ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.03)', 
+                      background: isActive ? 'rgba(195,203,211,0.2)' : 'rgba(255,255,255,0.03)', 
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: isActive ? P.purpleLight : P.text3
                     }}>

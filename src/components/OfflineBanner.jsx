@@ -71,12 +71,12 @@ export default function OfflineBanner() {
           gap: 12,
           padding: '12px 24px',
           background: isReconnected
-            ? 'linear-gradient(135deg, #065f46, #10B981)'
-            : 'linear-gradient(135deg, #7f1d1d, #EF4444)',
-          borderBottom: `1px solid ${isReconnected ? '#34d399' : '#fca5a5'}`,
+            ? 'linear-gradient(135deg, #065f46, #34C08A)'
+            : 'linear-gradient(135deg, #7f1d1d, #DB5C4E)',
+          borderBottom: `1px solid ${isReconnected ? '#63D6AA' : '#F0AFA6'}`,
           boxShadow: isReconnected
-            ? '0 4px 24px rgba(16,185,129,0.3)'
-            : '0 4px 24px rgba(239,68,68,0.3)',
+            ? '0 4px 24px rgba(52,192,138,0.3)'
+            : '0 4px 24px rgba(219,92,78,0.3)',
           minHeight: 48,
         }}
       >

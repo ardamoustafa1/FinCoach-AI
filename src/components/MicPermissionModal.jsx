@@ -34,8 +34,8 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
           50%      { transform: scale(1.5); opacity: 0;   }
         }
         @keyframes mic-glow-pulse {
-          0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.5), 0 24px 64px rgba(124,58,237,0.3); }
-          50%      { box-shadow: 0 0 0 16px rgba(124,58,237,0), 0 24px 64px rgba(124,58,237,0.5); }
+          0%,100% { box-shadow: 0 0 0 0 rgba(195,203,211,0.5), 0 24px 64px rgba(195,203,211,0.3); }
+          50%      { box-shadow: 0 0 0 16px rgba(195,203,211,0), 0 24px 64px rgba(195,203,211,0.5); }
         }
         .mic-allow-btn:hover { opacity: 0.88 !important; transform: translateY(-2px) !important; }
         .mic-deny-btn:hover  { background: rgba(255,255,255,0.08) !important; }
@@ -65,8 +65,8 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
           width: 'min(420px, calc(100vw - 32px))',
           maxHeight: 'calc(100vh - 40px)',
           overflowY: 'auto',
-          background: 'linear-gradient(160deg, #141728 0%, #0d0f1e 100%)',
-          border: '1px solid rgba(124,58,237,0.3)',
+          background: 'linear-gradient(160deg, #121417 0%, #101113 100%)',
+          border: '1px solid rgba(195,203,211,0.3)',
           borderRadius: 28,
           padding: '40px 32px 32px',
           boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset',
@@ -100,14 +100,14 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
                 position: 'absolute',
                 inset: -i * 12,
                 borderRadius: '50%',
-                border: '2px solid rgba(124,58,237,0.3)',
+                border: '2px solid rgba(195,203,211,0.3)',
                 animation: `mic-ring ${1.4 + i * 0.4}s ease-out ${i * 0.3}s infinite`,
               }} />
             ))}
             {/* Core button */}
             <div style={{
               width: 96, height: 96, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #7C3AED, #6366F1)',
+              background: 'linear-gradient(135deg, #C3CBD3, #8B949D)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               animation: 'mic-glow-pulse 2s ease-in-out infinite',
               position: 'relative', zIndex: 1,
@@ -123,7 +123,7 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
           style={{
             textAlign: 'center',
             fontSize: 22, fontWeight: 900,
-            color: '#f1f5f9',
+            color: '#F2F4F5',
             marginBottom: 8, letterSpacing: '-0.02em',
           }}
         >
@@ -151,11 +151,11 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
             <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                background: 'rgba(124,58,237,0.15)',
-                border: '1px solid rgba(124,58,237,0.2)',
+                background: 'rgba(195,203,211,0.15)',
+                border: '1px solid rgba(195,203,211,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon size={15} color="#a78bfa" />
+                <Icon size={15} color="#E4E9ED" />
               </div>
               <span style={{ fontSize: 13, color: P.text2, fontWeight: 500 }}>{text}</span>
             </div>
@@ -165,13 +165,13 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
         {/* Privacy note */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          background: 'rgba(16,185,129,0.08)',
-          border: '1px solid rgba(16,185,129,0.2)',
+          background: 'rgba(52,192,138,0.08)',
+          border: '1px solid rgba(52,192,138,0.2)',
           borderRadius: 12, padding: '10px 14px',
           marginBottom: 24,
         }}>
-          <Shield size={14} color="#10B981" style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#6ee7b7', fontWeight: 600 }}>
+          <Shield size={14} color="#34C08A" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: '#9BE0C2', fontWeight: 600 }}>
             Ses verilerin hiçbir zaman sunucuya kaydedilmez. Yalnızca metne dönüştürülür.
           </span>
         </div>
@@ -184,10 +184,10 @@ export default function MicPermissionModal({ onAllow, onDeny }) {
             style={{
               width: '100%', padding: '16px',
               borderRadius: 16, border: 'none',
-              background: 'linear-gradient(135deg, #7C3AED, #6366F1)',
+              background: 'linear-gradient(135deg, #C3CBD3, #8B949D)',
               color: '#fff', fontSize: 15, fontWeight: 800,
               cursor: 'pointer',
-              boxShadow: '0 12px 32px rgba(124,58,237,0.4)',
+              boxShadow: '0 12px 32px rgba(195,203,211,0.4)',
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}

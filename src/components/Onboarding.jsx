@@ -53,20 +53,20 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
-      style={{ background: "#070b14" }}>
+      style={{ background: "#0C0D0F" }}>
 
       {/* Arka plan ışık efektleri */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div style={{
           position:"absolute", top:"-10%", left:"-10%",
           width:"55%", height:"55%",
-          background:"radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)",
+          background:"radial-gradient(circle, rgba(195,203,211,0.15) 0%, transparent 70%)",
           borderRadius:"50%"
         }}/>
         <div style={{
           position:"absolute", bottom:"-10%", right:"-5%",
           width:"50%", height:"50%",
-          background:"radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)",
+          background:"radial-gradient(circle, rgba(139,148,157,0.1) 0%, transparent 70%)",
           borderRadius:"50%"
         }}/>
       </div>
@@ -91,7 +91,7 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
           {/* Kart iç parlaklık */}
           <div style={{
             position:"absolute", inset:0, pointerEvents:"none",
-            background:"linear-gradient(135deg, rgba(124,58,237,0.06) 0%, transparent 60%)",
+            background:"linear-gradient(135deg, rgba(195,203,211,0.06) 0%, transparent 60%)",
           }}/>
 
           {/* Progress bar */}
@@ -101,7 +101,7 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
           }}>
             <div style={{
               height:"100%", borderRadius:"100px",
-              background:"linear-gradient(90deg,#7c3aed,#6366f1)",
+              background:"linear-gradient(90deg,#C3CBD3,#8B949D)",
               width: s.progress,
               transition:"width 0.5s cubic-bezier(0.4,0,0.2,1)"
             }}/>
@@ -110,24 +110,24 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
           {/* İkon */}
           <div style={{
             width:"64px", height:"64px",
-            background:"linear-gradient(135deg,#7c3aed,#6366f1)",
+            background:"linear-gradient(135deg,#C3CBD3,#8B949D)",
             borderRadius:"18px",
             display:"flex", alignItems:"center", justifyContent:"center",
             margin:"0 auto 20px",
             fontSize:"28px",
-            boxShadow:"0 0 40px rgba(124,58,237,0.4), 0 0 0 1px rgba(124,58,237,0.3)",
+            boxShadow:"0 0 40px rgba(195,203,211,0.4), 0 0 0 1px rgba(195,203,211,0.3)",
           }}> {s.icon} </div>
 
           {/* Step badge */}
           <div style={{
             display:"inline-flex", alignItems:"center", gap:"6px",
-            background:"rgba(124,58,237,0.15)",
-            border:"1px solid rgba(124,58,237,0.3)",
+            background:"rgba(195,203,211,0.15)",
+            border:"1px solid rgba(195,203,211,0.3)",
             borderRadius:"100px", padding:"4px 14px",
-            fontSize:"12px", color:"#a78bfa", fontWeight:"500",
+            fontSize:"12px", color:"#E4E9ED", fontWeight:"500",
             marginBottom:"12px",
           }}>
-            <span style={{width:"5px",height:"5px",background:"#7c3aed",borderRadius:"50%",display:"inline-block"}}/>
+            <span style={{width:"5px",height:"5px",background:"#C3CBD3",borderRadius:"50%",display:"inline-block"}}/>
             {s.label}
           </div>
 
@@ -195,15 +195,15 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
 
               {/* Demo önerisi */}
               <div style={{
-                background:"rgba(124,58,237,0.1)",
-                border:"1px solid rgba(124,58,237,0.2)",
+                background:"rgba(195,203,211,0.1)",
+                border:"1px solid rgba(195,203,211,0.2)",
                 borderRadius:"14px", padding:"14px 16px",
                 display:"flex", alignItems:"flex-start", gap:"10px",
                 marginBottom:"24px",
               }}>
                 <span style={{ fontSize:"18px" }}>✨</span>
                 <div>
-                  <div style={{ fontSize:"13px", fontWeight:"600", color:"#a78bfa", marginBottom:"3px" }}>
+                  <div style={{ fontSize:"13px", fontWeight:"600", color:"#E4E9ED", marginBottom:"3px" }}>
                     Demo verisiyle başla
                   </div>
                   <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.4)", lineHeight:"1.5" }}>
@@ -221,7 +221,7 @@ export default function Onboarding({ userName = 'Kullanıcı', onComplete = () =
             {[1,2].map(i => (
               <div key={i} style={{
                 height:"6px", borderRadius:"100px",
-                background: i===step ? "#7c3aed" : "rgba(255,255,255,0.12)",
+                background: i===step ? "#C3CBD3" : "rgba(255,255,255,0.12)",
                 width: i===step ? "20px" : "6px",
                 transition:"all 0.3s ease",
               }}/>
@@ -260,8 +260,8 @@ function Input({ ...props }) {
         ...props.style,
       }}
       onFocus={e => {
-        e.target.style.borderColor = "rgba(124,58,237,0.6)";
-        e.target.style.background  = "rgba(124,58,237,0.08)";
+        e.target.style.borderColor = "rgba(195,203,211,0.6)";
+        e.target.style.background  = "rgba(195,203,211,0.08)";
       }}
       onBlur={e => {
         e.target.style.borderColor = "rgba(255,255,255,0.1)";
@@ -274,10 +274,10 @@ function Input({ ...props }) {
 function OptionBtn({ selected, onClick, children }) {
   return (
     <button onClick={onClick} style={{
-      background: selected ? "rgba(124,58,237,0.18)" : "rgba(255,255,255,0.05)",
-      border: `1px solid ${selected ? "rgba(124,58,237,0.5)" : "rgba(255,255,255,0.08)"}`,
+      background: selected ? "rgba(195,203,211,0.18)" : "rgba(255,255,255,0.05)",
+      border: `1px solid ${selected ? "rgba(195,203,211,0.5)" : "rgba(255,255,255,0.08)"}`,
       borderRadius:"12px", padding:"12px 14px",
-      color: selected ? "#a78bfa" : "rgba(255,255,255,0.55)",
+      color: selected ? "#E4E9ED" : "rgba(255,255,255,0.55)",
       fontSize:"14px", fontWeight: selected ? "600" : "400",
       cursor:"pointer", textAlign:"left",
       transition:"all 0.15s ease", fontFamily:"inherit",
@@ -292,8 +292,8 @@ function PrimaryBtn({ onClick, disabled, children }) {
     <button onClick={onClick} disabled={disabled} style={{
       width:"100%",
       background: disabled
-        ? "rgba(124,58,237,0.3)"
-        : "linear-gradient(135deg,#7c3aed,#6366f1)",
+        ? "rgba(195,203,211,0.3)"
+        : "linear-gradient(135deg,#C3CBD3,#8B949D)",
       border:"none", borderRadius:"14px",
       padding:"15px", color:"#fff", fontSize:"15px", fontWeight:"600",
       cursor: disabled ? "not-allowed" : "pointer",

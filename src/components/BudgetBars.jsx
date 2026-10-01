@@ -5,14 +5,14 @@ import { P } from '../styles/palette';
 /* ─── Palette ─── */
 
 const KAT_IKONLARI = {
-  Market: { icon: ShoppingCart, renk: '#10b981' },
-  'Yemek Siparişi': { icon: UtensilsCrossed, renk: '#f59e0b' },
-  Ulaşım: { icon: Bus, renk: '#6366f1' },
-  Abonelik: { icon: Tv, renk: '#a855f7' },
-  Fatura: { icon: Zap, renk: '#3b82f6' },
-  Alışveriş: { icon: ShoppingBag, renk: '#ec4899' },
-  Eğlence: { icon: Gamepad2, renk: '#f97316' },
-  Sağlık: { icon: Heart, renk: '#14b8a6' },
+  Market: { icon: ShoppingCart, renk: '#34C08A' },
+  'Yemek Siparişi': { icon: UtensilsCrossed, renk: '#D2894F' },
+  Ulaşım: { icon: Bus, renk: '#8B949D' },
+  Abonelik: { icon: Tv, renk: '#C7CED5' },
+  Fatura: { icon: Zap, renk: '#6E93C4' },
+  Alışveriş: { icon: ShoppingBag, renk: '#C0705C' },
+  Eğlence: { icon: Gamepad2, renk: '#C0705C' },
+  Sağlık: { icon: Heart, renk: '#45939C' },
 };
 
 const fmt = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
@@ -29,7 +29,7 @@ function BudgetRow({ kategori, harcanan, limit }) {
   }, [displayPct]);
 
   const barColor = pct >= 100 ? P.red : pct >= 80 ? P.amber : P.green;
-  const katInfo = KAT_IKONLARI[kategori] || { icon: ShoppingBag, renk: '#94a3b8' };
+  const katInfo = KAT_IKONLARI[kategori] || { icon: ShoppingBag, renk: '#9BA1A6' };
   const Icon = katInfo.icon;
 
   return (
@@ -45,7 +45,7 @@ function BudgetRow({ kategori, harcanan, limit }) {
           <span style={{ fontSize: 13, fontWeight: 600, color: P.text1 }}>{kategori}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {pct >= 100 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.15)', color: P.red, border: '1px solid rgba(239,68,68,0.3)' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(219,92,78,0.15)', color: P.red, border: '1px solid rgba(219,92,78,0.3)' }}>
                 Aşıldı!
               </span>
             )}
@@ -75,10 +75,10 @@ export default function BudgetBars({ harcamalar, limitler }) {
 
   return (
     <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(124,58,237,0.06)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(195,203,211,0.06)', filter: 'blur(40px)', pointerEvents: 'none' }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <h2 style={{ fontSize: 17, fontWeight: 800, color: P.text1, letterSpacing: '-0.01em' }}>Bütçe Limitleri</h2>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa', letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 99, background: 'rgba(195,203,211,0.15)', border: '1px solid rgba(195,203,211,0.3)', color: '#E4E9ED', letterSpacing: '0.08em' }}>
           {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
         </span>
       </div>

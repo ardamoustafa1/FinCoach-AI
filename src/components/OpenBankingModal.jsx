@@ -18,9 +18,9 @@ const CATEGORIZED_DATA = [
   { magaza: "Starbucks", kategori: "Yemek", icon: "🍔", color: P.red },
   { magaza: "Ev Kirası", kategori: "Fatura", icon: "📄", color: P.amber },
   { magaza: "Uber", kategori: "Ulaşım", icon: "🚌", color: P.blue },
-  { magaza: "Netflix", kategori: "Eğlence", icon: "🎮", color: '#A855F7' },
+  { magaza: "Netflix", kategori: "Eğlence", icon: "🎮", color: '#C7CED5' },
   { magaza: "Elektrik Faturası", kategori: "Fatura", icon: "📄", color: P.amber },
-  { magaza: "Getir", kategori: "Yemek Siparişi", icon: "🛵", color: '#F97316' }
+  { magaza: "Getir", kategori: "Yemek Siparişi", icon: "🛵", color: '#C0705C' }
 ];
 
 export default function OpenBankingModal({ onComplete }) {
@@ -126,36 +126,36 @@ export default function OpenBankingModal({ onComplete }) {
       
       <div style={{
         width: '100%', maxWidth: 700,
-        background: '#09090b', border: '1px solid rgba(59,130,246,0.3)',
+        background: '#09090b', border: '1px solid rgba(110,147,196,0.3)',
         borderRadius: 24, overflow: 'hidden',
-        boxShadow: '0 0 80px rgba(59,130,246,0.2)',
+        boxShadow: '0 0 80px rgba(110,147,196,0.2)',
         position: 'relative', display: 'flex', flexDirection: 'column', height: 600
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(180deg, rgba(59,130,246,0.1) 0%, transparent 100%)',
+          background: 'linear-gradient(180deg, rgba(110,147,196,0.1) 0%, transparent 100%)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
           padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 16, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Landmark size={24} color="#60a5fa" />
+            <div style={{ width: 48, height: 48, borderRadius: 16, background: 'rgba(110,147,196,0.15)', border: '1px solid rgba(110,147,196,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Landmark size={24} color="#8EAFD6" />
             </div>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>Açık Bankacılık Sandbox Senkronizasyonu <span style={{fontSize: 10, backgroundColor: 'rgba(16,185,129,0.18)', color: '#10B981', padding: '2px 6px', borderRadius: 6, verticalAlign: 'middle'}}>Çalışır Sandbox</span></h3>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>Açık Bankacılık Sandbox Senkronizasyonu <span style={{fontSize: 10, backgroundColor: 'rgba(52,192,138,0.18)', color: '#34C08A', padding: '2px 6px', borderRadius: 6, verticalAlign: 'middle'}}>Çalışır Sandbox</span></h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                {step === 0 && <><Loader2 size={12} color="#94a3b8" className="animate-spin" /><span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>API'ye bağlanılıyor...</span></>}
-                {step === 1 && <><Server size={12} color="#60a5fa" className="animate-pulse" /><span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>Sandbox veri akışı başlatıldı...</span></>}
-                {step === 2 && <><Sparkles size={12} color="#c4b5fd" className="animate-pulse" /><span style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600 }}>Yerel kategorizasyon motoru çalışıyor...</span></>}
-                {step === 3 && <><CheckCircle2 size={12} color="#10b981" /><span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>Senkronizasyon tamamlandı</span></>}
+                {step === 0 && <><Loader2 size={12} color="#9BA1A6" className="animate-spin" /><span style={{ fontSize: 12, color: '#9BA1A6', fontWeight: 600 }}>API'ye bağlanılıyor...</span></>}
+                {step === 1 && <><Server size={12} color="#8EAFD6" className="animate-pulse" /><span style={{ fontSize: 12, color: '#8EAFD6', fontWeight: 600 }}>Sandbox veri akışı başlatıldı...</span></>}
+                {step === 2 && <><Sparkles size={12} color="#F1F4F6" className="animate-pulse" /><span style={{ fontSize: 12, color: '#F1F4F6', fontWeight: 600 }}>Yerel kategorizasyon motoru çalışıyor...</span></>}
+                {step === 3 && <><CheckCircle2 size={12} color="#34C08A" /><span style={{ fontSize: 12, color: '#34C08A', fontWeight: 600 }}>Senkronizasyon tamamlandı</span></>}
               </div>
             </div>
           </div>
           {step === 3 && (
             <button onClick={handleApply} style={{
-              padding: '10px 20px', borderRadius: 12, background: 'linear-gradient(135deg, #3B82F6, #10B981)',
+              padding: '10px 20px', borderRadius: 12, background: 'linear-gradient(135deg, #6E93C4, #34C08A)',
               border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(16,185,129,0.3)', animation: 'fadeSlideUp 0.4s ease'
+              boxShadow: '0 4px 20px rgba(52,192,138,0.3)', animation: 'fadeSlideUp 0.4s ease'
             }}>Kayıtlara Ekle</button>
           )}
           {step === 0 && (
@@ -172,7 +172,7 @@ export default function OpenBankingModal({ onComplete }) {
         {/* List View */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 24, background: '#050505', position: 'relative' }}>
           {step === 2 && (
-             <div style={{ position: 'absolute', left: 0, right: 0, height: 100, background: 'linear-gradient(180deg, transparent, rgba(124,58,237,0.2), transparent)', animation: 'scan 2.5s linear infinite', zIndex: 10, pointerEvents: 'none' }} />
+             <div style={{ position: 'absolute', left: 0, right: 0, height: 100, background: 'linear-gradient(180deg, transparent, rgba(195,203,211,0.2), transparent)', animation: 'scan 2.5s linear infinite', zIndex: 10, pointerEvents: 'none' }} />
           )}
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'relative', zIndex: 1 }}>
@@ -191,13 +191,13 @@ export default function OpenBankingModal({ onComplete }) {
                 }}>
                   {/* Raw Data Left */}
                   <div style={{ flex: 1, opacity: isCategorized ? 0.4 : 1, transition: 'opacity 0.4s' }}>
-                    <p style={{ fontSize: 13, fontFamily: 'monospace', color: '#cbd5e1', margin: '0 0 4px', fontWeight: 600 }}>{item.raw}</p>
-                    <p style={{ fontSize: 11, color: '#64748b', margin: 0, fontFamily: 'monospace' }}>{item.date} • ₺{item.amount.toFixed(2)}</p>
+                    <p style={{ fontSize: 13, fontFamily: 'monospace', color: '#C8CDD2', margin: '0 0 4px', fontWeight: 600 }}>{item.raw}</p>
+                    <p style={{ fontSize: 11, color: '#6B7075', margin: 0, fontFamily: 'monospace' }}>{item.date} • ₺{item.amount.toFixed(2)}</p>
                   </div>
 
                   {/* Transformation Arrow */}
                   {isCategorized && (
-                    <div style={{ padding: '0 16px', color: '#60a5fa', animation: 'fadeSlideUp 0.3s ease' }}>
+                    <div style={{ padding: '0 16px', color: '#8EAFD6', animation: 'fadeSlideUp 0.3s ease' }}>
                       <ArrowRight size={16} />
                     </div>
                   )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Lock, Brain, Dices, Layers, ScanFace, FileText, ChevronRight, Calculator, Network, Target, Building, Trophy, ShieldAlert, LayoutDashboard, ArrowRightLeft, Crosshair, BarChart3, Landmark, Bell, ShoppingBag, Cpu, MessageSquare, Settings } from 'lucide-react';
 import useStore from '../store/useStore';
 
@@ -50,22 +50,22 @@ const TOUR_CONTENT = {
     title: 'Gizlilik ve Güvenlik 🛡️',
     subtitle: 'Verileriniz Sadece Sizde Kalır',
     desc: "Finansal verileriniz en hassas bilgilerinizdir. FinCoach, Apple'ın kullandığı güvenlik yaklaşımıyla çalışır: Verileriniz hiçbir zaman dışarı çıkmaz, her şey sizin cihazınızda işlenir. Yapay zeka sizi tanır ama kimse sizin verilerinize erişemez. Bankacılık düzeyinde mahremiyet, sıfır veri sızıntısı.",
-    icon: <FileText size={32} color="#8B5CF6" />,
-    color: "#8B5CF6"
+    icon: <FileText size={32} color="#AAB3BB" />,
+    color: "#AAB3BB"
   },
   '/tax': {
     title: 'Vergi Asistanınız 🧾',
     subtitle: 'Devletten Geri Alacağınız Parayı Bulun',
     desc: "Maaşınızdan her ay ne kadar vergi kesiliyor biliyor musunuz? Belki de hak ettiğiniz indirimlerden faydalanmıyorsunuzdur. Bu ekran gelirlerinizi ve giderlerinizi tarar, size yasal olarak geri alabileceğiniz tutarı gösterir. Freelance çalışanlar için özellikle çok faydalı — vergiden kaçmak değil, vergiyi akıllıca yönetmek.",
-    icon: <Calculator size={32} color="#EC4899" />,
-    color: "#EC4899"
+    icon: <Calculator size={32} color="#C0705C" />,
+    color: "#C0705C"
   },
   '/graph-analysis': {
     title: 'Harcama Haritanız 🕸️',
     subtitle: 'Paranız Nereye Gidiyor, Neden Gidiyor?',
     desc: "Hiç fark ettiniz mi? Her kahve aldığınızda peşinden tatlı da alıyorsunuz. Ya da market alışverişinden sonra hep online sipariş veriyorsunuz. Bu ekran harcamalarınız arasındaki gizli bağlantıları ortaya çıkarıyor. Hangi alışkanlıkların birbirini tetiklediğini görünce, gereksiz harcamaların kökünü kesebilirsiniz.",
-    icon: <Network size={32} color="#06B6D4" />,
-    color: "#06B6D4"
+    icon: <Network size={32} color="#45939C" />,
+    color: "#45939C"
   },
   '/debt-snowball': {
     title: 'Borçtan Kurtulma Planı ❄️',
@@ -78,8 +78,8 @@ const TOUR_CONTENT = {
     title: 'Ev Alma Rehberiniz 🏠',
     subtitle: 'Ev Almaya Ne Kadar Yakınsınız?',
     desc: "Ev almak herkesin hayali ama rakamlar korkutucu olabiliyor. Bu ekran size net cevaplar veriyor: Peşinat için ne kadar biriktirmeniz lazım, kredi çekseniz toplamda ne kadar geri ödersiniz, aylık taksitiniz ne olur? Hayalinizdeki eve giden yolu adım adım planlayın.",
-    icon: <Building size={32} color="#14B8A6" />,
-    color: "#14B8A6"
+    icon: <Building size={32} color="#45939C" />,
+    color: "#45939C"
   },
   '/league': {
     title: 'Tasarruf Yarışması 🏆',
@@ -92,8 +92,8 @@ const TOUR_CONTENT = {
     title: 'Gelir Dengeleyici 🌊',
     subtitle: 'Düzensiz Kazancınızı Düzenli Maaşa Çevirin',
     desc: "Serbest çalışıyorsanız bilirsiniz: Bir ay çok kazanırsınız, bir ay hiç para gelmez. Bu ekran yüksek kazançlı aylarınızdan otomatik olarak kenara koyar ve düşük aylarda size düzenli bir gelir akışı sağlar. Sanki her ay aynı maaşı alıyormuşsunuz gibi hissedersiniz. Strese son.",
-    icon: <ShieldAlert size={32} color="#8B5CF6" />,
-    color: "#8B5CF6"
+    icon: <ShieldAlert size={32} color="#AAB3BB" />,
+    color: "#AAB3BB"
   },
   '/dashboard': {
     title: 'Finansal Kokpitiniz 📊',
@@ -120,8 +120,8 @@ const TOUR_CONTENT = {
     title: 'Nakit Akışı Takvimi 📅',
     subtitle: 'Paranız Ayın Hangi Günü Nereye Gidiyor?',
     desc: "Maaş günü ile bir sonraki maaş günü arasında paranız nasıl eriyor? Bu ekran günlük nakit akışınızı gösteriyor. Hangi günlerde en çok harcama yaptığınızı, ayın sonuna doğru paranızın ne durumda olduğunu net olarak görün.",
-    icon: <BarChart3 size={32} color="#06B6D4" />,
-    color: "#06B6D4"
+    icon: <BarChart3 size={32} color="#45939C" />,
+    color: "#45939C"
   },
   '/wealth': {
     title: 'Varlık Yönetimi 🏦',
@@ -134,8 +134,8 @@ const TOUR_CONTENT = {
     title: 'Abonelik Takipçisi 🔔',
     subtitle: 'Unuttuğunuz Abonelikler Cebinizi Yakmasın',
     desc: "Netflix, Spotify, spor salonu, dergi abonelikleri... Her ay kartınızdan çekilen ama belki kullanmadığınız abonelikler var mı? Bu ekran tüm düzenli ödemelerinizi listeler, yenileme tarihlerini hatırlatır ve iptal etmeniz gerekenleri önerir.",
-    icon: <Bell size={32} color="#EC4899" />,
-    color: "#EC4899"
+    icon: <Bell size={32} color="#C0705C" />,
+    color: "#C0705C"
   },
   '/chat': {
     title: 'Yapay Zeka Koçunuz 🤖',
@@ -156,7 +156,7 @@ const TOUR_CONTENT = {
     subtitle: 'Uygulamayı Size Göre Özelleştirin',
     desc: "Profil bilgilerinizi güncelleyin, bütçe limitlerinizi belirleyin, tema tercihlerinizi (karanlık/aydınlık) değiştirin ve bildirim ayarlarınızı yönetin. FinCoach sizin alışkanlıklarınıza göre çalışır — burada ince ayar yapabilirsiniz.",
     icon: <Settings size={32} color={P.text2} />,
-    color: "#64748B"
+    color: "#6B7075"
   },
   '/shop-sim': {
     title: 'Harcama Simülatörü 🛍️',
@@ -169,8 +169,8 @@ const TOUR_CONTENT = {
     title: 'Sistem Mimarisi 🖥️',
     subtitle: 'FinCoach AI Nasıl Çalışıyor?',
     desc: "Merak edenler için: FinCoach arka planda hangi yapay zeka modellerini kullanıyor, verileriniz nasıl işleniyor, hangi güvenlik katmanları devrede? Bu ekran tüm teknik altyapıyı şeffaf bir şekilde gösterir. Güvenliğiniz bizim için her şeyden önce gelir.",
-    icon: <Cpu size={32} color="#06B6D4" />,
-    color: "#06B6D4"
+    icon: <Cpu size={32} color="#45939C" />,
+    color: "#45939C"
   }
 };
 
@@ -182,9 +182,17 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
 
   const modalRef = useRef(null);
 
+  // Modal gerçekten görünür mü? (içerik var + zorlanmış ya da henüz görülmemiş)
+  const isVisible = Boolean(content) && (forceShow || !(seenTours || []).includes(pathname));
+
+  const handleClose = useCallback(() => {
+    if (!forceShow && typeof markTourSeen === 'function') markTourSeen(pathname);
+    if (onClose) onClose();
+  }, [forceShow, markTourSeen, pathname, onClose]);
+
   useEffect(() => {
-    if (!content) return;
-    
+    if (!isVisible) return undefined;
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         handleClose();
@@ -219,17 +227,10 @@ export default function FeatureTourModal({ pathname, forceShow = false, onClose 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [content]);
+  }, [isVisible, handleClose]);
 
-  // If no content for this route, don't show
-  if (!content) return null;
-  // If already seen and not forced open, skip
-  if (!forceShow && (seenTours || []).includes(pathname)) return null;
-
-  const handleClose = () => {
-    if (!forceShow && typeof markTourSeen === 'function') markTourSeen(pathname);
-    if (onClose) onClose();
-  };
+  // İçerik yoksa ya da bu tur zaten görüldüyse gösterme
+  if (!isVisible) return null;
 
   return (
     <div style={{

@@ -17,21 +17,21 @@ function saveDismissed(list) {
 }
 
 const MARKA_RENK = {
-  netflix: { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', dot: '#ef4444' },
-  spotify: { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e', dot: '#22c55e' },
-  'youtube premium': { bg: 'rgba(220, 38, 38, 0.15)', text: '#dc2626', dot: '#dc2626' },
-  youtube: { bg: 'rgba(220, 38, 38, 0.15)', text: '#dc2626', dot: '#dc2626' },
-  exxen: { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7', dot: '#a855f7' },
-  apple: { bg: 'rgba(100, 116, 139, 0.15)', text: 'var(--text-primary)', dot: '#64748b' },
-  amazon: { bg: 'rgba(249, 115, 22, 0.15)', text: '#f97316', dot: '#f97316' },
-  disney: { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', dot: '#3b82f6' },
+  netflix: { bg: 'rgba(219,92,78, 0.15)', text: '#DB5C4E', dot: '#DB5C4E' },
+  spotify: { bg: 'rgba(63,199,146, 0.15)', text: '#3FC792', dot: '#3FC792' },
+  'youtube premium': { bg: 'rgba(185,75,63, 0.15)', text: '#B94B3F', dot: '#B94B3F' },
+  youtube: { bg: 'rgba(185,75,63, 0.15)', text: '#B94B3F', dot: '#B94B3F' },
+  exxen: { bg: 'rgba(199,206,213, 0.15)', text: '#C7CED5', dot: '#C7CED5' },
+  apple: { bg: 'rgba(107,112,117, 0.15)', text: 'var(--text-primary)', dot: '#6B7075' },
+  amazon: { bg: 'rgba(192,112,92, 0.15)', text: '#C0705C', dot: '#C0705C' },
+  disney: { bg: 'rgba(110,147,196, 0.15)', text: '#6E93C4', dot: '#6E93C4' },
 };
 function markaRenk(magaza) {
   const key = (magaza || '').toLowerCase();
   for (const [k, v] of Object.entries(MARKA_RENK)) {
     if (key.includes(k)) return v;
   }
-  return { bg: 'rgba(99, 102, 241, 0.15)', text: '#6366f1', dot: '#6366f1' };
+  return { bg: 'rgba(139,148,157, 0.15)', text: '#8B949D', dot: '#8B949D' };
 }
 
 export default function SubscriptionsTab({ islemler }) {
@@ -66,16 +66,16 @@ export default function SubscriptionsTab({ islemler }) {
               key={ab.key}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 16,
-                background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)'
+                background: 'rgba(210,137,79, 0.1)', border: '1px solid rgba(210,137,79, 0.2)'
               }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(210,137,79, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Bell size={18} color={P.amber} />
               </div>
               <p style={{ fontSize: 14, color: P.text1, flex: 1, margin: 0 }}>
                 <strong style={{ fontWeight: 800 }}>{ab.magaza}</strong> {ab.gunAdi} yenileniyor — <strong style={{ color: P.amber }}>{fmt(ab.aylikTutar)}</strong> hazır olsun
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: P.amber, background: 'rgba(245, 158, 11, 0.1)', padding: '4px 10px', borderRadius: 8, flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: P.amber, background: 'rgba(210,137,79, 0.1)', padding: '4px 10px', borderRadius: 8, flexShrink: 0 }}>
                 <Clock size={12} />
                 {ab.gunKaldi === 0 ? 'Bugün' : `${ab.gunKaldi} gün`}
               </div>
@@ -86,10 +86,10 @@ export default function SubscriptionsTab({ islemler }) {
 
       {/* ── ÖZET KARTI ── */}
       <div style={{ background: P.bg2, border: `1px solid ${P.border}`, borderRadius: 20, padding: 24, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(124, 58, 237, 0.08)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(195,203,211, 0.08)', filter: 'blur(40px)', pointerEvents: 'none' }} />
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #C3CBD3, #7A828A)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(195,203,211, 0.3)' }}>
             <RefreshCw size={20} color="#fff" />
           </div>
           <div>
@@ -101,7 +101,7 @@ export default function SubscriptionsTab({ islemler }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {/* Aylık Toplam */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(219,92,78, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <CreditCard size={20} color={P.red} />
             </div>
             <div>
@@ -112,7 +112,7 @@ export default function SubscriptionsTab({ islemler }) {
 
           {/* Yıllık Toplam */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(210,137,79, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <TrendingUp size={20} color={P.amber} />
             </div>
             <div>
@@ -123,12 +123,12 @@ export default function SubscriptionsTab({ islemler }) {
 
           {/* Abonelik Sayısı */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 16, background: P.bg3, border: `1px solid ${P.border}` }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Zap size={20} color="#6366f1" />
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(139,148,157, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Zap size={20} color="#8B949D" />
             </div>
             <div>
               <p style={{ fontSize: 10, fontWeight: 700, color: P.text2, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' }}>Aktif Abonelik</p>
-              <p style={{ fontSize: 20, fontWeight: 800, color: '#6366f1', margin: 0 }}>{abonelikler.length}</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: '#8B949D', margin: 0 }}>{abonelikler.length}</p>
             </div>
           </div>
         </div>
@@ -231,7 +231,7 @@ function AbonelikKarti({ abonelik, onDismiss }) {
           <span style={{ fontWeight: 600, color: yaklasiyorMu ? P.amber : P.text1 }}>
             {abonelik.sonrakiOdeme}
             {yaklasiyorMu && (
-              <span style={{ marginLeft: 6, fontSize: 10, padding: '2px 6px', borderRadius: 99, background: 'rgba(245, 158, 11, 0.15)', color: P.amber, fontWeight: 700 }}>
+              <span style={{ marginLeft: 6, fontSize: 10, padding: '2px 6px', borderRadius: 99, background: 'rgba(210,137,79, 0.15)', color: P.amber, fontWeight: 700 }}>
                 {gunKaldi === 0 ? 'Bugün' : `${gunKaldi}g`}
               </span>
             )}
@@ -253,7 +253,7 @@ function AbonelikKarti({ abonelik, onDismiss }) {
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
             fontSize: 12, fontWeight: 600, background: P.bg3, color: P.text2, border: `1px solid ${P.border}`, cursor: 'pointer', transition: 'all 0.2s'
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = P.red; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(219,92,78, 0.1)'; e.currentTarget.style.color = P.red; }}
           onMouseLeave={e => { e.currentTarget.style.background = P.bg3; e.currentTarget.style.color = P.text2; }}
         >
           <X size={12} /> Abonelik Değil
@@ -265,7 +265,7 @@ function AbonelikKarti({ abonelik, onDismiss }) {
             disabled={swapping}
             style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
-              fontSize: 12, fontWeight: 700, background: '#9333ea', color: '#fff', border: 'none', cursor: swapping ? 'not-allowed' : 'pointer',
+              fontSize: 12, fontWeight: 700, background: '#9BA4AC', color: '#fff', border: 'none', cursor: swapping ? 'not-allowed' : 'pointer',
               boxShadow: '0 4px 12px rgba(147, 51, 234, 0.3)', transition: 'all 0.2s'
             }}
           >
@@ -277,7 +277,7 @@ function AbonelikKarti({ abonelik, onDismiss }) {
         {isNetflix && swapped && (
           <div style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 12,
-            fontSize: 12, fontWeight: 700, background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)'
+            fontSize: 12, fontWeight: 700, background: 'rgba(63,199,146, 0.15)', color: '#3FC792', border: '1px solid rgba(63,199,146, 0.3)'
           }}>
              <CheckCircle2 size={12} /> Mubi Aktif
           </div>

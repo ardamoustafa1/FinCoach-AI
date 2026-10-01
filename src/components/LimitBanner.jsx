@@ -11,18 +11,18 @@ export default function LimitBanner({ asimlar, persistent = false }) {
   return (
     <div style={{
       padding: '16px 20px', borderRadius: 16,
-      background: 'rgba(239,68,68,0.08)',
-      border: '1px solid rgba(239,68,68,0.28)',
-      boxShadow: '0 4px 24px rgba(239,68,68,0.12)',
+      background: 'rgba(219,92,78,0.08)',
+      border: '1px solid rgba(219,92,78,0.28)',
+      boxShadow: '0 4px 24px rgba(219,92,78,0.12)',
       animation: 'fadeSlideUp 0.4s ease',
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <AlertTriangle size={18} color="#ef4444" />
+          <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(219,92,78,0.15)', border: '1px solid rgba(219,92,78,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <AlertTriangle size={18} color="#DB5C4E" />
           </div>
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 800, color: '#f87171', marginBottom: 8 }}>
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#EC8A7E', marginBottom: 8 }}>
               {asimlar.length === 1 ? 'Bütçe limiti aşıldı!' : `${asimlar.length} kategoride limit aşıldı!`}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -30,11 +30,11 @@ export default function LimitBanner({ asimlar, persistent = false }) {
                 <span key={kategori} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '4px 10px', borderRadius: 99,
-                  background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)',
-                  fontSize: 12, fontWeight: 700, color: '#F1F5F9',
+                  background: 'rgba(219,92,78,0.12)', border: '1px solid rgba(219,92,78,0.25)',
+                  fontSize: 12, fontWeight: 700, color: '#F2F4F5',
                 }}>
                   {kategori}
-                  <span style={{ color: '#f87171', fontWeight: 600 }}>{fmt(harcanan)} / {fmt(limit)}</span>
+                  <span style={{ color: '#EC8A7E', fontWeight: 600 }}>{fmt(harcanan)} / {fmt(limit)}</span>
                 </span>
               ))}
             </div>
@@ -44,11 +44,11 @@ export default function LimitBanner({ asimlar, persistent = false }) {
         {!persistent && (
           <button onClick={() => setKapali(true)} style={{
             padding: 6, borderRadius: 8,
-            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
+            background: 'rgba(219,92,78,0.1)', border: '1px solid rgba(219,92,78,0.2)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0,
             transition: 'background 0.15s',
           }}>
-            <X size={15} color="#ef4444" />
+            <X size={15} color="#DB5C4E" />
           </button>
         )}
       </div>

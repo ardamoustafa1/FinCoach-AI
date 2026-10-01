@@ -2,12 +2,12 @@ import { Component } from 'react';
 import { trackEvent } from '../utils/analytics';
 
 const colors = {
-  bg: '#050714',
+  bg: '#0A0B0C',
   panel: '#111427',
   border: 'rgba(255,255,255,0.08)',
-  text: '#F8FAFC',
-  muted: '#94A3B8',
-  primary: '#7C3AED',
+  text: '#F7F9FA',
+  muted: '#9BA1A6',
+  primary: '#C3CBD3',
 };
 
 export default class ErrorBoundary extends Component {
@@ -50,7 +50,7 @@ export default class ErrorBoundary extends Component {
           padding: 28,
           boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         }}>
-          <p style={{ margin: '0 0 8px', color: '#C4B5FD', fontSize: 12, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+          <p style={{ margin: '0 0 8px', color: '#F1F4F6', fontSize: 12, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
             FinCoach AI
           </p>
           <h1 style={{ margin: '0 0 12px', fontSize: 28, lineHeight: 1.15, fontWeight: 900 }}>

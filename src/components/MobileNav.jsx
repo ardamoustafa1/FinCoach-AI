@@ -92,6 +92,8 @@ export default function MobileNav() {
       <style>{`
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        .mobile-tabbar { display: none; }
+        @media (max-width: 1023px) { .mobile-tabbar { display: flex; } }
       `}</style>
 
       {/* Bottom Tab Bar — always visible on mobile */}
@@ -101,12 +103,12 @@ export default function MobileNav() {
           background: 'var(--bg-sidebar)', backdropFilter: 'blur(24px) saturate(150%)',
           borderTop: '1px solid var(--border-color)',
           boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          alignItems: 'center', justifyContent: 'space-between',
           height: 64, padding: '0 8px',
           overflowX: 'auto', whiteSpace: 'nowrap',
           WebkitOverflowScrolling: 'touch',
         }}
-        className="lg:hidden hide-scrollbar"
+        className="mobile-tabbar hide-scrollbar"
       >
         {bottomTabs.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -119,15 +121,15 @@ export default function MobileNav() {
               <>
                 <div style={{
                   padding: 6, borderRadius: 10,
-                  background: isActive ? 'linear-gradient(135deg, #7c3aed, #6366f1)' : 'transparent',
-                  boxShadow: isActive ? '0 4px 12px rgba(124,58,237,0.3)' : 'none',
+                  background: isActive ? 'linear-gradient(135deg, #C3CBD3, #8B949D)' : 'transparent',
+                  boxShadow: isActive ? '0 4px 12px rgba(195,203,211,0.3)' : 'none',
                   transition: 'all 0.2s',
                 }}>
                   <Icon size={20} color={isActive ? '#fff' : 'var(--text-muted)'} />
                 </div>
                 <span style={{
                   fontSize: 10, fontWeight: isActive ? 800 : 600, lineHeight: 1,
-                  color: isActive ? '#A78BFA' : 'var(--text-muted)',
+                  color: isActive ? '#E4E9ED' : 'var(--text-muted)',
                 }}>{label}</span>
               </>
             )}
@@ -185,9 +187,9 @@ export default function MobileNav() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                background: 'linear-gradient(135deg, #C3CBD3, #8B949D)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
+                boxShadow: '0 4px 16px rgba(195,203,211,0.3)',
               }}>
                 <Wallet size={18} color="#fff" />
               </div>
@@ -232,17 +234,17 @@ export default function MobileNav() {
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 12,
                           padding: '12px 14px', borderRadius: 12,
-                          background: isActive ? 'rgba(124,58,237,0.12)' : 'transparent',
-                          border: `1px solid ${isActive ? 'rgba(124,58,237,0.3)' : 'transparent'}`,
+                          background: isActive ? 'rgba(195,203,211,0.12)' : 'transparent',
+                          border: `1px solid ${isActive ? 'rgba(195,203,211,0.3)' : 'transparent'}`,
                           transition: 'all 0.15s',
                         }}>
-                          <Icon size={18} color={isActive ? '#7C3AED' : 'var(--text-secondary)'} />
+                          <Icon size={18} color={isActive ? '#C3CBD3' : 'var(--text-secondary)'} />
                           <span style={{
                             fontSize: 14, fontWeight: isActive ? 800 : 600,
                             color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
                             flex: 1,
                           }}>{label}</span>
-                          {isActive && <ChevronRight size={14} color="#7C3AED" />}
+                          {isActive && <ChevronRight size={14} color="#C3CBD3" />}
                         </div>
                       )}
                     </NavLink>

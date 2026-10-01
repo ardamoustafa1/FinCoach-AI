@@ -123,13 +123,13 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
         }
         .modal-container {
           animation: modalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-          background: linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.45) 100%);
-          border: 1px solid rgba(124, 58, 237, 0.25);
-          box-shadow: 0 24px 64px rgba(124, 58, 237, 0.2);
+          background: linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(18,20,23, 0.45) 100%);
+          border: 1px solid rgba(195,203,211, 0.25);
+          box-shadow: 0 24px 64px rgba(195,203,211, 0.2);
         }
         .suggestion-card:hover {
-          background: rgba(124, 58, 237, 0.15) !important;
-          border-color: rgba(124, 58, 237, 0.45) !important;
+          background: rgba(195,203,211, 0.15) !important;
+          border-color: rgba(195,203,211, 0.45) !important;
           transform: translateY(-2px);
         }
       `}</style>
@@ -138,17 +138,18 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Mic size={18} color="#ef4444" />
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(219,92,78, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Mic size={18} color="#DB5C4E" />
             </div>
             <div>
               <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', margin: 0 }}>Sesli Komut Anlaşılamadı</h3>
-              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Tutar veya harcama yeri tam ayrıştırılamadı</p>
+              <p style={{ fontSize: 12, color: '#9BA1A6', margin: 0 }}>Tutar veya harcama yeri tam ayrıştırılamadı</p>
             </div>
           </div>
           <button 
+            aria-label="Sesli komut penceresini kapat"
             onClick={onClose}
-            style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+            style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', color: '#9BA1A6', cursor: 'pointer' }}
           >
             <X size={16} />
           </button>
@@ -156,7 +157,7 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
 
         {/* Captured Text Area */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Algılanan Ses Metni</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: '#F1F4F6', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Algılanan Ses Metni</label>
           <div style={{ position: 'relative' }}>
             <textarea
               value={transcript}
@@ -165,8 +166,8 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
                 generateSuggestions(e.target.value);
               }}
               style={{
-                width: '100%', height: 72, background: 'rgba(15, 23, 42, 0.65)',
-                border: '1px solid rgba(124, 58, 237, 0.2)', borderRadius: 12,
+                width: '100%', height: 72, background: 'rgba(18,20,23, 0.65)',
+                border: '1px solid rgba(195,203,211, 0.2)', borderRadius: 12,
                 padding: '12px 16px', color: '#fff', fontSize: 14, resize: 'none',
                 outline: 'none', fontFamily: 'inherit'
               }}
@@ -178,8 +179,8 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
         {/* Suggestions Section */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-            <Sparkles size={14} color="#a78bfa" className="animate-pulse" />
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Öneri Kutusu (Tek Tıkla Ekle)</span>
+            <Sparkles size={14} color="#E4E9ED" className="animate-pulse" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#9BA1A6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Öneri Kutusu (Tek Tıkla Ekle)</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -200,9 +201,9 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
               >
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 2px 0' }}>{item.text}</p>
-                  <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>{item.desc}</p>
+                  <p style={{ fontSize: 11, color: '#6B7075', margin: 0 }}>{item.desc}</p>
                 </div>
-                <ArrowRight size={14} color="#7c3aed" style={{ flexShrink: 0 }} />
+                <ArrowRight size={14} color="#C3CBD3" style={{ flexShrink: 0 }} />
               </button>
             ))}
           </div>
@@ -225,10 +226,10 @@ export default function SpeechFallbackModal({ isOpen, onClose, transcript: initi
             disabled={loading}
             style={{
               flex: 2, padding: '12px 20px', borderRadius: 12,
-              background: 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)',
+              background: 'linear-gradient(135deg, #C3CBD3 0%, #8B949D 100%)',
               border: 'none', color: '#fff', fontSize: 14, fontWeight: 800,
               cursor: loading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(124, 58, 237, 0.25)',
+              justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(195,203,211, 0.25)',
               transition: 'opacity 0.2s'
             }}
           >
