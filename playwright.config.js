@@ -11,7 +11,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'PORT=8555 npm start',
+    // DEMO_MODE: testlerin gizli anahtar olmadan çalışabilmesi için
+    command: 'DEMO_MODE=true PORT=8555 npm start',
     port: 8555,
     reuseExistingServer: false,
     timeout: 90_000,

@@ -20,6 +20,14 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
+        minify: {
+          compress: {
+            dropConsole: true,
+            dropDebugger: true,
+          },
+          mangle: true,
+          codegen: { removeWhitespace: true },
+        },
         codeSplitting: {
           groups: [
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|react-router-dom|zustand)[\\/]/, priority: 20 },
@@ -32,8 +40,5 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 700,
-  },
-  esbuild: {
-    drop: ['console', 'debugger'],
   },
 })

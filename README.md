@@ -8,7 +8,7 @@
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111111">
   <img alt="Vite" src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=ffffff">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-RLS-3FCF8E?logo=supabase&logoColor=111111">
-  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-2.5_Flash-8E75FF">
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-3.7_Flash-8E75FF">
   <img alt="TensorFlow.js" src="https://img.shields.io/badge/TensorFlow.js-Federated_AI-FF6F00?logo=tensorflow&logoColor=ffffff">
   <img alt="Offline First" src="https://img.shields.io/badge/Offline--First-IndexedDB-10B981">
 </p>
@@ -31,7 +31,7 @@
 ## Mimari Karar Kayıtları (ADRs) & Bilinen Kısıtlar (Known Limitations)
 
 * **Offline-first mimari:** `PWA` ve `Service Worker` ile tüm veriler lokal IndexedDB'de şifreli tutulur ve Supabase'e senkronize edilir. 
-* **Yapay Zeka (Gemini & TF.js):** Sunucu tarafında veri güvenliğini sağlamak amacıyla `Gemini 2.5 Flash` API'si proxy olarak kullanılır. Tarayıcıda (Edge AI) ise `@tensorflow/tfjs` ile anonimleştirilmiş cihaz-içi çıkarım (Federated AI denemeleri) yapılır.
+* **Yapay Zeka (Gemini & TF.js):** Sunucu tarafında veri güvenliğini sağlamak amacıyla `Gemini 3.7 Flash` API'si proxy olarak kullanılır. Tarayıcıda (Edge AI) ise `@tensorflow/tfjs` ile anonimleştirilmiş cihaz-içi çıkarım (Federated AI denemeleri) yapılır.
 * **Bilinen Kısıtlar:**
   * Kredi kartı/banka veri entegrasyonu (Open Banking) gerçek bir API'ye değil, demo simülasyonuna veya CSV importuna bağlıdır.
   * *Web3 Escrow* ve *Autonomous Agent* modülleri birer arayüz vizyonudur; gerçek blok zincir işlemleri yapmaz.
@@ -202,7 +202,7 @@ WHATSAPP_ENABLED=false
 
 | Alan | Implementasyon |
 | --- | --- |
-| AI backend | Express proxy uzerinden Google Gemini 2.5 Flash, frontend'e API key sizmaz |
+| AI backend | Express proxy uzerinden Google Gemini 3.7 Flash, frontend'e API key sizmaz |
 | Local RAG | Kullanici islemleri uzerinde cosine similarity tabanli semantik arama |
 | Federated learning | `@tensorflow/tfjs` ile cihaz ici model egitimi ve gizlilik odakli agirlik paylasimi demosu |
 | Offline-first | IndexedDB sync queue, Service Worker, optimistic update ve rollback |
@@ -211,7 +211,7 @@ WHATSAPP_ENABLED=false
 | Analitik | Recharts, kategori dagilimi, trend, heatmap, graph ve skor panelleri |
 | CSV import | PapaParse ile banka ekstresi okuma, format algilama ve tekrar kaydi eleme |
 | PDF export | `jsPDF` ile vergi/rapor ciktisi |
-| WhatsApp opsiyonel | `whatsapp-web.js` ile mesajdan islem kaydi akisi, kapatilabilir demo modu |
+| WhatsApp opsiyonel | Mesajdan işlem kaydı akışı için tembel yüklenen entegrasyon; upstream güvenlik düzeltmesine kadar production kurulumunda kapalı |
 
 ---
 
@@ -234,7 +234,7 @@ flowchart LR
 
   UI --> API["Express API"]
   API --> JWT["JWT Doğrulama"]
-  JWT --> Gemini["Gemini 2.5 Flash"]
+  JWT --> Gemini["Gemini 3.7 Flash"]
   JWT --> Admin["Supabase Service Role"]
   API --> WhatsApp["Opsiyonel WhatsApp Bot"]
 
@@ -268,7 +268,7 @@ sequenceDiagram
   participant App as React App
   participant RAG as Local Context Builder
   participant API as Express /api/chat
-  participant Gemini as Gemini 2.5 Flash
+  participant Gemini as Gemini 3.7 Flash
   participant UI as Chat UI
 
   User->>App: Finansal soru sorar
@@ -509,7 +509,7 @@ Aşağıdaki değişkenleri ortamınıza göre ayarlayarak farklı çalışma mo
 ## Yol Haritası (Roadmap)
 
 - [x] Temel gelir/gider takibi ve hedefler
-- [x] AI Koç (Gemini 2.5 Flash) ve RAG tabanlı sohbet
+- [x] AI Koç (Gemini 3.7 Flash) ve RAG tabanlı sohbet
 - [x] Offline-first mimari ve AES-GCM şifreleme
 - [ ] Gerçek banka API (PSD2 / Open Banking) entegrasyonu
 - [ ] Push Notification destekli PWA

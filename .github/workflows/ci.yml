@@ -43,8 +43,12 @@ jobs:
     - name: NPM Audit Root
       run: npm audit
       
+    # WhatsApp botu (whatsapp-web.js → Puppeteer) isteğe bağlı bağımlılıktır ve
+    # yalnızca WHATSAPP_ENABLED=true iken tembel yüklenir. Puppeteer zincirindeki
+    # extract-zip açığının üstte yayımlanmış bir düzeltmesi yok; bu yüzden
+    # denetim zorunlu üretim bağımlılıkları üzerinde çalıştırılır.
     - name: NPM Audit Server
-      run: cd server && npm audit
+      run: cd server && npm audit --omit=optional
       
     - name: Run Lighthouse CI
       run: |

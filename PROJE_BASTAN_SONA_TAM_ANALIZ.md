@@ -61,7 +61,7 @@ Kodda özellikle güvenlik politikaları, gerçek banka transferi veya gerçek b
 | Local güvenlik | WebCrypto AES-GCM, IndexedDB keyring, encrypted storage adapter |
 | Offline | IndexedDB sync queue, Service Worker cache, Background Sync |
 | Backend | Node.js, Express, compression, CORS, rate-limit |
-| AI | Google Gemini 2.5 Flash via `@google/generative-ai` |
+| AI | Google Gemini 3.7 Flash via `@google/genai` (3.5 Flash otomatik fallback) |
 | Client ML | TensorFlow.js |
 | DB/Auth | Supabase Auth + PostgreSQL + RLS |
 | CSV | PapaParse |
@@ -1512,4 +1512,3 @@ FinCoach AI, basit bir finans CRUD uygulamasının çok üstüne çıkmış. Kod
 Projenin anlatımında en doğru pozisyon şu:
 
 > "FinCoach AI, gerçek çalışan kişisel finans altyapısını; güvenli, açıkça etiketlenmiş sandbox AI/Web3/agent demolarıyla büyüten uçtan uca bir hackathon finans kokpitidir."
-
