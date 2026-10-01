@@ -155,10 +155,16 @@ export async function authFetch(path, options = {}) {
       headers,
     });
 
+    // Sunucu "yapılandırılmamış" dediğinde (Supabase admin ya da AI anahtarı yok)
+    // kullanıcıya hata göstermek yerine yerel demo yanıtına düş.
     if (response.status === 503 && path.startsWith('/api/')) {
       const cloned = response.clone();
       const payload = await cloned.json().catch(() => ({}));
-      if (String(payload.error || '').includes('Supabase admin yapılandırması')) {
+      const notConfigured =
+        payload.code === 'AI_NOT_CONFIGURED' ||
+        String(payload.error || '').includes('Supabase admin yapılandırması') ||
+        String(payload.error || '').includes('yapılandırılmamış');
+      if (notConfigured) {
         return localApiFallback(path, options);
       }
     }

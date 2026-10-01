@@ -86,7 +86,7 @@ export const sampleGoals = [
     currentAmount: 42000,
     deadline: '2026-12-31',
     icon: '🛡️',
-    color: '#6366f1',
+    color: '#8B949D',
     createdAt: '2026-01-01T00:00:00Z',
   },
   {
@@ -96,7 +96,7 @@ export const sampleGoals = [
     currentAmount: 18500,
     deadline: '2026-08-01',
     icon: '✈️',
-    color: '#10b981',
+    color: '#34C08A',
     createdAt: '2026-02-15T00:00:00Z',
   },
   {
@@ -106,7 +106,7 @@ export const sampleGoals = [
     currentAmount: 12000,
     deadline: '2026-10-01',
     icon: '💻',
-    color: '#f59e0b',
+    color: '#D2894F',
     createdAt: '2026-03-01T00:00:00Z',
   },
 ];

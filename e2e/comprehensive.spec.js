@@ -66,4 +66,30 @@ test.describe('Comprehensive Test Suite - 100/100 Release', () => {
     await page.waitForTimeout(500);
     await expect(page.getByText('Bakiye', { exact: false }).first()).toBeVisible();
   });
+
+  test('Restored business controls change state and export data', async ({ page }) => {
+    test.setTimeout(30_000);
+
+    await page.goto('/league');
+    const leagueTour = page.getByRole('button', { name: /Keşfetmeye Başla/i });
+    if (await leagueTour.isVisible()) await leagueTour.click();
+    const muteButton = page.getByRole('button', { name: /Ahmet'i Sustur/i });
+    await expect(muteButton).toBeVisible({ timeout: 10_000 });
+    await muteButton.click();
+    await expect(page.getByRole('button', { name: 'Ahmet Susturuldu' })).toBeDisabled();
+
+    await page.goto('/synthetic-data');
+    const syntheticTour = page.getByRole('button', { name: /Keşfetmeye Başla/i });
+    if (await syntheticTour.isVisible()) await syntheticTour.click();
+    const generateButton = page.getByRole('button', { name: 'Sentetik Veri Üretimini Başlat' });
+    await expect(generateButton).toBeVisible({ timeout: 10_000 });
+    await generateButton.click();
+
+    const exportButton = page.getByRole('button', { name: 'JSON Önizlemesini İndir' });
+    await expect(exportButton).toBeVisible({ timeout: 15_000 });
+    const downloadPromise = page.waitForEvent('download');
+    await exportButton.click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^fincoach-synthetic-preview-\d{4}-\d{2}-\d{2}\.json$/);
+  });
 });

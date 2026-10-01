@@ -7,23 +7,29 @@ import { test, expect } from '@playwright/test';
  * They run against the Vite dev server (auto-started via playwright.config.js).
  */
 
-// ─── 1. Auth Page Loads ─────────────────────────────────────────────────────
-test('Auth page renders login form', async ({ page }) => {
+// ─── 1. Tanıtım Sayfası ─────────────────────────────────────────────────────
+// Oturum açmamış ziyaretçi `/` adresinde tanıtım sayfasını görür;
+// giriş formu bir tık uzaktadır.
+test('Tanıtım sayfası açılır ve giriş formuna götürür', async ({ page }) => {
   await page.goto('/');
-  // The auth page should show email + password fields and a submit button
-  await expect(page.locator('input[type="email"], input[placeholder*="mail"], input[placeholder*="E-posta"]').first()).toBeVisible({ timeout: 10_000 });
+
+  // Tanıtım sayfası hero'su ve ana çağrılar
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /Giriş yap/i }).first()).toBeVisible();
+
+  // Girişe geç → e-posta + şifre + gönder butonu
+  await page.getByRole('button', { name: /Giriş yap/i }).first().click();
+  await expect(page.locator('input[type="email"]').first()).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('input[type="password"]').first()).toBeVisible();
-  // A login/register button should exist
-  const submitBtn = page.locator('button[type="submit"], button:has-text("Giriş"), button:has-text("Kayıt")').first();
-  await expect(submitBtn).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Giriş yap$/i }).first()).toBeVisible();
 });
 
-// ─── 2. App Shell Renders After Auth (Skeleton/Loading) ─────────────────────
-test('Loading skeleton appears while session is checked', async ({ page }) => {
+// ─── 2. Açılış Ekranı ───────────────────────────────────────────────────────
+test('Oturum kontrol edilirken açılış ekranı görünür', async ({ page }) => {
   await page.goto('/');
-  // Either the auth page or the loading skeleton should appear
-  const authOrSkeleton = page.locator('input[type="email"], .skeleton-box, [aria-live="polite"]').first();
-  await expect(authOrSkeleton).toBeVisible({ timeout: 10_000 });
+  // Ya açılış ekranı (aria-live durum metni) ya da tanıtım sayfası görünür olmalı
+  const bootOrLanding = page.locator('[aria-live="polite"], h1').first();
+  await expect(bootOrLanding).toBeVisible({ timeout: 10_000 });
 });
 
 // ─── 3. Page Title Updates Correctly ────────────────────────────────────────
@@ -37,7 +43,10 @@ test('Document title contains FinCoach AI', async ({ page }) => {
 // ─── 4. Auth Form Validation Works ──────────────────────────────────────────
 test('Auth form shows validation on empty submit', async ({ page }) => {
   await page.goto('/');
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1500);
+  // Tanıtım sayfasından giriş formuna geç
+  await page.getByRole('button', { name: /Giriş yap/i }).first().click();
+  await page.waitForTimeout(800);
 
   // Try to find and click submit without filling fields
   const submitBtn = page.locator('button[type="submit"], button:has-text("Giriş"), button:has-text("Kayıt")').first();

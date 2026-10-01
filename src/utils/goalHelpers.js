@@ -5,12 +5,12 @@
 export const IKONLAR = ['✈️', '🚗', '🏠', '💍', '📱', '🎓', '💰', '🏖️', '🎮', '🛋️'];
 
 export const RENKLER = [
-  { id: 'violet',  hex: '#7c3aed', glow: '124,58,237' },
-  { id: 'emerald', hex: '#10b981', glow: '16,185,129' },
-  { id: 'fuchsia', hex: '#d946ef', glow: '217,70,239' },
-  { id: 'rose',    hex: '#f43f5e', glow: '244,63,94'  },
-  { id: 'amber',   hex: '#f59e0b', glow: '245,158,11' },
-  { id: 'cyan',    hex: '#06b6d4', glow: '6,182,212'  },
+  { id: 'violet',  hex: '#C3CBD3', glow: '195,203,211' },
+  { id: 'emerald', hex: '#34C08A', glow: '52,192,138' },
+  { id: 'fuchsia', hex: '#C0705C', glow: '192,112,92' },
+  { id: 'rose',    hex: '#DB5C4E', glow: '219,92,78'  },
+  { id: 'amber',   hex: '#D2894F', glow: '210,137,79' },
+  { id: 'cyan',    hex: '#45939C', glow: '69,147,156'  },
 ];
 
 export const KESINTI_KATEGORILERI = [
@@ -22,9 +22,9 @@ export const KESINTI_KATEGORILERI = [
 ];
 
 export const HAZIR_HEDEFLER = [
-  { name: 'Acil Durum Fonu', targetAmount: 100000, currentAmount: 0, deadline: '2026-12-31', icon: '🛡️', color: '#6366f1' },
-  { name: 'Tatil Birikimi',  targetAmount:  60000, currentAmount: 0, deadline: '2026-08-15', icon: '✈️', color: '#10b981' },
-  { name: 'Borç Kapatma',    targetAmount:  40000, currentAmount: 0, deadline: '2026-07-01', icon: '✅', color: '#ef4444' },
+  { name: 'Acil Durum Fonu', targetAmount: 100000, currentAmount: 0, deadline: '2026-12-31', icon: '🛡️', color: '#8B949D' },
+  { name: 'Tatil Birikimi',  targetAmount:  60000, currentAmount: 0, deadline: '2026-08-15', icon: '✈️', color: '#34C08A' },
+  { name: 'Borç Kapatma',    targetAmount:  40000, currentAmount: 0, deadline: '2026-07-01', icon: '✅', color: '#DB5C4E' },
 ];
 
 export const liraFmt = (v) => `${Math.round(v).toLocaleString('tr-TR')}₺`;

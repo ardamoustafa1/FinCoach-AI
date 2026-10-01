@@ -43,7 +43,7 @@ function dbGoalFromApp(goal) {
     mevcut_tutar: Number(goal.currentAmount || 0),
     deadline: goal.deadline || '',
     icon: goal.icon || 'Target',
-    renk: goal.color || '#7c3aed',
+    renk: goal.color || '#C3CBD3',
     created_at: goal.createdAt || new Date().toISOString(),
   };
 }
